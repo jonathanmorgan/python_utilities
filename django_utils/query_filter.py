@@ -35,7 +35,10 @@ class QueryFilterHelper():
     PARAM_DATE_COLUMN = "date_column"
     PARAM_START_DATE = "start_date"
     PARAM_END_DATE = "end_date"
-    
+
+    # default values
+    DEFAULT_DATE_FORMAT = "%Y-%m-%d"
+
     # param for primary key =
     PARAM_PRIMARY_KEY_LIST = "primary_key_list"
 
