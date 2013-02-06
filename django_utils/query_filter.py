@@ -2,6 +2,11 @@
 Created on Apr 26, 2011
 
 @author: jonathanmorgan
+
+Need to refactor this so it contains a nested instance of QuerySetHelper,
+    calls methods there, so we only have one class that does this.  This is
+    only here for backward compatibility.
+
 '''
 __author__="jonathanmorgan"
 __date__ ="$Apr 26, 2011 12:31:35 AM$"

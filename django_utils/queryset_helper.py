@@ -1,6 +1,10 @@
 '''
 queryset_generator and queryset_list_generator based on:
 https://gist.github.com/897894
+
+Going forward, this is the main class for QuerySet helper methods, etc.
+Need to refactor QueryFilterHelper so it contains a nested instance of this
+    class calls methods here, so we only have one class that does this.
 '''
 
 #===============================================================================
