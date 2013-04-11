@@ -30,7 +30,7 @@ class StringHelper( object ):
 
                 name = htmlentitydefs.codepoint2name.get( ord( char ) )
                 entity = htmlentitydefs.name2codepoint.get( name )
-                string_OUT +="&#" + str(entity)
+                string_OUT += "&#" + str(entity) + ";"
     
             else:
 
