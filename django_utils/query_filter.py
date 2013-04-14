@@ -2,12 +2,8 @@
 Created on Apr 26, 2011
 
 @author: jonathanmorgan
-
-Need to refactor this so it contains a nested instance of QuerySetHelper,
-    calls methods there, so we only have one class that does this.  This is
-    only here for backward compatibility.
-
 '''
+
 __author__="jonathanmorgan"
 __date__ ="$Apr 26, 2011 12:31:35 AM$"
 
@@ -20,9 +16,9 @@ if __name__ == "__main__":
 
 # Python base modules
 #import logging
-import django_utils.queryset_helper
+import queryset_helper
 
-class QueryFilterHelper( django_utils.queryset_helper.QuerySetHelper ):
+class QueryFilterHelper( queryset_helper.QuerySetHelper ):
 
     '''
     Just extends QuerySetHelper, nothing more.
