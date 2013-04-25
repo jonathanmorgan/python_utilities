@@ -1,6 +1,5 @@
 # HTML parsing
-from BeautifulSoup import BeautifulSoup
-from BeautifulSoup import BeautifulStoneSoup
+from bs4 import BeautifulSoup
 
 # SAX parser utilities
 from xml.sax import saxutils
@@ -235,11 +234,7 @@ class BeautifulSoupHelper( object ):
         
         # then, use the SAX parser to replace others.
         string_OUT = saxutils.unescape( string_OUT )
-        
-        # eventually, might instead want to use the BeautifulSoup way...
-        # from BeautifulSoup import BeautifulStoneSoup
-        #string_OUT = BeautifulStoneSoup( string_OUT, convertEntities=BeautifulStoneSoup.HTML_ENTITIES ).contents[0]
-        
+                
         return string_OUT
     
     #-- END method convert_html_entities() --#
