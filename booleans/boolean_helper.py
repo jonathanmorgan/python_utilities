@@ -28,7 +28,7 @@ class BooleanHelper( object ):
         """
     
         # return reference
-        value_OUT = ""
+        value_OUT = False
         
         # declare variables
         value_cleaned = ""
