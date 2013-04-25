@@ -16,7 +16,7 @@ class BooleanHelper( object ):
     #===========================================================================
 
     @classmethod
-    def convert_string_to_boolean( cls, value_IN ):
+    def convert_value_to_boolean( cls, value_IN ):
         
         """
         Compares the value passed in to known representations of boolean True:
@@ -61,7 +61,7 @@ class BooleanHelper( object ):
     
         return value_OUT
     
-    #-- END convert_string_to_boolean() function --#
+    #-- END convert_value_to_boolean() function --#
 
 
 #-- END class BooleanHelper --#
