@@ -105,6 +105,48 @@ class StringHelper( object ):
 
 
     @staticmethod
+    def unicode_to_ascii( string_IN, encoding_IN = "", encode_error_IN = "xmlcharrefreplace" ):
+        
+        """
+        Converts string to unicode, then to ascii, converting any Unicode 
+           characters to XML entities.  UTF-8 is not unicode - it is an
+           encoding, just like ASCII.  To really deal with ENCODING problems,
+           you need to first DEECODE to unicode.  Who knew?
+        
+        Based in part on:
+        http://stackoverflow.com/questions/15800185/unicodeencodeerror-ascii-codec-cant-encode-character-u-xe9
+        http://nedbatchelder.com/text/unipain.html
+        """
+    
+        # return reference
+        string_OUT = ""
+        
+        # first decode from external encoding to unicode (probably is UTF-8).
+
+        # dp we have an encoding passed in?
+        if ( ( encoding_IN ) and ( encoding_IN != None ) and ( encoding_IN != "" ) ):
+        
+            # encoding passed in.  Use it.
+            string_OUT = unicode( string_IN, encoding_IN )
+        
+        else:
+            
+            # no encoding - use default.
+            string_OUT = unicode( string_IN )
+            
+        #-- END see if encoding is passed in. --#
+        
+        # then, encode to ascii, replacing any non-ascii characters with
+        #    error strategy passed in (defaults to converting them to XML
+        #    entities).
+        string_OUT = string_OUT.encode( 'ascii', encode_error_IN )
+                
+        return string_OUT
+    
+    #-- END unicode_to_ascii() function --#
+
+
+    @staticmethod
     def remove_html( string_IN, preserve_entities_IN = False ):
         
         """
