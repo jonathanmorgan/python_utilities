@@ -106,21 +106,21 @@ class BasicRateLimited( object ):
         #    difference_seconds.
         difference_seconds = difference_seconds + ( difference_microseconds / 1000000.0 )
         
-        print( "In " + me + ": difference = " + str( difference_seconds ) )
+        print( "In " + me + ": time elapsed = " + str( difference_seconds ) )
 
         # is difference greater than or equal to our second limit?
         if ( difference_seconds >= seconds_between_requests ):
         
             # yes - return True.
             value_OUT = True
-            print( "In " + me + ": greater than 2 seconds - OK to continue." )
+            print( "In " + me + ": greater than " + str( seconds_between_requests ) + " seconds - OK to continue." )
             
         else:
             
             # no - subtract difference from 2.
             sleep_seconds = 2 - difference_seconds
             
-            print( "In " + me + ": less than 2 seconds - sleep for " + str( sleep_seconds ) + " seconds." )
+            print( "In " + me + ": less than " + str( seconds_between_requests ) + " seconds - sleep for " + str( sleep_seconds ) + " seconds." )
 
             # sleep.
             time.sleep( sleep_seconds )
