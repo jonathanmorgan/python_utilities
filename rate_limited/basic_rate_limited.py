@@ -81,12 +81,12 @@ class BasicRateLimited( object ):
             if ( ( last_transaction_dt_IN ) and ( last_transaction_dt_IN != None ) ):
             
                 # yes.  Use it.
-                last_request_dt = last_transaction_dt_IN
+                request_start_dt = last_transaction_dt_IN
                 
             else:
             
                 # no - just grab now().
-                last_request_dt = datetime.datetime.now()
+                request_start_dt = datetime.datetime.now()
                 
             #-- END check to see if we have a datetime passed in. --#
             
