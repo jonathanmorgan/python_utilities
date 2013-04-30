@@ -4,7 +4,7 @@ import python_utilities.strings.string_helper
 # django includes
 import django.utils.encoding
 
-class DjangoStringHelper( strings.string_helper.StringHelper ):
+class DjangoStringHelper( python_utilities.strings.string_helper.StringHelper ):
     
 
     #============================================================================
