@@ -228,24 +228,31 @@ class StringHelper( object ):
         # make sure it is not None or empty string    
         if ( ( string_OUT ) and ( string_OUT != None ) and ( string_OUT != "" ) ):
         
+            # first, make sure we have a unicode string.
+            unicode_string = cls.convert_to_unicode( string_OUT, input_encoding_IN )
+            
+            # have we been asked to convert 4-byte characters to entities?
+            if ( entitize_4_byte_unicode_IN == True ):
+                
+                # yes.  convert 4-byte unicode characters to entities.
+                unicode_string = cls.entitize_4_byte_unicode( unicode_string )
+                
+            #-- END check to see if we entitize 4-byte unicode characters. --#
+            
             # first, see if converting to desired encoding breaks things.
             try:
             
-                string_OUT.decode( output_encoding_IN )
+                string_OUT = unicode_string.encode( output_encoding_IN )
                 
             except:
     
-                # yes, it does.  Encode differently.
-                
-                # Convert to unicode.
-                unicode_string = cls.convert_to_unicode( string_OUT, input_encoding_IN )
-                
-                # then, encode to desired encoding, escaping invalid characters.
+                # yes, it does.  Encode to desired encoding, escaping invalid
+                #    characters.
                 string_OUT = unicode_string.encode( output_encoding_IN, encode_error_IN )
                 
             #-- END check to see if we need to safen string. --#
             
-        #-- END check to see if any flair text - don't want "None". --#
+        #-- END check to see if something passed in - don't want "None". --#
         
         return string_OUT
         
