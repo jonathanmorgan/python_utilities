@@ -271,6 +271,7 @@ class StringHelper( object ):
         string_OUT = False
         
         # declare variables
+        me = "entitize_4_byte_unicode"
         unicode_string = ""
         match_count = -1
         re_match = None
@@ -313,7 +314,7 @@ class StringHelper( object ):
             # if debug, output stuff.
             if ( cls.DEBUG_FLAG == True ):
 
-                print( str( match_count ) + " - " + character_entity + " - span: ( " + str( span_start ) + ", " + str( span_end ) + " )" )
+                print( "In " + me + "(): " + str( match_count ) + " - " + character_entity + " - span: ( " + str( span_start ) + ", " + str( span_end ) + " )" )
 
             #-- END DEBUG --#
         
@@ -328,7 +329,7 @@ class StringHelper( object ):
         # if debug, output stuff.
         if ( cls.DEBUG_FLAG == True ):
 
-            print( "replaced?: " + replace_string )
+            print( "In " + me + "(): replaced? - " + string_OUT )
             
         #-- END DEBUG --#
             
