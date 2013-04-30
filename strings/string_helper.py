@@ -174,7 +174,7 @@ class StringHelper( object ):
         re_match = None
 
         # first, decode.
-        unicode_string = unicode( string_IN )
+        unicode_string = cls.convert_to_unicode( string_IN )
         
         # see if string contains matches.
         re_match = cls.RE_UNICODE_4_BYTE.search( unicode_string )
