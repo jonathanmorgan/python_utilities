@@ -1,10 +1,10 @@
+# start to python 3 support:
+from __future__ import unicode_literals
+
 # Imports
 import htmlentitydefs
 from HTMLParser import HTMLParser
 import re
-
-# start to python 3 support:
-from __future__ import unicode_literals
 
 # define MLStripper class (from: http://stackoverflow.com/questions/753052/strip-html-from-strings-in-python )
 class MLStripper(HTMLParser):
@@ -89,6 +89,31 @@ class StringHelper( object ):
 
 
     @staticmethod
+    def remove_html( string_IN, preserve_entities_IN = False ):
+        
+        """
+        strips out HTML from string.
+        """
+    
+        # return reference
+        string_OUT = ""
+        
+        if ( preserve_entities_IN == True ):
+        
+            string_OUT = HTMLTextExtractor.html_to_text( string_IN )
+        
+        else:
+
+            string_OUT = MLStripper.strip_tags( string_IN )
+            
+        #-- END check to see if we preserve entities or not. --#
+
+        return string_OUT
+    
+    #-- END remove_html() function --#
+
+
+    @staticmethod
     def unicode_escape( string_IN ):
         
         """
@@ -128,31 +153,6 @@ class StringHelper( object ):
     #-- END unicode_escape() function --#
 
 
-    @staticmethod
-    def remove_html( string_IN, preserve_entities_IN = False ):
-        
-        """
-        strips out HTML from string.
-        """
-    
-        # return reference
-        string_OUT = ""
-        
-        if ( preserve_entities_IN == True ):
-        
-            string_OUT = HTMLTextExtractor.html_to_text( string_IN )
-        
-        else:
-
-            string_OUT = MLStripper.strip_tags( string_IN )
-            
-        #-- END check to see if we preserve entities or not. --#
-
-        return string_OUT
-    
-    #-- END remove_html() function --#
-
-
     #============================================================================
     # class methods
     #============================================================================
@@ -162,7 +162,7 @@ class StringHelper( object ):
     def convert_to_unicode( cls, string_IN, encoding_IN = "", *args, **kwargs ):
         
         """
-        Converts string to unicode
+        Converts string to unicode.
         
         Based in part on:
         http://stackoverflow.com/questions/15800185/unicodeencodeerror-ascii-codec-cant-encode-character-u-xe9
