@@ -4,6 +4,9 @@ import python_utilities.strings.string_helper
 # django includes
 import django.utils.encoding
 
+# start to python 3 support:
+from __future__ import unicode_literals
+
 class DjangoStringHelper( python_utilities.strings.string_helper.StringHelper ):
     
 

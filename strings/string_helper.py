@@ -3,6 +3,9 @@ import htmlentitydefs
 from HTMLParser import HTMLParser
 import re
 
+# start to python 3 support:
+from __future__ import unicode_literals
+
 # define MLStripper class (from: http://stackoverflow.com/questions/753052/strip-html-from-strings-in-python )
 class MLStripper(HTMLParser):
     def __init__(self):
@@ -74,7 +77,10 @@ class StringHelper( object ):
     ENCODING_UTF8 = 'utf-8'
 
     # regular expression for 4-byte unicode characters.
-    RE_UNICODE_4_BYTE = re.compile( unicode( '[^\u0000-\uD7FF\uE000-\uFFFF]' ), re.UNICODE )
+    RE_UNICODE_4_BYTE = re.compile( '[\U00010000-\U0010ffff]', re.UNICODE )
+    
+    # DEBUG
+    DEBUG_FLAG = True
 
 
     #============================================================================
@@ -153,49 +159,6 @@ class StringHelper( object ):
 
     
     @classmethod
-    def contains_4_byte_unicode( cls, string_IN, encoding_IN = "", *args, **kwargs ):
-        
-        """
-        Converts string to unicode if it isn't already in unicode, then uses
-           regular expression to see if string contains 4-byte Unicode.  If so,
-           returns True.  If not, return False.
-        
-        Based in part on:
-        http://stackoverflow.com/questions/3220031/how-to-filter-or-replace-unicode-characters-that-would-take-more-than-3-bytes
-        http://stackoverflow.com/questions/15800185/unicodeencodeerror-ascii-codec-cant-encode-character-u-xe9
-        http://nedbatchelder.com/text/unipain.html
-        """
-    
-        # return reference
-        has_4_byte_characters_OUT = False
-        
-        # declare variables
-        unicode_string = ""
-        re_match = None
-
-        # first, decode.
-        unicode_string = cls.convert_to_unicode( string_IN )
-        
-        # see if string contains matches.
-        re_match = cls.RE_UNICODE_4_BYTE.search( unicode_string )
-        
-        # got anything?
-        if ( ( re_match ) and ( re_match != None ) ):
-            
-            # yes, it does.  Return True.
-            has_4_byte_characters_OUT = True
-            
-            # and print the match instance.
-            print( str( re_match ) )
-            
-        #-- END check to see if regular expression matches. --#
-        
-        return has_4_byte_characters_OUT
-    
-    #-- END contains_4_byte_unicode() function --#
-
-
-    @classmethod
     def convert_to_unicode( cls, string_IN, encoding_IN = "", *args, **kwargs ):
         
         """
@@ -230,7 +193,14 @@ class StringHelper( object ):
 
 
     @classmethod
-    def encode_string( cls, string_IN, output_encoding_IN = ENCODING_ASCII, input_encoding_IN = '', encode_error_IN = "xmlcharrefreplace", *args, **kwargs ):
+    def encode_string( cls,
+                       string_IN,
+                       output_encoding_IN = ENCODING_ASCII,
+                       input_encoding_IN = '',
+                       encode_error_IN = "xmlcharrefreplace",
+                       entitize_4_byte_unicode_IN = False,
+                       *args,
+                       **kwargs ):
         
         '''
         Accepts a string.  First, tries to convert to encoding passed in.  If
@@ -243,6 +213,7 @@ class StringHelper( object ):
         - output_encoding_IN - encoding we want this string to be in.  Defaults to ascii.
         - input_encoding_IN - optional encoding in which our string is encoded.
         - encod_error_IN - what we want to do on encoding errors, when converting to safe string (default is "xmlcharrefreplace", which converts those characters to entities).
+        - entitize_4_byte_unicode_IN - Boolean, if True, after encoding, converts all 4-byte unicode characters to entities (for mysql that can't handle 4-byte unicode).  If false, doesn't.
         '''
         
         # return reference
@@ -278,7 +249,92 @@ class StringHelper( object ):
         
         return string_OUT
         
-    #-- END method safe_string --#
+    #-- END method encode_string --#
+
+
+    @classmethod
+    def entitize_4_byte_unicode( cls, string_IN, encoding_IN = "", *args, **kwargs ):
+        
+        """
+        Accepts string, optional encoding that string is in.  Converts string to
+           unicode if it isn't already in unicode, then uses regular expression
+           to see if string contains 4-byte Unicode.  If so, converts all the
+           4-byte Unicode characters to XML entities.  If not, returns string.
+        
+        Based in part on:
+        http://stackoverflow.com/questions/3220031/how-to-filter-or-replace-unicode-characters-that-would-take-more-than-3-bytes
+        http://stackoverflow.com/questions/15800185/unicodeencodeerror-ascii-codec-cant-encode-character-u-xe9
+        http://nedbatchelder.com/text/unipain.html
+        """
+    
+        # return reference
+        string_OUT = False
+        
+        # declare variables
+        unicode_string = ""
+        match_count = -1
+        re_match = None
+        match_character = ""
+        character_entity = ""
+
+        # variables to hold position of match.
+        span = None
+        span_start = -1
+        span_end = -1
+        
+        # first, decode.
+        unicode_string = cls.convert_to_unicode( string_IN, encoding_IN )
+        
+        # initialize variables.
+        match_count = 0
+        string_OUT = unicode_string
+
+        # see if there is at least one match.
+        re_match = cls.RE_UNICODE_4_BYTE.search( string_OUT )
+
+        # loop as long as there is another match.
+        while ( ( re_match ) and ( re_match != None ) ):
+
+            # get details on match and span.
+            match_count += 1
+            
+            # get matching character
+            match_character = re_match.group( 0 )
+            
+            # convert to XML entity (have to do "ascii", else it will not
+            #    detect the character as an error).
+            character_entity = re_match.group( 0 ).encode( 'ascii', 'xmlcharrefreplace' )
+            
+            # get span, and from it, start and end position of character.
+            span = re_match.span()
+            span_start = span[ 0 ]
+            span_end = span[ 1 ]
+            
+            # if debug, output stuff.
+            if ( cls.DEBUG_FLAG == True ):
+
+                print( str( match_count ) + " - " + character_entity + " - span: ( " + str( span_start ) + ", " + str( span_end ) + " )" )
+
+            #-- END DEBUG --#
+        
+            # replace string with character.
+            string_OUT = string_OUT[ : span_start ] + character_entity + string_OUT[ span_end : ]
+            
+            # check for another match.
+            re_match = cls.RE_UNICODE_4_BYTE.search( string_OUT )
+
+        #-- END 
+
+        # if debug, output stuff.
+        if ( cls.DEBUG_FLAG == True ):
+
+            print( "replaced?: " + replace_string )
+            
+        #-- END DEBUG --#
+            
+        return string_OUT
+    
+    #-- END entitize_4_byte_unicode() function --#
 
 
     @classmethod
