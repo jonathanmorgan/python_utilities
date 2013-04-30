@@ -1,6 +1,7 @@
 # Imports
 import htmlentitydefs
 from HTMLParser import HTMLParser
+import re
 
 # define MLStripper class (from: http://stackoverflow.com/questions/753052/strip-html-from-strings-in-python )
 class MLStripper(HTMLParser):
@@ -71,6 +72,9 @@ class StringHelper( object ):
 
     ENCODING_ASCII = 'ascii'
     ENCODING_UTF8 = 'utf-8'
+
+    # regular expression for 4-byte unicode characters.
+    RE_UNICODE_4_BYTE = re.compile( unicode( '[^\u0000-\uD7FF\uE000-\uFFFF]' ), re.UNICODE )
 
 
     #============================================================================
@@ -149,6 +153,49 @@ class StringHelper( object ):
 
     
     @classmethod
+    def contains_4_byte_unicode( cls, string_IN, encoding_IN = "", *args, **kwargs ):
+        
+        """
+        Converts string to unicode if it isn't already in unicode, then uses
+           regular expression to see if string contains 4-byte Unicode.  If so,
+           returns True.  If not, return False.
+        
+        Based in part on:
+        http://stackoverflow.com/questions/3220031/how-to-filter-or-replace-unicode-characters-that-would-take-more-than-3-bytes
+        http://stackoverflow.com/questions/15800185/unicodeencodeerror-ascii-codec-cant-encode-character-u-xe9
+        http://nedbatchelder.com/text/unipain.html
+        """
+    
+        # return reference
+        has_4_byte_characters_OUT = False
+        
+        # declare variables
+        unicode_string = ""
+        re_match = None
+
+        # first, decode.
+        unicode_string = unicode( string_IN )
+        
+        # see if string contains matches.
+        re_match = cls.RE_UNICODE_4_BYTE.search( unicode_string )
+        
+        # got anything?
+        if ( ( re_match ) and ( re_match != None ) ):
+            
+            # yes, it does.  Return True.
+            has_4_byte_characters_OUT = True
+            
+            # and print the match instance.
+            print( str( re_match ) )
+            
+        #-- END check to see if regular expression matches. --#
+        
+        return has_4_byte_characters_OUT
+    
+    #-- END contains_4_byte_unicode() function --#
+
+
+    @classmethod
     def convert_to_unicode( cls, string_IN, encoding_IN = "", *args, **kwargs ):
         
         """
@@ -183,19 +230,19 @@ class StringHelper( object ):
 
 
     @classmethod
-    def encode_string( cls, string_IN, output_encoding_IN = 'ascii', input_encoding_IN = '', encode_error_IN = "xmlcharrefreplace", *args, **kwargs ):
+    def encode_string( cls, string_IN, output_encoding_IN = ENCODING_ASCII, input_encoding_IN = '', encode_error_IN = "xmlcharrefreplace", *args, **kwargs ):
         
         '''
-        Accepts a string that might or might not play well with ascii.  First,
-           tries to convert to ascii.  If exception, decodes it to unicode, then
-           re-encodes it into the requested output_encoding, escaping illegal
-           characters to XML entities by default.
+        Accepts a string.  First, tries to convert to encoding passed in.  If
+           exception, decodes it to unicode, then re-encodes it into the
+           requested output_encoding, escaping illegal characters to XML
+           entities by default.
            
         Parameters:
-        - string_IN - string we want to safen for the output encoding specified.
-        - output_encoding_IN - encoding we want this string to be safe for.  Defaults to ascii.
-        - input_encoding_IN - encoding in which our string is encoded.
-        - encod_error_IN - what we want to do on encoding errors, when converting to safe string (default is "xmlcharrefreplace", which convers those characters to entities).
+        - string_IN - string we want encoded in the output encoding specified.
+        - output_encoding_IN - encoding we want this string to be in.  Defaults to ascii.
+        - input_encoding_IN - optional encoding in which our string is encoded.
+        - encod_error_IN - what we want to do on encoding errors, when converting to safe string (default is "xmlcharrefreplace", which converts those characters to entities).
         '''
         
         # return reference
