@@ -80,7 +80,7 @@ class StringHelper( object ):
     RE_UNICODE_4_BYTE = re.compile( '[\U00010000-\U0010ffff]', re.UNICODE )
     
     # DEBUG
-    DEBUG_FLAG = True
+    DEBUG_FLAG = False
 
 
     #============================================================================
