@@ -267,11 +267,19 @@ class StringHelper( object ):
            unicode if it isn't already in unicode, then uses regular expression
            to see if string contains 4-byte Unicode.  If so, converts all the
            4-byte Unicode characters to XML entities.  If not, returns string.
-        
+           
         Based in part on:
-        http://stackoverflow.com/questions/3220031/how-to-filter-or-replace-unicode-characters-that-would-take-more-than-3-bytes
-        http://stackoverflow.com/questions/15800185/unicodeencodeerror-ascii-codec-cant-encode-character-u-xe9
-        http://nedbatchelder.com/text/unipain.html
+        - http://stackoverflow.com/questions/3220031/how-to-filter-or-replace-unicode-characters-that-would-take-more-than-3-bytes
+        - http://stackoverflow.com/questions/15800185/unicodeencodeerror-ascii-codec-cant-encode-character-u-xe9
+        - http://nedbatchelder.com/text/unipain.html
+
+        Eventually, will want to make a method to do the opposite - convert
+           these entities back to unicode.
+
+        References:
+        - by hand - http://effbot.org/zone/re-sub.htm#unescape-html
+        - HTMLParser and BeautifulSoup - http://stackoverflow.com/questions/663058/html-entity-codes-to-text
+        
         """
     
         # return reference
