@@ -2,7 +2,7 @@
 
 Python Utility classes.  Includes the following:
 
-- __/beautiful\_soup/beautiful\_soup\_helper.py__ - BeautifulSoupHelper class that implements helper methods for common things you do with BeautifulSoup, like getting child text and encoding HTML entities.  Built against BeautifulSoup 3, but should work with BeautifulSoup 4 if you change the imports.
+- __/beautiful\_soup/beautiful\_soup\_helper.py__ - BeautifulSoupHelper class that implements helper methods for common things you do with BeautifulSoup, like getting child text and encoding HTML entities.  Built against BeautifulSoup 3, updated to import BeautifulSoup 4, not sure if it works at the moment.  Should work just fine...
 - __/booleans/boolean\_helper.py__ - BooleanHelper class with method to convert non-boolean values to boolean type based on valid known true values (1, 't', 'true', 'y', 'yes').
 - __/dictionaries/dict\_helper.py__ - for now, just contains a function to retrieve a dict value that also accepts a default, so you can define default yourself when you look things up in a dict.
 - __/django\_utils/queryset\_helper.py__ - QuerySetHelper class that contains memory-efficient ways of iterating over large QuerySets, and also a few convenience methods for adding date and primary key filters to a QuerySet.
@@ -13,7 +13,7 @@ Python Utility classes.  Includes the following:
 
 ## Installation
 
-The easiest way to use these libraries is to clone this repository into a django sites folder alongside other applications, so they are a part of the same python path as other django apps.  These utilities are used by other of my django applications, as well.  They can also be used outside of django.
+Clone this repository and place it somewhere in your PYTHON_PATH, including the base "python\_utilities" directory.  The easiest way to use these libraries with a Django site is to clone this repository into the site's folder alongside other applications, so these utilities are a part of the same python path as other django apps.  These utilities are used by other of my django applications, as well.  They can also be used outside of django.
 
 ## Usage
 
