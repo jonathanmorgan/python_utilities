@@ -1,3 +1,23 @@
+'''
+Copyright 2012, 2013 Jonathan Morgan
+
+This file is part of http://github.com/jonathanmorgan/python_utilities.
+
+python_utilities is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Foobar is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with http://github.com/jonathanmorgan/python_utilities.  If not, see
+<http://www.gnu.org/licenses/>.
+'''
+
 def get_dict_value( dict_IN, name_IN, default_IN = None ):
 
     '''
