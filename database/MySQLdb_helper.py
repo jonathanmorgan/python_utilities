@@ -41,8 +41,8 @@ class MySQLdb_Helper( object ):
     #============================================================================
 
     # database connection variables
-    db_host = ""
-    db_port = ""
+    db_host = "localhost"
+    db_port = 3306
     db_username = ""
     db_password = ""
     db_database = ""
@@ -56,7 +56,7 @@ class MySQLdb_Helper( object ):
     #---------------------------------------------------------------------------
 
     
-    def __init__( self, db_host_IN = "", db_port_IN = "", db_username_IN = "", db_password_IN = "", db_database_IN = "" ):
+    def __init__( self, db_host_IN = "localhost", db_port_IN = 3306, db_username_IN = "", db_password_IN = "", db_database_IN = "" ):
         
         '''
         Constructor
@@ -167,15 +167,15 @@ class MySQLdb_Helper( object ):
         if ( ( my_connection ) and ( my_connection != None ) ):
         
             # yes.  Use it to create cursor. Do we want dict?
-            if ( cursor_type_IN == CURSOR_TYPE_DICT ):
+            if ( cursor_type_IN == self.CURSOR_TYPE_DICT ):
             
                 # yes. create cursor that maps column names to values.
-                cursor_OUT = my_db.cursor( MySQLdb.cursors.DictCursor )
+                cursor_OUT = my_connection.cursor( MySQLdb.cursors.DictCursor )
             
             else:
             
                 # no.  Plain old cursor.
-                cursor_OUT = my_db.cursor()
+                cursor_OUT = my_connection.cursor()
             
             #-- END check to see if we want dictionary cursor --#
             
@@ -199,7 +199,7 @@ class MySQLdb_Helper( object ):
     #-- END method get_cursor() --#
     
     
-    def open_connection( self, *args, **kwargs )
+    def open_connection( self, *args, **kwargs ):
     
         '''
         Uses connection information inside this instance to open a database
@@ -254,7 +254,7 @@ class MySQLdb_Helper( object ):
         
             # there are - loop over them.
             cursor_count = 0
-            for current_cursor in cursor_list:
+            for current_cursor in self.cursor_list:
             
                 # try to close cursor.
                 cursor_count += 1
@@ -278,17 +278,20 @@ class MySQLdb_Helper( object ):
                 #-- END try/except for closing cursor --#
             
             #-- END loop over cursors --#
+            
+            # all are closed.  Empty out list.
+            self.cursor_list = []
         
         #-- END check for cursors. --#
         
         # got a connection?
-        if ( ( self.database_connection ) and ( self.database_connection != None ) ):
+        if ( ( self.db_connection ) and ( self.db_connection != None ) ):
     
             # yes - try to close connection.
             try:
             
                 # close cursor
-                self.database_connection.close()
+                self.db_connection.close()
             
             except Exception as e:
             
@@ -303,6 +306,9 @@ class MySQLdb_Helper( object ):
                 print( "      - traceback = " + str( exception_traceback ) )
 
             #-- END try/except for closing cursor --#
+            
+            # empty out connection variable.
+            self.db_connection = None
 
         #-- END check to see if database connection. --#
 
