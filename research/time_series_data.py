@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 '''
 Copyright 2012, 2013 Jonathan Morgan
 
@@ -28,10 +30,11 @@ Contains django abstract model class for creating and storing time-series data
 '''
 
 # imports
-from __future__ import unicode_literals
 
 # django
 from django.db import models
+import django.utils.encoding
+from django.utils.encoding import python_2_unicode_compatible
 
 @python_2_unicode_compatible
 class AbstractTimeSeriesDataModel( models.Model ):
@@ -50,10 +53,23 @@ class AbstractTimeSeriesDataModel( models.Model ):
     start_date = models.DateTimeField( null = True, blank = True )
     end_date = models.DateTimeField( null = True, blank = True )
     time_period_type = models.CharField( max_length = 255, null = True, blank = True ) # - hourly, by minute, etc.
+    time_period_index = models.IntegerField( null = True, blank = True )
+    time_period_category = models.CharField( max_length = 255, null = True, blank = True )
+    time_period_label = models.CharField( max_length = 255, null = True, blank = True ) # could give each hour, etc. a separate identifier "start+1", "start+2", etc. - not naming _id to start, so you leave room for this to be a separate table.
+    aggregate_index = models.IntegerField( null = True, blank = True ) # a separate index you can use to keep track of overall order within a time-series that you separate out into multiple types - "before" and "after", for example - time_period_index can be counter within before or after, aggregate index can be unique through both before and after.
     filter_type = models.CharField( max_length = 255, null = True, blank = True ) # - place to keep track of different filter types, if you want.  Example: "text_contains"
     filter_value = models.CharField( max_length = 255, null = True, blank = True )
-    time_period_label = models.CharField( max_length = 255, null = True, blank = True ) # could give each hour, etc. a separate identifier "start+1", "start+2", etc. - not naming _id to start, so you leave room for this to be a separate table.
     match_value = models.CharField( max_length = 255, null = True, blank = True )
+    filter_1 = models.BooleanField( default = False )
+    filter_2 = models.BooleanField( default = False )
+    filter_3 = models.BooleanField( default = False )
+    filter_4 = models.BooleanField( default = False )
+    filter_5 = models.BooleanField( default = False )
+    filter_6 = models.BooleanField( default = False )
+    filter_7 = models.BooleanField( default = False )
+    filter_8 = models.BooleanField( default = False )
+    filter_9 = models.BooleanField( default = False )
+    filter_10 = models.BooleanField( default = False )
 
     #============================================================================
     # Instance variables
