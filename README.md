@@ -1,4 +1,4 @@
-# python_utilities
+# python\_utilities
 
 Python Utility classes.  Includes the following:
 
@@ -9,12 +9,11 @@ Python Utility classes.  Includes the following:
 - __/django\_utils/queryset\_helper.py__ - QuerySetHelper class that contains memory-efficient ways of iterating over large QuerySets, and also a few convenience methods for adding date and primary key filters to a QuerySet.
 - __/email/email\_helper.py__ - EmailHelper class that contains logic for setting up SMTP server using smtplib, then sending text or HTML email messages.
 - __/rate\_limited/basic\_rate\_limited.py__ - BasicRateLimited is a non-parallel parent class that contains variables and code for rate-limiting.  Details on extending TK below, in Usage Section.
-- __/research/time\_series\_data.py__ - BasicRateLimited is a non-parallel parent class that contains variables and code for rate-limiting.  Details on extending TK below, in Usage Section.
 - __/strings/string\_helper.py__ - StringHelper class with methods to help with unicode encoding, stripping HTML from strings.
 
 ## Installation
 
-Clone this repository and place it somewhere in your PYTHON_PATH, including the base "python\_utilities" directory.  The easiest way to use these libraries with a Django site is to clone this repository into the site's folder alongside other applications, so these utilities are a part of the same python path as other django apps.  These utilities are used by other of my django applications, as well.  They can also be used outside of django.
+Clone this repository and place it somewhere in your PYTHON\_PATH, including the base "python\_utilities" directory.  The easiest way to use these libraries with a Django site is to clone this repository into the site's folder alongside other applications, so these utilities are a part of the same python path as other django apps.  These utilities are used by other of my django applications, as well.  They can also be used outside of django.
 
 ### /database/MySQLdb\_helper.py
 
@@ -24,7 +23,7 @@ Before you can connect to MySQL with this code, you need to do the following:
 
 ## Usage
 
-### /rate_limited/basic\_rate\_limited.py
+### /rate\_limited/basic\_rate\_limited.py
 
 For a class you want to be rate-limited:
 
@@ -38,18 +37,18 @@ For a class you want to be rate-limited:
 
 Copyright 2012, 2013 Jonathan Morgan
 
-This file is part of [http://github.com/jonathanmorgan/python_utilities](http://github.com/jonathanmorgan/python_utilities).
+This file is part of [http://github.com/jonathanmorgan/python\_utilities](http://github.com/jonathanmorgan/python_utilities).
 
-python_utilities is free software: you can redistribute it and/or modify
+python\_utilities is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-Foobar is distributed in the hope that it will be useful,
+python\_utilities is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
-along with [http://github.com/jonathanmorgan/python_utilities](http://github.com/jonathanmorgan/python_utilities).  If not, see
+along with [http://github.com/jonathanmorgan/python\_utilities](http://github.com/jonathanmorgan/python_utilities).  If not, see
 [http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
