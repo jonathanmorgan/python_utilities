@@ -79,7 +79,7 @@ class BeautifulSoupHelper( object ):
                 # print( "<<< current_class_name: " + current_class_name )
                 
                 # got a tag?
-                if ( current_class_name == self.BC_CLASS_NAVIGABLE_STRING ):
+                if ( current_class_name == self.BS_CLASS_NAVIGABLE_STRING ):
                 
                     # get current string value
                     current_string = bs_current_element.string
