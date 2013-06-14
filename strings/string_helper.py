@@ -97,7 +97,22 @@ class StringHelper( object ):
     ENCODING_UTF8 = 'utf-8'
 
     # regular expression for 4-byte unicode characters.
-    RE_UNICODE_4_BYTE = re.compile( '[\U00010000-\U0010ffff]', re.UNICODE )
+    #RE_UNICODE_4_BYTE = re.compile( '[\U00010000-\U0010ffff]', re.UNICODE )
+
+    # need to re-jigger to accomodate UCS-2 builds of python (not sure if it
+    #    works, though).
+    # from: http://stackoverflow.com/questions/12636489/python-convert-4-byte-char-to-avoid-mysql-error-incorrect-string-value
+    try:
+
+        # only works on UCS-4 builds of python
+        RE_UNICODE_4_BYTE = re.compile( '[\U00010000-\U0010ffff]', re.UNICODE )
+
+    except re.error:
+
+        # didn't work, so UCS-2 build
+        RE_UNICODE_4_BYTE = re.compile( '[\uD800-\uDBFF][\uDC00-\uDFFF]', re.UNICODE )
+
+    #-- END exception handling for UCS-2 vs. UCS-4 builds of python --#
     
     # DEBUG
     DEBUG_FLAG = False
