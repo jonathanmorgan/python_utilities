@@ -40,8 +40,14 @@ class BeautifulSoupHelper( object ):
     #============================================================================
     
 
-    BS_CLASS_TAG = "Tag"
+    # BeautifulSoup classes
+    BS_CLASS_COMMENT = "Comment"
     BS_CLASS_NAVIGABLE_STRING = "NavigableString"
+    BS_CLASS_TAG = "Tag"
+    
+    # element name constants.
+    BS_ELEMENT_NAME_COMMENT = BS_CLASS_COMMENT
+    BS_ELEMENT_NAME_TEXT = BS_CLASS_NAVIGABLE_STRING
 
 
     #============================================================================
@@ -141,6 +147,123 @@ class BeautifulSoupHelper( object ):
     #-- END method bs_get_child_text() --#
 
 
+    def bs_get_cleaned_direct_child_text( self, tag_IN, separator_IN = "" ):
+    
+        '''
+        Accepts a tag, gets all text that is a direct child of tag passed in
+           (but not of nested elements), concatenates it, and returns it.
+           
+        Preconditions: None
+        Postconditions: None
+        '''
+    
+        # return reference
+        text_OUT = ""
+        
+        # declare variables
+        bs_current_element = None
+        current_class_name = ""
+        
+        
+        # got a tag?
+        if ( tag_IN ):
+        
+            # Retrieve all text directly below the element passed in, not 
+            #    including a recursive path through children of children, etc.
+            text_OUT = separator_IN.join( tag_IN.findAll( text = True, recursive = False ) )
+            
+            # strip the result.
+            text_OUT = text_OUT.strip()
+
+        #-- END check to see if tag passed in --#
+        
+        return text_OUT
+    
+    #-- END method bs_get_child_text() --#
+
+
+    def bs_get_element_name( self, instance_IN ):
+    
+        '''
+        Accepts a BeautifulSoup object.  If instance of NavigableString, returns
+            self.BS_ELEMENT_NAME_TEXT.  Otherwise, returns instance_IN.name.  
+           
+        Preconditions: None
+        
+        Postconditions: None.
+        '''
+    
+        # return reference
+        name_OUT = ""
+                
+        # declare variables
+        
+        is_tag = ""
+        
+        # Got anything passed in?
+        if ( ( instance_IN ) and ( instance_IN != None ) ):
+
+            # is the instance a tag?
+            is_tag = self.bs_is_tag( instance_IN )
+            if ( is_tag == True ):
+            
+                # yes - get name of element.
+                name_OUT = instance_IN.name
+
+            else:
+            
+                # no.  What is it?
+                is_text = self.bs_is_navigable_string( instance_IN )
+                is_comment = self.bs_is_comment( instance_IN )
+
+                if ( is_text == True ):
+                
+                    # yes - say name is text.
+                    name_OUT = self.BS_ELEMENT_NAME_TEXT
+                    
+                elif ( is_comment == True ):
+                
+                    # yes - say name is text.
+                    name_OUT = self.BS_ELEMENT_NAME_COMMENT
+                    
+                #-- END check to see what non-Tag object we have --#
+                
+            #-- END check to see if navigable tag. --#
+            
+        #-- END check to make sure instance_IN is not None --#
+        
+        return name_OUT
+    
+    #-- END method bs_get_element_name() --#
+
+
+    def bs_is_comment( self, instance_IN ):
+    
+        '''
+        Accepts a BeautifulSoup object.  If it is an instance of Comment, returns
+            true.  If not, returns false.
+           
+        Preconditions: None
+        
+        Postconditions: If element passed in is an instance of Comment, returns true.  If not, returns false.
+        '''
+    
+        # return reference
+        is_class_OUT = False
+                
+        # got an element?
+        if ( instance_IN ):
+        
+            # check if it is instance of class.
+            is_class_OUT = self.bs_is_instance_of_class( instance_IN, self.BS_CLASS_COMMENT )
+            
+        #-- END check to see if instance passed in --#
+        
+        return is_class_OUT
+    
+    #-- END method bs_is_comment() --#
+    
+    
     def bs_is_instance_of_class( self, instance_IN, class_IN ):
     
         '''
@@ -205,13 +328,40 @@ class BeautifulSoupHelper( object ):
         if ( instance_IN ):
         
             # get class name.
-            is_navigable_text_OUT = self.bs_is_instance_of_class( instance_IN, self.BS_CLASS_NAVIGABLE_TEXT )
+            is_navigable_text_OUT = self.bs_is_navigable_string( instance_IN )
             
         #-- END check to see if instance passed in --#
         
         return is_navigable_text_OUT
     
     #-- END method bs_is_navigable_text() --#
+
+
+    def bs_is_navigable_string( self, instance_IN ):
+    
+        '''
+        Accepts a BeautifulSoup object.  If it is an instance of NavigableText,
+           returns true.  If not, returns false.
+           
+        Preconditions: None
+        
+        Postconditions: If element passed in is an instance of NavigableText, returns true.  If not, returns false.
+        '''
+    
+        # return reference
+        is_navigable_text_OUT = False
+                
+        # got an element?
+        if ( instance_IN ):
+        
+            # get class name.
+            is_navigable_text_OUT = self.bs_is_instance_of_class( instance_IN, self.BS_CLASS_NAVIGABLE_STRING )
+            
+        #-- END check to see if instance passed in --#
+        
+        return is_navigable_text_OUT
+    
+    #-- END method bs_is_navigable_string() --#
 
 
     def bs_is_tag( self, instance_IN ):
