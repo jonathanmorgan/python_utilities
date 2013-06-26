@@ -502,7 +502,7 @@ class EmailHelper( object ):
     #-- END method set_smtp_server_password() --#
 
 
-    def set_smtp_server_port( self, value_IN = "" ):
+    def set_smtp_server_port( self, value_IN = -1 ):
     
         '''
         Accepts SMTP server port.           
@@ -517,7 +517,7 @@ class EmailHelper( object ):
         me = "set_smtp_server_port"
 
         # see if there is a value passed in.
-        if ( ( value_IN ) and ( value_IN != "" ) ):
+        if ( ( value_IN ) and ( value_IN > 0 ) ):
 
             # store value.        
             self.m_smtp_server_port = value_IN
