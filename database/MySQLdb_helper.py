@@ -18,6 +18,57 @@ along with http://github.com/jonathanmorgan/python_utilities.  If not, see
 <http://www.gnu.org/licenses/>.
 '''
 
+'''
+Example:
+
+# configure database helper
+db_host = "localhost"
+db_port = 3306
+db_username = "<username>"
+db_password = "<password>"
+db_database = "<database_name>"
+
+# get instance of mysqldb helper
+db_helper = MySQLdb_Helper( db_host, db_port, db_username, db_password, db_database )
+
+# get connection (if you write to database, you need to commit with connection object).
+my_db_conn = db_helper.get_connection()
+
+# get cursor (opens connection if one not already open).
+my_cursor = db_helper.get_cursor()
+
+# make select statement
+sql_string = "SELECT * FROM django_reference_data_nbc_stations ORDER BY call_sign ASC;"
+
+# execute it.
+my_cursor.execute( sql_string )
+
+# get number of domains.
+result_count = int( my_cursor.rowcount )
+
+# loop.
+domain_counter = 0
+for i in range( result_count ):
+
+    # increment counter
+    domain_counter += 1
+
+    # get row.
+    current_row = db_read_cursor.fetchone()
+    
+    # get values.
+    current_domain_name = current_row[ 'domain_name' ]
+    current_use_count = current_row[ 'use_count' ]
+    
+    # print
+    print( "Domain: " + current_domain_name + " used " + str( current_use_count ) + " times." )
+    
+#-- END loop over domains. --#
+
+# close everything down.
+db_helper.close()
+'''
+
 # imports
 from __future__ import unicode_literals
 import sys
