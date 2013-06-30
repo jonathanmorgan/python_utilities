@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 '''
 Copyright 2013 Jonathan Morgan
 
@@ -32,19 +34,19 @@ db_database = "<database_name>"
 db_helper = MySQLdb_Helper( db_host, db_port, db_username, db_password, db_database )
 
 # get connection (if you write to database, you need to commit with connection object).
-my_db_conn = db_helper.get_connection()
+db_connection = db_helper.get_connection()
 
 # get cursor (opens connection if one not already open).
-my_cursor = db_helper.get_cursor()
+db_read_cursor = db_helper.get_cursor()
 
 # make select statement
 sql_string = "SELECT * FROM django_reference_data_nbc_stations ORDER BY call_sign ASC;"
 
 # execute it.
-my_cursor.execute( sql_string )
+db_read_cursor.execute( sql_string )
 
 # get number of domains.
-result_count = int( my_cursor.rowcount )
+result_count = int( db_read_cursor.rowcount )
 
 # loop.
 domain_counter = 0
@@ -56,7 +58,7 @@ for i in range( result_count ):
     # get row.
     current_row = db_read_cursor.fetchone()
     
-    # get values.
+    # get values (default is to return rows as hashes of column name to value).
     current_domain_name = current_row[ 'domain_name' ]
     current_use_count = current_row[ 'use_count' ]
     
@@ -70,7 +72,6 @@ db_helper.close()
 '''
 
 # imports
-from __future__ import unicode_literals
 import sys
 
 # mysql package
