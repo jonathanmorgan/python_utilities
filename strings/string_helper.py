@@ -114,6 +114,10 @@ class StringHelper( object ):
 
     #-- END exception handling for UCS-2 vs. UCS-4 builds of python --#
     
+    # clearing out white space
+    DEFAULT_CHAR_SUB_LIST = [ [ "\n", "" ], [ "\t", "" ] ]
+    DEFAULT_RE_SUB_LIST =  [ [ "\s\s+", " " ] ]
+    
     # DEBUG
     DEBUG_FLAG = False
 
@@ -386,6 +390,87 @@ class StringHelper( object ):
         return string_OUT
     
     #-- END entitize_4_byte_unicode() function --#
+
+
+    @classmethod
+    def clean_string( cls,
+                       string_IN,
+                       char_list_IN = DEFAULT_CHAR_SUB_LIST,
+                       re_list_IN = DEFAULT_RE_SUB_LIST,
+                       *args,
+                       **kwargs ):
+        
+        '''
+        Accepts a string.  First, loops over list of character substitutions,
+           using replace on each pair to replace the first item in the list with
+           the second. Next, loops over the list of regular expression
+           substitutions, replacing matches for the regular expression that is
+           first in each pair with the text that is second.  If called with 
+           
+        Parameters:
+        - string_IN - string we want to strip white.
+        - char_list_IN - list of lists that contain two strings, the first the string you want replaced, and the second the string you want to replace with.  If nothing specified, defaults to replacing tabs and newlines.
+        - re_list_IN - list of lists that contain two strings, the first the regular expression you are looking to match, the second the string you want to replace matches with.  If nothing specified, defaults to replacing two or more contiguous spaces with one space.
+        '''
+        
+        # return reference
+        string_OUT = ""
+
+        # declare variables
+        char_list_length = -1
+        char_list_pair = None
+        replace_this = ""
+        replace_with = ""
+        re_list_length = -1
+        re_list_pair = None
+        
+        # first, store string_IN in string_OUT.
+        string_OUT = string_IN.strip()
+
+        # make sure it is not None or empty string    
+        if ( ( string_OUT ) and ( string_OUT != None ) and ( string_OUT != "" ) ):
+        
+            # first, see if anything in char list.
+            char_list_length = len( char_list_IN )
+            if ( char_list_length > 0 ):
+            
+                # there are things in list.
+                for char_list_pair in char_list_IN:
+                
+                    # get replace this and replace with strings.
+                    replace_this = char_list_pair[ 0 ]
+                    replace_with = char_list_pair[ 1 ]
+                    
+                    # replace.
+                    string_OUT = string_OUT.replace( replace_this, replace_with )
+                
+                #-- END loop over char list --#
+            
+            #-- END check to see if character replacement list populated --#
+
+            # see if we have regular expressions.
+            re_list_length = len( re_list_IN )
+            if ( re_list_length > 0 ):
+            
+                # there are things in list.
+                for re_list_pair in re_list_IN:
+                
+                    # get replace this and replace with strings.
+                    replace_this = re_list_pair[ 0 ]
+                    replace_with = re_list_pair[ 1 ]
+                    
+                    # replace.
+                    string_OUT = re.sub( replace_this, replace_with, string_OUT )
+                
+                #-- END loop over char list --#
+            
+            #-- END check to see if character replacement list populated --#
+            
+        #-- END check to see if something passed in - don't want "None". --#
+        
+        return string_OUT
+        
+    #-- END method clean_string --#
 
 
     @classmethod
