@@ -8,6 +8,10 @@ Python Utility classes.  Includes the following:
 - __/dictionaries/dict\_helper.py__ - for now, just contains a function to retrieve a dict value that also accepts a default, so you can define default yourself when you look things up in a dict.
 - __/django\_utils/queryset\_helper.py__ - QuerySetHelper class that contains memory-efficient ways of iterating over large QuerySets, and also a few convenience methods for adding date and primary key filters to a QuerySet.
 - __/email/email\_helper.py__ - EmailHelper class that contains logic for setting up SMTP server using smtplib, then sending text or HTML email messages.
+- __/exceptions/exception\_helper.py__ - ExceptionHelper class that contains logic for printing exception messages, and also for emailing a summary if email is set up in the isntance.
+- __/http/http\_helper.py__ - Http_Helper class that contains logic for setting checking if a URL has been redirected, and if so, stores status code and URLs.
+- __/http/openanything.py__ - Contains logic to support Http_Helper, from the Dive Into Python site (http://www.diveintopython.net/download/diveintopython-examples-5.4.zip)
+- __/objects/object\_helper.py__ - ObjectHelper class contains logic for detecting attributes in a given class (like the vars() method, only a little fancier).
 - __/rate\_limited/basic\_rate\_limited.py__ - BasicRateLimited is a non-parallel parent class that contains variables and code for rate-limiting.  Details on extending TK below, in Usage Section.
 - __/strings/string\_helper.py__ - StringHelper class with methods to help with unicode encoding, stripping HTML from strings.
 
@@ -32,6 +36,10 @@ For a class you want to be rate-limited:
 - At the start of each transaction, call the `self.start_request()` method to let the code know you're starting a request.
 - Once the request is done, call `continue_collecting = self.may_i_continue()` this method will block if you have to wait, will return true if it is OK to continue, will return False if some error occurred.
 - In your control structure, always check the result of `may_i_continue()` before continuing.
+
+## ToDo:
+
+- Implement a Postgresql_Helper class, same interface as MySQL_helper, so they are interchangable, then maybe a factory for getting instances.
 
 ## License:
 

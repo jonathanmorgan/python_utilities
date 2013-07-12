@@ -31,7 +31,7 @@ import traceback
 from python_utilities.email.email_helper import EmailHelper
 
 #================================================================================
-# class RedditCollector
+# class ExceptionHelper
 #================================================================================
 
 class ExceptionHelper( object ):
