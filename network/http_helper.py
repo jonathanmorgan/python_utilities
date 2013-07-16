@@ -12,7 +12,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 Usage:
 
 # import
-from python_utilities.http.http_helper import Http_Helper
+from python_utilities.network.http_helper import Http_Helper
 
 # make an instance.
 my_http_helper = Http_Helper()

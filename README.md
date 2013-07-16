@@ -9,8 +9,8 @@ Python Utility classes.  Includes the following:
 - __/django\_utils/queryset\_helper.py__ - QuerySetHelper class that contains memory-efficient ways of iterating over large QuerySets, and also a few convenience methods for adding date and primary key filters to a QuerySet.
 - __/email/email\_helper.py__ - EmailHelper class that contains logic for setting up SMTP server using smtplib, then sending text or HTML email messages.
 - __/exceptions/exception\_helper.py__ - ExceptionHelper class that contains logic for printing exception messages, and also for emailing a summary if email is set up in the isntance.
-- __/http/http\_helper.py__ - Http_Helper class that contains logic for setting checking if a URL has been redirected, and if so, stores status code and URLs.
-- __/http/openanything.py__ - Contains logic to support Http_Helper, from the Dive Into Python site (http://www.diveintopython.net/download/diveintopython-examples-5.4.zip)
+- __/network/http\_helper.py__ - Http_Helper class that contains logic for setting checking if a URL has been redirected, and if so, stores status code and URLs.
+- __/network/openanything.py__ - Contains logic to support Http_Helper, from the Dive Into Python site (http://www.diveintopython.net/download/diveintopython-examples-5.4.zip)
 - __/objects/object\_helper.py__ - ObjectHelper class contains logic for detecting attributes in a given class (like the vars() method, only a little fancier).
 - __/rate\_limited/basic\_rate\_limited.py__ - BasicRateLimited is a non-parallel parent class that contains variables and code for rate-limiting.  Details on extending TK below, in Usage Section.
 - __/strings/string\_helper.py__ - StringHelper class with methods to help with unicode encoding, stripping HTML from strings.
