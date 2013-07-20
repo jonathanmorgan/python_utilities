@@ -23,7 +23,13 @@ Clone this repository and place it somewhere in your PYTHON\_PATH, including the
 
 Before you can connect to MySQL with this code, you need to do the following:
 - install the MySQL client if it isn't already installed.  On linux, you'll also need to install a few dev packages (python-dev, libmysqlclient-dev) ( [source](http://codeinthehole.com/writing/how-to-set-up-mysql-for-python-on-ubuntu/) ).
-- install the MySQLdb python package.  To install, you can either install through your operating system's package manager (ubuntu, for example, has package "python-mysqldb") or using pip (`sudo pip --install MySQL-python`).
+- install the MySQLdb python package.  To install, you can either install through your operating system's package manager (ubuntu, for example, has package "python-mysqldb") or using pip (`sudo pip install MySQL-python`).
+
+### /network/*
+
+Requires you install mechanize, a library that implements a browser client in python:
+
+    (sudo) pip install mechanize
 
 ## Usage
 

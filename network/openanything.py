@@ -30,10 +30,10 @@ opener = urllib2.build_opener( SmartRedirectHandler() )
 open_result = opener.open(request)
 
 # if redirected, there will be a status attribute
-if ( hasattr( open_result, "status" ) == True ):
+if ( hasattr( open_result, "status_list" ) == True ):
 
-    # redirected - list of statuses from redirects will be in open_result.status.
-    print( str( open_result.status ) )
+    # redirected - list of statuses from redirects will be in open_result.status_list.
+    print( str( open_result.status_list ) )
     
 #-- END check to see if redirect --#
 

@@ -58,6 +58,9 @@ class ExceptionHelper( object ):
     email_helper = None
     email_status_address = ""
     
+    # last exception details
+    last_exception_details = ""
+    
     # debug_flag
     debug_flag = False
     
@@ -76,6 +79,9 @@ class ExceptionHelper( object ):
         # email
         self.email_helper = None
         self.email_status_address = ""
+        
+        # last exception description
+        self.last_exception_details = ""
         
         # debug
         self.debug_flag = False
@@ -219,7 +225,7 @@ class ExceptionHelper( object ):
     #-- END method email_send_status() --#
     
     
-    def process_exception( self, exception_IN = None, message_IN = "", send_email_IN = False, email_subject_IN = "", *args, **kwargs ):
+    def process_exception( self, exception_IN = None, message_IN = "", send_email_IN = False, email_subject_IN = "", print_details_IN = True, *args, **kwargs ):
     
         # return reference
         status_OUT = self.STATUS_SUCCESS
@@ -240,38 +246,111 @@ class ExceptionHelper( object ):
             exception_type, exception_value, exception_traceback = sys.exc_info()
             
             exception_details = ""
+
+            #-------------------------------------------------------------------#
+            # intro
+            #-------------------------------------------------------------------#
             
             # got a message?
             if ( ( message_IN ) and ( message_IN != "" ) ):
     
+                # create current line of text.
                 temp_exception_string = "====> " + message_IN
-                print( temp_exception_string )
+
+                # add to details.
                 exception_details += temp_exception_string
-                
+
+                # print?
+                if ( print_details_IN == True ):
+
+                    print( temp_exception_string )
+
+                #-- END check to see if we should print details --#
+
             else:
             
+                # create current line of text.
                 temp_exception_string = "====> Exception caught"
-                print( temp_exception_string )
+
+                # add to details.
                 exception_details += temp_exception_string
             
+                # print?
+                if ( print_details_IN == True ):
+
+                    print( temp_exception_string )
+
+                #-- END check to see if we should print details --#
+
             #-- END check to see if we have a message --#
             
+            #-------------------------------------------------------------------#
+            # arguments
+            #-------------------------------------------------------------------#
+
+            # create current line of text.
             temp_exception_string = "      - args = " + str( exception_IN.args )
-            print( temp_exception_string )
+
+            # add to details.
             exception_details += "\n" + temp_exception_string
     
+            # print?
+            if ( print_details_IN == True ):
+
+                print( temp_exception_string )
+
+            #-- END check to see if we should print details --#
+
+            #-------------------------------------------------------------------#
+            # exception type
+            #-------------------------------------------------------------------#
+
+            # create current line of text.
             temp_exception_string = "      - type = " + str( exception_type )
-            print( temp_exception_string )
+
+            # add to details.
             exception_details += "\n" + temp_exception_string
             
+            #-------------------------------------------------------------------#
+            # exception value
+            #-------------------------------------------------------------------#
+
+            # create current line of text.
             temp_exception_string = "      - value = " + str( exception_value )
             print( temp_exception_string )
+
+            # add to details.
             exception_details += "\n" + temp_exception_string
             
+            # print?
+            if ( print_details_IN == True ):
+
+                print( temp_exception_string )
+
+            #-- END check to see if we should print details --#
+
+            #-------------------------------------------------------------------#
+            # exception stack trace
+            #-------------------------------------------------------------------#
+
+            # create current line of text.
             temp_exception_string = "      - traceback = " + str( traceback.format_exc() )
             print( temp_exception_string )
+
+            # add to details.
             exception_details += "\n" + temp_exception_string
     
+            # print?
+            if ( print_details_IN == True ):
+
+                print( temp_exception_string )
+
+            #-- END check to see if we should print details --#
+
+            #-------------------------------------------------------------------#
+            # email?
+            #-------------------------------------------------------------------#
+
             # do we send email?
             if ( send_email_IN == True ):
     
@@ -288,6 +367,9 @@ class ExceptionHelper( object ):
             status_OUT = self.STATUS_ERROR_PREFIX + "no exception passed in, can't process exception."
         
         #-- END check to make sure exception passed in --#
+        
+        # store details, in case someone wants programmatic access to them.
+        self.last_exception_details = exception_details
         
         return status_OUT
     

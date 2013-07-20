@@ -37,7 +37,14 @@ if ( redirect_url != None ):
 # imports
 #================================================================================
 
+# python libraries
 import urllib2
+
+# mechanize
+import mechanize
+
+# python_utilites.network
+import mechanize_tools
 import openanything
 
 #================================================================================
@@ -104,7 +111,8 @@ class Http_Helper( object ):
         Accepts a URL.  Tries to load that page.  If page loads, checks to see if
            redirect. If yes, returns URL to which we were redirected and stores
            the list of redirect codes in self.redirect_status_list.  If no,
-           returns None.
+           returns None.  If there is an error loading the page, will throw an
+           exception.  Return of None DOES NOT imply error in this case.
         '''
     
         # return reference
@@ -119,7 +127,7 @@ class Http_Helper( object ):
         if ( ( url_IN ) and ( url_IN != None ) and ( url_IN != "" ) ):
 
             # create request for a URL (must include a protocol - http://, etc.).
-            request = urllib2.Request( 'http://wbez.org' )
+            request = urllib2.Request( url_IN )
         
             # make an opener, passing it an instance of our SmartRedirectHandler()
             opener = urllib2.build_opener( openanything.SmartRedirectHandler() )
@@ -158,6 +166,69 @@ class Http_Helper( object ):
         return url_OUT
     
     #-- END methot get_redirect_url --#    
+
+
+    def get_redirect_url_mechanize( self, url_IN, *args, **kwargs ):
+    
+        '''
+        Accepts a URL.  Tries to load that page.  If page loads, checks to see if
+           redirect. If yes, returns URL to which we were redirected and stores
+           the list of redirect codes in self.redirect_status_list.  If no,
+           returns None.  If there is an error loading the page, will throw an
+           exception.  Return of None DOES NOT imply error in this case.
+        '''
+    
+        # return reference
+        url_OUT = None
+    
+        # declare variables.
+        request = None
+        opener = None
+        open_result = None
+        
+        # got a url?
+        if ( ( url_IN ) and ( url_IN != None ) and ( url_IN != "" ) ):
+
+            # create request for a URL (must include a protocol - http://, etc.).
+            request = mechanize.Request( url_IN )
+        
+            # make an opener, passing it an instance of our SmartRedirectHandler()
+            opener = mechanize.build_opener( mechanize_tools.SmartRedirectHandler() )
+            
+            # open the URL
+            open_result = opener.open( request )
+            
+            # if redirected, there will be a status_list attribute
+            if ( hasattr( open_result, "status_list" ) == True ):
+            
+                # redirected - list of statuses from redirects will be in
+                #    open_result.status_list - store it.
+                self.redirect_status_list = open_result.status_list
+                
+                # redirected - list of urls of redirects will be in
+                #    open_result.url_list - store it.
+                self.redirect_url_list = open_result.url_list
+                
+                # return URL from result
+                url_OUT = open_result.geturl()
+                
+            else:
+            
+                # no redirect.  Return None.
+                url_OUT = None
+            
+            #-- END check to see if redirect --#
+            
+        else:
+        
+            # No URL passed in, return None.
+            url_OUT = None
+        
+        #-- END check to see of URL string passed in. --#            
+                
+        return url_OUT
+    
+    #-- END methot get_redirect_url_mechanize --#    
 
 
 #-- END class Http_Helper --#

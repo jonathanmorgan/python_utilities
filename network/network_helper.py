@@ -79,6 +79,7 @@ class Network_Helper( object ):
     URL_PARSE_RETURN_TRIMMED_DOMAIN = "trimmed_domain"
     URL_PARSE_RETURN_PATH = "path"
     URL_PARSE_RETURN_ALL_AFTER_DOMAIN = "all_after_domain"
+    URL_PARSE_RETURN_RESULT_OBJECT = "result_object"
 
     
     #============================================================================
@@ -120,8 +121,9 @@ class Network_Helper( object ):
 
     def parse_URL( self,
                    URL_IN = "",
-                   return_type_IN = URL_PARSE_RETURN_TRIMMED_DOMAIN,
-                   use_last_parse_result = False,
+                   return_type_IN = URL_PARSE_RETURN_RESULT_OBJECT,
+                   use_last_parse_result_IN = False,
+                   assume_http_IN = True,
                    *args,
                    **kwargs ):
         
@@ -135,35 +137,68 @@ class Network_Helper( object ):
         - URL_PARSE_RETURN_TRIMMED_DOMAIN - "trimmed_domain" - returns the domain name, and removes "www." or "m." if they are on the front of the domain.
         - URL_PARSE_RETURN_PATH - "path" - returns just the path of the URL, no query string included.
         - URL_PARSE_RETURN_ALL_AFTER_DOMAIN - "all_after_domain" - returns the entire URL after the domain, including path, params, query string, and fragment (#<link name>, used, for example, for within-page navigation in web pages).
+        - URL_PARSE_RETURN_RESULT_OBJECT - "result_object" - default - returns the object that results from parsing, not just one piece or another.
         '''
 
         # return reference
         value_OUT = ""
         
         # declare variables
+        me = "parse_URL"
+        url_to_parse = ""
         parse_result = None
+        url_scheme = ""
         params = ""
         query_string = ""
         fragment_string = ""
+        status_message = ""
         
         # got a URL?
         if ( ( URL_IN ) and ( URL_IN != None ) and ( URL_IN != "" ) ):
         
-            # use urlparse to parse?
-            if ( use_last_parse_result == False ):
+            # parse
+            parse_result = self.parse_URL_string( URL_IN = URL_IN, use_last_parse_result_IN = use_last_parse_result_IN )
+
+            # check if there was a scheme detected.
+            url_scheme = parse_result.scheme
+            if ( ( not url_scheme ) or ( url_scheme == None ) or ( url_scheme == "" ) ):
             
-                # don't use last parse result - parse anew.
-                parse_result = urlparse.urlparse( URL_IN )
+                # no URL scheme - do we assume HTTP?
+                if ( assume_http_IN == True ):
                 
-                # store the result
-                self.latest_parse_result = parse_result
+                    # we do.  Are we asked to use last parse result?
+                    if ( use_last_parse_result_IN == False ):
+                    
+                        # no - OK to change URL, reparse.  Append "http://" to
+                        #    the front of the string, parse again.
+                        url_to_parse = "http://" + URL_IN
+
+                        # status
+                        status_message = "In " + me + "(): Adding http:// to URL - " + url_to_parse
+                
+                        # parse again.
+                        parse_result = self.parse_URL_string( URL_IN = url_to_parse, use_last_parse_result_IN = False )
+                        
+                    else:
+                    
+                        # we are not assuming HTTP.
+                        status_message = "In " + me + "(): We are using last parse result, so not doing anything about missing scheme."
+                
+                    #-- END check to see if it is OK to change string and re-parse --#
+                
+                else:
+                
+                    # we are not assuming HTTP.
+                    status_message = "In " + me + "(): We are not assuming HTTP, so not doing anything about missing scheme."
+            
+                #-- END check to see if we assume HTTP. --#
             
             else:
             
-                # DO reuse last parse result.
-                parse_result = self.latest_parse_result
+                # there is a URL scheme.
+                status_message = "In " + me + "(): There is a URL Scheme - " + url_scheme
             
-            #-- END check to see if we parse anew. --#
+            #-- END check to see if URL scheme. --#
             
             # create output based on return type - see what we've been asked to
             #    return.
@@ -212,7 +247,12 @@ class Network_Helper( object ):
                 
                 #-- END check to see if params. --#
                 
-            # default is trimmed domain.
+            elif ( return_type_IN == self.URL_PARSE_RETURN_RESULT_OBJECT ):
+            
+                # just return the result.
+                value_OUT = parse_result
+
+            # default is trimmed domain, including for unknown value.
             else:
             
                 # domain - "netloc" in result.
@@ -235,9 +275,61 @@ class Network_Helper( object ):
         
         #-- END check to see if URL --#
 
+        #if ( ( status_message ) and ( status_message != None ) and ( status_message != "" ) ):
+
+        #    print( status_message )
+        
+        #-- END check to see if status message to output. --#
+
         return value_OUT
         
     #-- END method parse_URL() --#
+
+
+    def parse_URL_string( self,
+                          URL_IN = "",
+                          use_last_parse_result_IN = False,
+                          *args,
+                          **kwargs ):
+        
+        '''
+        Accepts URL and optional flag to tell whether to use last parse result
+           or force new parse (defaults to new parse every time).  Uses urlparse
+           library to parse the URL, stores result, then returns it.
+        '''
+
+        # return reference
+        value_OUT = None
+        
+        # declare variables
+        parse_result = None
+        
+        # got a URL?
+        if ( ( URL_IN ) and ( URL_IN != None ) and ( URL_IN != "" ) ):
+        
+            # use urlparse to parse?
+            if ( use_last_parse_result_IN == False ):
+            
+                # don't use last parse result - parse anew.
+                parse_result = urlparse.urlparse( URL_IN )
+                
+                # store the result
+                self.latest_parse_result = parse_result
+                
+            #-- END check to see if we parse anew. --#
+            
+            # return latest parse result.
+            value_OUT = self.latest_parse_result
+            
+        else:
+        
+            value_OUT = None
+        
+        #-- END check to see if URL --#
+
+        return value_OUT
+        
+    #-- END method parse_URL_string() --#
 
 
 #-- END class Http_Helper --#
