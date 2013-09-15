@@ -23,21 +23,19 @@ along with http://github.com/jonathanmorgan/python_utilities.  If not, see
 '''
 Example:
 
-# get instance of mysqldb helper
-
 # import
 from python_utilities.database.database_helper_factory import Database_Helper_Factory
 
 # configure database helper
 db_host = "localhost"
-db_port = 3306
+db_port = 5432
 db_username = "<username>"
 db_password = "<password>"
 db_database = "<database_name>"
 
 # get instance of mysqldb helper
-#db_helper = MySQLdb_Helper( db_host, db_port, db_username, db_password, db_database )
-db_helper = Database_Helper_Factory.get_database_helper( Database_Helper_Factory.DATABASE_TYPE_MYSQLDB, db_host, db_port, db_username, db_password, db_database )
+#db_helper = psycopg2_Helper( db_host, db_port, db_username, db_password, db_database )
+db_helper = Database_Helper_Factory.get_database_helper( Database_Helper_Factory.DATABASE_TYPE_PSYCOPG2, db_host, db_port, db_username, db_password, db_database )
 
 # get connection (if you write to database, you need to commit with connection object).
 db_connection = db_helper.get_connection()
@@ -81,12 +79,15 @@ db_helper.close()
 import sys
 
 # mysql package
-import MySQLdb
+import psycopg2
+
+#note that we have to import the Psycopg2 extras library!
+import psycopg2.extras
 
 # python utilities - import parent abstract class from this package.
 import python_utilities.database.database_helper
 
-class MySQLdb_Helper( python_utilities.database.database_helper.Database_Helper ):
+class psycopg2_Helper( python_utilities.database.database_helper.Database_Helper ):
 
 
     #============================================================================
@@ -96,18 +97,18 @@ class MySQLdb_Helper( python_utilities.database.database_helper.Database_Helper 
     # cursor types
     CURSOR_TYPE_DICT = "dict"
     CURSOR_TYPE_ARRAY = "array"
-
+    
     # defaults
     #DEFAULT_HOST = "localhost"
-    DEFAULT_PORT = 3306
+    DEFAULT_PORT = 5432
 
     #============================================================================
     # instance variables
     #============================================================================
 
     # database connection variables
-    #db_host = "localhost"
-    #db_port = 3306
+    #db_host = DEFAULT_HOST
+    #db_port = DEFAULT_PORT
     #db_username = ""
     #db_password = ""
     #db_database = ""
@@ -123,7 +124,7 @@ class MySQLdb_Helper( python_utilities.database.database_helper.Database_Helper 
     
     # parent class
     #def __init__( self, db_host_IN = DEFAULT_HOST, db_port_IN = DEFAULT_PORT, db_username_IN = "", db_password_IN = "", db_database_IN = "" ):
-        
+
 
     #---------------------------------------------------------------------------
     # __del__() method
@@ -137,7 +138,6 @@ class MySQLdb_Helper( python_utilities.database.database_helper.Database_Helper 
     #============================================================================
     # instance methods
     #============================================================================
-    
     
     # parent class
     #def get_connection( self, *args, **kwargs ):
@@ -175,7 +175,7 @@ class MySQLdb_Helper( python_utilities.database.database_helper.Database_Helper 
             if ( cursor_type_IN == self.CURSOR_TYPE_DICT ):
             
                 # yes. create cursor that maps column names to values.
-                cursor_OUT = my_connection.cursor( MySQLdb.cursors.DictCursor )
+                cursor_OUT = my_connection.cursor( cursor_factory = psycopg2.extras.DictCursor )
             
             else:
             
@@ -224,6 +224,7 @@ class MySQLdb_Helper( python_utilities.database.database_helper.Database_Helper 
         my_username = ""
         my_password = ""
         my_database = ""
+        connection_string = ""
         
         # get values
         my_host = self.db_host
@@ -235,7 +236,7 @@ class MySQLdb_Helper( python_utilities.database.database_helper.Database_Helper 
         # use them to create a connection.  For now, no error checking.  If it
         #     gets screwed up because the object isn't initialized right, calling
         #     program will figure it out pretty quickly.
-        connection_OUT = MySQLdb.connect( host = my_host, port = my_port, user = my_username, passwd = my_password, db = my_database )
+        connection_OUT = MySQLdb.connect( host = my_host, port = my_port, user = my_username, password = my_password, database = my_database )
         
         return connection_OUT
     
@@ -243,7 +244,7 @@ class MySQLdb_Helper( python_utilities.database.database_helper.Database_Helper 
     
     
     # parent class
-    #def close( self, *args, **kwargs ):
-
+    # def close( self, *args, **kwargs ):
+    
 
 #-- END class MySQLdb_Helper --#
