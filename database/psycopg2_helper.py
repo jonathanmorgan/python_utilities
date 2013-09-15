@@ -247,4 +247,4 @@ class psycopg2_Helper( python_utilities.database.database_helper.Database_Helper
     # def close( self, *args, **kwargs ):
     
 
-#-- END class MySQLdb_Helper --#
+#-- END class psycopg2_Helper --#
