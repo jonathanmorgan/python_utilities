@@ -236,7 +236,7 @@ class psycopg2_Helper( python_utilities.database.database_helper.Database_Helper
         # use them to create a connection.  For now, no error checking.  If it
         #     gets screwed up because the object isn't initialized right, calling
         #     program will figure it out pretty quickly.
-        connection_OUT = MySQLdb.connect( host = my_host, port = my_port, user = my_username, password = my_password, database = my_database )
+        connection_OUT = psycopg2.connect( host = my_host, port = my_port, user = my_username, password = my_password, database = my_database )
         
         return connection_OUT
     
