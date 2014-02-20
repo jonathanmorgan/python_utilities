@@ -1,10 +1,33 @@
+# start to support python 3:
+from __future__ import unicode_literals
+
+'''
+Copyright 2012-2014 Jonathan Morgan
+
+This file is part of http://github.com/jonathanmorgan/python_utilities.
+
+python_utilities is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+python_utilities is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with http://github.com/jonathanmorgan/python_utilities.  If not, see
+<http://www.gnu.org/licenses/>.
+'''
+
 # imports
 import inspect
 
 class ObjectHelper( object ):
 
     @classmethod
-    def get_user_attributes( cls, class_IN, exlude_boring_IN = True ):
+    def get_user_attributes( cls, class_IN, exclude_boring_IN = True ):
 
         '''
         Based on: http://stackoverflow.com/questions/4241171/inspect-python-class-attributes
@@ -56,7 +79,7 @@ class ObjectHelper( object ):
         #-- END loop over base classes --#
 
         # remove anything that is in the "boring" list.
-        if ( exlude_boring_IN == True ):
+        if ( exclude_boring_IN == True ):
         
             for key in boring:
     
