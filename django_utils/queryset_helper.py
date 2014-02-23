@@ -1,3 +1,6 @@
+# start to python 3 support:
+from __future__ import unicode_literals
+
 '''
 Copyright 2012, 2013 Jonathan Morgan
 
@@ -134,7 +137,9 @@ class QuerySetHelper():
         
         Usage:
         
-        my_queryset = queryset_iterator( MyItem.objects.all() )
+        my_queryset = queryset_generator( MyItem.objects.all() )
+        
+        # loop as normal - no need to keep coming back for more chunks of 1000...
         for item in my_queryset:
             item.do_something()
         
@@ -200,14 +205,14 @@ class QuerySetHelper():
         list of model objects of the size 'listsize'.
         This method loads a maximum of chunksize (default: 1000) rows in memory
         while django normally would load all rows into memory.  In contrast to
-        the queryset_iterator, it doesn't return each row on its own, but
+        the queryset_generator, it doesn't return each row on its own, but
         returns a list of listsize (default: 10000) rows at a time.
         
         Note that the implementation of the iterator does not support ordered
         query sets.
         """
         
-        it = queryset_iterator(queryset, chunksize)
+        it = queryset_generator(queryset, chunksize)
         i = 0
         row_list = []
 
