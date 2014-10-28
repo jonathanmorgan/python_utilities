@@ -144,42 +144,7 @@ class BeautifulSoupHelper( object ):
         
         return text_OUT
     
-    #-- END method bs_get_child_text() --#
-
-
-    def bs_get_cleaned_direct_child_text( self, tag_IN, separator_IN = "" ):
-    
-        '''
-        Accepts a tag, gets all text that is a direct child of tag passed in
-           (but not of nested elements), concatenates it, and returns it.
-           
-        Preconditions: None
-        Postconditions: None
-        '''
-    
-        # return reference
-        text_OUT = ""
-        
-        # declare variables
-        bs_current_element = None
-        current_class_name = ""
-        
-        
-        # got a tag?
-        if ( tag_IN ):
-        
-            # Retrieve all text directly below the element passed in, not 
-            #    including a recursive path through children of children, etc.
-            text_OUT = separator_IN.join( tag_IN.findAll( text = True, recursive = False ) )
-            
-            # strip the result.
-            text_OUT = text_OUT.strip()
-
-        #-- END check to see if tag passed in --#
-        
-        return text_OUT
-    
-    #-- END method bs_get_child_text() --#
+    #-- END method bs_get_cleaned_direct_child_text() --#
 
 
     def bs_get_element_name( self, instance_IN ):
