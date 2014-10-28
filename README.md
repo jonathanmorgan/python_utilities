@@ -25,9 +25,7 @@ Python Utility classes.  Includes the following:
 
 Clone this repository and place it somewhere in your PYTHON\_PATH, including the base "python\_utilities" directory.  The easiest way to use these libraries with a Django site is to clone this repository into the site's folder alongside other applications, so these utilities are a part of the same python path as other django apps.  These utilities are used by other of my django applications, as well.  They can also be used outside of django.
 
-### libraries
-
-#### /beautiful\_soup/*
+### /beautiful\_soup/*
 
 Requires the Beautiful Soup 4 package, installed via pip:
 
@@ -38,12 +36,16 @@ If you are planning on using Beautiful Soup's "UnicodeDammit" class, you also sh
     (sudo) pip install chardet
     (sudo) pip install cchardet
     
-#### bleach
+### /strings/html_helper.py
 
-Library for selectively parsing HTML and XML.
+requires bleach, a library for selectively parsing HTML and XML:
 
     (sudo) pip install bleach
 
+and requires the Beautiful Soup 4 package, installed via pip:
+
+    (sudo) pip install BeautifulSoup4
+    
 ### /database/MySQLdb\_helper.py
 
 Before you can connect to MySQL with this code, you need to do the following:
