@@ -137,7 +137,7 @@ class QuerySetHelper():
         
         Usage:
         
-        my_queryset = queryset_generator( MyItem.objects.all() )
+        my_queryset = QuerySetHelper.queryset_generator( MyItem.objects.all() )
         
         # loop as normal - no need to keep coming back for more chunks of 1000...
         for item in my_queryset:
