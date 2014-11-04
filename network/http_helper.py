@@ -30,7 +30,21 @@ if ( redirect_url != None ):
 
 #-- END check to see if redirected --#
 
-# set up a normal 
+# make a POST request using Http_Helper.
+my_http_helper = Http_Helper()
+
+# set up call to REST API.
+calais_REST_API_URL = "http://api.opencalais.com/tag/rs/enrich"
+calais_api_key = "<insert_calais_API_key_here>"
+my_http_helper.set_http_header( "x-calais-licenseID", calais_api_key, None )
+my_http_helper.set_http_header( "Content-Type", "TEXT/RAW", None )
+my_http_helper.set_http_header( "outputformat", "Application/JSON", None )
+
+# request type
+my_http_helper.request_type = Http_Helper.REQUEST_TYPE_POST
+
+# make the request.
+requests_response = my_http_helper.load_url_requests( calais_REST_API_URL, data_IN = article_body_text )
 
 '''
 
