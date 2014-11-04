@@ -64,9 +64,10 @@ Before you can connect to Postgresql with this code, you need to do the followin
 
 ### /network/*
 
-Requires you install mechanize, a library that implements a browser client in python:
+Requires you install mechanize, a library that implements a browser client in python, and requests:
 
     (sudo) pip install mechanize
+    (sudo) pip install requests
     
 ### /strings/*
 

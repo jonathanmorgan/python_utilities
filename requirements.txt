@@ -1,0 +1,9 @@
+beautifulsoup4
+chardet
+cchardet
+bleach
+MySQL-python
+psycopg2
+mechanize
+six
+requests
