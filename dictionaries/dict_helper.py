@@ -83,7 +83,7 @@ class DictHelper( object ):
                 if ( name_IN in dict_IN ):
                 
                     # name is in dictionary.  Get value, return it.
-                    value_OUT = dict_IN[ name_IN ]
+                    value_OUT = dict_IN.get( name_IN, default_IN )
                 
                 else:
                 
@@ -142,6 +142,121 @@ class DictHelper( object ):
         return value_OUT
     
     #-- END function get_dict_value_as_int --#
+
+
+    @classmethod
+    def get_dict_value_as_list( cls, dict_IN, name_IN, default_IN = [], delimiter_IN = ',' ):
+        
+        # return reference
+        list_OUT = []
+        
+        # declare variables
+        list_param_value = ""
+        param_type = ""
+        working_list = []
+        current_value = ""
+        current_value_clean = ""
+        missing_string = "get_list_param-missing"
+        
+        # first, try getting raw param, see if it is already a list.
+        
+        # get raw value
+        list_param_value = cls.get_dict_value( dict_IN, name_IN, None )
+        
+        # get type string
+        param_type = type( list_param_value )
+        
+        # check if list
+        if param_type == list:
+        
+            # already a list - return it.
+            list_OUT = list_param_value
+            
+        if ( ( param_type == str ) and ( list_param_value == "" ) ):
+        
+            # empty string - return empty list
+            list_OUT = []
+        
+        else:
+        
+            # not a list.  assume string.
+        
+            # get list param's original value
+            list_param_value = cls.get_dict_value_as_str( dict_IN, name_IN, missing_string )
+            
+            # print( "====> list param value: " + list_param_value )
+            
+            # got a value?
+            if ( ( list_param_value != "" ) and ( list_param_value != missing_string ) ):
+            
+                # yes - split on delimiter into a list
+                working_list = list_param_value.split( delimiter_IN )
+                
+                # loop over the IDs, strip()-ing each then appending it to list_OUT.
+                list_OUT = []
+                for current_value in working_list:
+             
+                    # strip
+                    current_value_clean = current_value.strip()
+                    list_OUT.append( current_value_clean )
+        
+                #-- END loop over unique IDs passed in --#
+            
+            elif list_param_value == "":
+            
+                # return empty list.
+                list_OUT = []
+                
+            elif list_param_value == missing_string:
+            
+                # return default
+                list_OUT = default_IN
+                
+            else:
+            
+                # not sure how we got here - return default.
+                list_OUT = default_IN
+            
+            #-- END check to see what was in value. --#
+            
+        #-- END check to see if already a list --#
+        
+        return list_OUT
+        
+    #-- END method get_dict_value_as_list() --#
+    
+
+    @classmethod
+    def get_dict_value_as_str( cls, dict_IN, name_IN, default_IN = -1 ):
+    
+        '''
+        Accepts dictionary, name, and optional default value (if no default
+           provided, default is -1).  If dictionary or name missing, returns
+           default.  If name not present in dictionary, returns default.  If name
+           in dictionary, returns whatever is mapped to name, converted to a
+           string through call to str().
+           
+        Parameters:
+        - dict_IN - dictionary we are looking in.
+        - name_IN - name we are looking for in dictionary.
+        - default_IN (defaults to None) - default value to return if problem or not found in dict.
+        
+        Returns:
+        - value_OUT - value mapped to name_IN in dict_IN, converted to str(), else the default value if problems or if not found in dict.
+        '''
+    
+        # return reference
+        value_OUT = None
+        
+        # first, get value.
+        value_OUT = cls.get_dict_value( dict_IN, name_IN, default_IN )
+        
+        # convert to str.
+        value_OUT = str( value_OUT )
+        
+        return value_OUT
+    
+    #-- END function get_dict_value_as_str --#
 
 
     @classmethod
