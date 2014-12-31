@@ -1,6 +1,6 @@
 # python\_utilities
 
-Python Utility classes.  Includes the following:
+Python Utility classes.  Includes the following files:
 
 - __/beautiful\_soup/beautiful\_soup\_helper.py__ - BeautifulSoupHelper class that implements helper methods for common things you do with BeautifulSoup, like getting child text and encoding HTML entities.  Built against BeautifulSoup 3, updated to import BeautifulSoup 4, work just fine far as I can tell...
 - __/booleans/boolean\_helper.py__ - BooleanHelper class with method to convert non-boolean values to boolean type based on valid known true values (1, 't', 'true', 'y', 'yes').
@@ -10,7 +10,11 @@ Python Utility classes.  Includes the following:
     - __/database/psycopg2\_helper.py__ - psycopg2\_Helper class encapsulates basic logic for dealing with creating connections and cursors using the psycopg2 library.  Not fancy.  Opens and closes, nothing more.
     - __/database/MySQLdb\_helper.py__ - MySQLdb\_Helper class encapsulates basic logic for dealing with creating connections and cursors using the MySQLdb library.  Not fancy.  Opens and closes, nothing more.
 - __/dictionaries/dict\_helper.py__ - for now, just contains a function to retrieve a dict value that also accepts a default, so you can define default yourself when you look things up in a dict.
-- __/django\_utils/queryset\_helper.py__ - QuerySetHelper class that contains memory-efficient ways of iterating over large QuerySets, and also a few convenience methods for adding date and primary key filters to a QuerySet.
+- __/django\_utils/__
+    - __/django\_utils/django\_memory\_helper.py__ - for now, has a class DjangoMemoryHelper with a single class method, `free_memory()`, that does everything I know how to do to free up memory in django while a long-running process is running.
+    - __/django\_utils/django\_string\_helper.py__ - extends StringHelper class from `strings/string_helper.py`, updating the `convert_to_unicode()` method to use Django's built-in method.
+    - __/django\_utils/query\_filter.py__ - QueryFilterHelper class, just extends QuerySetHelper for backward compatibility.
+    - __/django\_utils/queryset\_helper.py__ - QuerySetHelper class that contains memory-efficient ways of iterating over large QuerySets, and also a few convenience methods for adding date and primary key filters to a QuerySet.
 - __/email/email\_helper.py__ - EmailHelper class that contains logic for setting up SMTP server using smtplib, then sending text or HTML email messages.
 - __/exceptions/exception\_helper.py__ - ExceptionHelper class that contains logic for printing exception messages, and also for emailing a summary if email is set up in the isntance.
 - __/network__
@@ -76,6 +80,46 @@ Requires you to install the "six" package, which helps make python code that can
     (sudo) pip install six
 
 ## Usage
+
+### /exceptions/exception\_helper.py
+
+For a class you want to use ExceptionHelper for outputting and potentially emailing exception messages:
+
+    # import ExceptionHandler
+    from python_utilities.exceptions.exception_helper import ExceptionHelper
+    
+    # make instance
+    my_exception_helper = ExceptionHelper()
+    
+    # configure mail settings?
+    '''
+    smtp_host = 'localhost'
+    smtp_port = 1234
+    smtp_use_ssl = True
+    smtp_username = "smtp_user"
+    smtp_password = "smtp_pass"
+    my_exception_helper.email_initialize( smtp_host, smtp_port, smtp_use_ssl, smtp_username, smtp_password ):
+    '''
+    
+    # log an exception
+    try:
+    
+        pass
+    
+    catch Exception as e:
+    
+        # log exception.
+        exception_message = "Exception caught for article " + str( current_article.id )
+        
+        # no email
+        my_exception_helper.process_exception( e, exception_message )
+        
+        # with email
+        # my_exception_helper.process_exception( e, exception_message, True, "email_subject" )        
+
+    #-- END try-catch --#
+
+If you are going to be in a long-running or looping process, consider initializing at the beginning and storing instance in a reusable variable.
 
 ### /rate\_limited/basic\_rate\_limited.py
 
