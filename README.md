@@ -268,7 +268,7 @@ For a class you want to be rate-limited:
         def __init__( self ):
     
             # call parent's __init__()
-            super( SourcenetBase, self ).__init__()
+            super( SampleClass, self ).__init__()
     
             # declare variables
             
