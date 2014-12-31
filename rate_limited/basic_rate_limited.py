@@ -135,6 +135,7 @@ class BasicRateLimited( object ):
         
         # declare variables
         me = "may_i_continue"
+        am_i_managing_time = False
         seconds_between_requests = -1
         request_start_dt = None
         current_dt = None
@@ -143,66 +144,77 @@ class BasicRateLimited( object ):
         difference_microseconds = -1
         sleep_seconds = -1.0
         
-        # get rate limit - default is 2
-        seconds_between_requests = self.rate_limit_in_seconds
+        # first, check to see if do_manage_time is True.  If not, return True.
+        am_i_managing_time = self.do_manage_time
+        if ( am_i_managing_time == True ):
         
-        request_start_dt = self.request_start_time
-        
-        # do we have a nested start datetime?
-        if ( request_start_dt == None ):
-        
-            # no - check argument.
-            if ( ( last_transaction_dt_IN ) and ( last_transaction_dt_IN != None ) ):
+            # get rate limit - default is 2
+            seconds_between_requests = self.rate_limit_in_seconds
             
-                # yes.  Use it.
-                request_start_dt = last_transaction_dt_IN
+            request_start_dt = self.request_start_time
+            
+            # do we have a nested start datetime?
+            if ( request_start_dt == None ):
+            
+                # no - check argument.
+                if ( ( last_transaction_dt_IN ) and ( last_transaction_dt_IN != None ) ):
+                
+                    # yes.  Use it.
+                    request_start_dt = last_transaction_dt_IN
+                    
+                else:
+                
+                    # no - just grab now().
+                    request_start_dt = datetime.datetime.now()
+                    
+                #-- END check to see if we have a datetime passed in. --#
+                
+            #-- END check to see if we have a nested request start time --#
+                
+            # get current date time.
+            current_dt = datetime.datetime.now()
+            
+            # date math - substract current from last_request.
+            difference_td = current_dt - request_start_dt
+            
+            # get difference in seconds
+            difference_seconds = difference_td.seconds
+            difference_microseconds = difference_td.microseconds
+            
+            # convert microseconds to seconds (divide by 1,000,000), add to
+            #    difference_seconds.
+            difference_seconds = difference_seconds + ( difference_microseconds / 1000000.0 )
+            
+            print( "In " + me + ": time elapsed = " + str( difference_seconds ) )
+    
+            # is difference greater than or equal to our second limit?
+            if ( difference_seconds >= seconds_between_requests ):
+            
+                # yes - return True.
+                value_OUT = True
+                print( "In " + me + ": greater than " + str( seconds_between_requests ) + " seconds - OK to continue." )
                 
             else:
-            
-                # no - just grab now().
-                request_start_dt = datetime.datetime.now()
                 
-            #-- END check to see if we have a datetime passed in. --#
-            
-        #-- END check to see if we have a nested request start time --#
-            
-        # get current date time.
-        current_dt = datetime.datetime.now()
-        
-        # date math - substract current from last_request.
-        difference_td = current_dt - request_start_dt
-        
-        # get difference in seconds
-        difference_seconds = difference_td.seconds
-        difference_microseconds = difference_td.microseconds
-        
-        # convert microseconds to seconds (divide by 1,000,000), add to
-        #    difference_seconds.
-        difference_seconds = difference_seconds + ( difference_microseconds / 1000000.0 )
-        
-        print( "In " + me + ": time elapsed = " + str( difference_seconds ) )
-
-        # is difference greater than or equal to our second limit?
-        if ( difference_seconds >= seconds_between_requests ):
-        
-            # yes - return True.
-            value_OUT = True
-            print( "In " + me + ": greater than " + str( seconds_between_requests ) + " seconds - OK to continue." )
+                # no - subtract difference from seconds we need between requests.
+                sleep_seconds = seconds_between_requests - difference_seconds
+                
+                print( "In " + me + ": less than " + str( seconds_between_requests ) + " seconds - sleep for " + str( sleep_seconds ) + " seconds." )
+    
+                # sleep.
+                time.sleep( sleep_seconds )
+                
+                # set value_OUT
+                value_OUT = True
+                
+            #-- END check to see if we need to sleep. --#
             
         else:
-            
-            # no - subtract difference from seconds we need between requests.
-            sleep_seconds = seconds_between_requests - difference_seconds
-            
-            print( "In " + me + ": less than " + str( seconds_between_requests ) + " seconds - sleep for " + str( sleep_seconds ) + " seconds." )
-
-            # sleep.
-            time.sleep( sleep_seconds )
-            
-            # set value_OUT
+        
+            # flag to manage time is False - fine to continue anytime!
             value_OUT = True
             
-        #-- END check to see if we need to sleep. --#
+        #-- END check to see if we are managing time. --#
         
         return value_OUT
     
