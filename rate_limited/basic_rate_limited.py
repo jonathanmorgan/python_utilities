@@ -84,6 +84,7 @@ class BasicRateLimited( object ):
     # rate limiting
     do_manage_time = True
     rate_limit_in_seconds = 2
+    rate_limit_daily_limit = -1
     request_start_time = None
     
     
@@ -99,6 +100,7 @@ class BasicRateLimited( object ):
         # rate limiting
         self.do_manage_time = True
         self.rate_limit_in_seconds = 2
+        self.rate_limit_daily_limit = -1
         self.request_start_time = None
 
     #-- END method __init__() --#
@@ -189,8 +191,8 @@ class BasicRateLimited( object ):
             
         else:
             
-            # no - subtract difference from 2.
-            sleep_seconds = 2 - difference_seconds
+            # no - subtract difference from seconds we need between requests.
+            sleep_seconds = seconds_between_requests - difference_seconds
             
             print( "In " + me + ": less than " + str( seconds_between_requests ) + " seconds - sleep for " + str( sleep_seconds ) + " seconds." )
 
