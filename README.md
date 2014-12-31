@@ -141,7 +141,7 @@ For a class you want to use ExceptionHelper for outputting and potentially email
 
     #-- END try-catch --#
 
-If you are going to be in a long-running or looping process, consider initializing at the beginning and storing instance in a reusable variable.
+If you are going to be in a long-running or looping process, consider initializing at the beginning and storing instance in a variable, so you can reuse it.
 
 ### /logging/summary\_helper.py
 
@@ -257,25 +257,25 @@ For a class you want to be rate-limited:
 
 - have that class import and extend `BasicRateLimited`.
 
-    # import
-    from python_utilities.rate_limited.basic_rate_limited import BasicRateLimited
-    
-    # class definition
-    def class SampleClass( BasicRateLimited ):
+        # import
+        from python_utilities.rate_limited.basic_rate_limited import BasicRateLimited
+        
+        # class definition
+        def class SampleClass( BasicRateLimited ):
 
 - in that class's `__init__()` method, call the parent `__init__()` method, then set instance variable `rate_limit_in_seconds` to the minimum number of seconds you want between requests (can be a decimal).
 
-    def __init__( self ):
-
-        # call parent's __init__()
-        super( SourcenetBase, self ).__init__()
-
-        # declare variables
-        
-        # limit to no more than 4 per second
-        self.rate_limit_in_seconds = 0.25
-        
-    #-- END method __init__() --#
+        def __init__( self ):
+    
+            # call parent's __init__()
+            super( SourcenetBase, self ).__init__()
+    
+            # declare variables
+            
+            # limit to no more than 4 per second
+            self.rate_limit_in_seconds = 0.25
+            
+        #-- END method __init__() --#
 
 - At the start of each transaction, call the `self.start_request()` method to let the code know you're starting a request.
 - Once the request is done, call `continue_collecting = self.may_i_continue()` this method will block if you have to wait, will return true if it is OK to continue, will return False if some error occurred.
