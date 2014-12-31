@@ -1,3 +1,6 @@
+# start to support python 3:
+from __future__ import unicode_literals
+
 '''
 Copyright 2012, 2013 Jonathan Morgan
 
@@ -16,6 +19,38 @@ GNU General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with http://github.com/jonathanmorgan/python_utilities.  If not, see
 <http://www.gnu.org/licenses/>.
+'''
+
+'''
+Usage:
+
+For a class you want to be rate-limited:
+
+- have that class import and extend `BasicRateLimited`.
+
+    # import
+    from python_utilities.rate_limited.basic_rate_limited import BasicRateLimited
+    
+    # class definition
+    def class SampleClass( BasicRateLimited ):
+
+- in that class's `__init__()` method, call the parent `__init__()` method, then set instance variable `rate_limit_in_seconds` to the minimum number of seconds you want between requests (can be a decimal).
+
+    def __init__( self ):
+
+        # call parent's __init__()
+        super( SourcenetBase, self ).__init__()
+
+        # declare variables
+        
+        # limit to no more than 4 per second
+        self.rate_limit_in_seconds = 0.25
+        
+    #-- END method __init__() --#
+
+- At the start of each transaction, call the `self.start_request()` method to let the code know you're starting a request.
+- Once the request is done, call `continue_collecting = self.may_i_continue()` this method will block if you have to wait, will return true if it is OK to continue, will return False if some error occurred.
+- In your control structure, always check the result of `may_i_continue()` before continuing.
 '''
 
 #!/usr/bin/python
@@ -52,6 +87,23 @@ class BasicRateLimited( object ):
     request_start_time = None
     
     
+    #---------------------------------------------------------------------------
+    # __init__() method
+    #---------------------------------------------------------------------------
+
+
+    def __init__( self ):
+
+        # declare variables
+
+        # rate limiting
+        self.do_manage_time = True
+        self.rate_limit_in_seconds = 2
+        self.request_start_time = None
+
+    #-- END method __init__() --#
+
+
     #============================================================================
     # instance methods
     #============================================================================

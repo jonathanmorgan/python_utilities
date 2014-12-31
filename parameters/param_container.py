@@ -1,3 +1,4 @@
+# start to support python 3:
 from __future__ import unicode_literals
 
 '''
@@ -10,6 +11,42 @@ python_utilities is free software: you can redistribute it and/or modify it unde
 python_utilities is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License along with http://github.com/jonathanmorgan/sourcenet. If not, see http://www.gnu.org/licenses/.
+'''
+
+'''
+Usage:
+
+    # import ParamContainer
+    from python_utilities.parameters.param_container import ParamContainer
+
+    # make an instance
+    my_param_container = ParamContainer()
+    
+    # define parameters (for outputting debug, nothing more at this point)
+    my_param_container.define_parameter( "test_int", ParamContainer.PARAM_TYPE_INT )
+    my_param_container.define_parameter( "test_string", ParamContainer.PARAM_TYPE_STRING )
+    my_param_container.define_parameter( "test_list", ParamContainer.PARAM_TYPE_LIST )
+    
+    # load parameters in a dict
+    my_param_container.set_parameters( params )
+    
+    # load parameters from a django HTTP request
+    my_param_container.set_request( request )
+    
+    # get parameter value - pass name and optional default if not present.
+    test_int = my_param_container.get_param( "test_int", -1 )
+    test_string = my_param_container.get_param( "test_string", "" )
+    test_list = my_param_container.get_param( "test_list", [] )
+    
+    # get param as int
+    test_int = my_param_container.get_param_as_int( "test_int", -1 )
+
+    # get param as str
+    test_string = my_param_container.get_param_as_str( "test_string", -1 )
+
+    # get param as list - pass in name, optional default, list delimiter string (defaults to ",")
+    test_int = my_param_container.get_param_as_list( "test_int", -1, delimiter_IN = "," )
+
 '''
 
 #===============================================================================
