@@ -283,7 +283,7 @@ For a class you want to be rate-limited:
 
 ## License:
 
-Copyright 2012, 2013 Jonathan Morgan
+Copyright 2015 Jonathan Morgan
 
 This file is part of [http://github.com/jonathanmorgan/python\_utilities](http://github.com/jonathanmorgan/python_utilities).
 
