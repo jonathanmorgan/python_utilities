@@ -60,9 +60,9 @@ For a class you want to be rate-limited:
 #================================================================================
 
 # base python libraries
-import time
-import sys
 import datetime
+import sys
+import time
 
 class BasicRateLimited( object ):
 
