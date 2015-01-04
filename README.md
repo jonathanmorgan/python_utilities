@@ -25,6 +25,7 @@ Python Utility classes.  Includes the following files:
 - __/exceptions/__
     - __/exceptions/exception\_helper.py__ - `ExceptionHelper` class that contains logic for printing exception messages, and also for emailing a summary if email is set up in the isntance.
 - __/logging/__
+    - __/logging/logging\_helper.py__ - `LoggingHelper` class contains instance variables to hold python `logging` logger instance and application name used when getting logger, and methods to get and set them.  The get_logger() method makes a new one using the application name if none is already present in the instance.  Can be used on its own, or as a parent class to add this stuff to an existing class.
     - __/logging/summary\_helper.py__ - `SummaryHelper` class that contains logic for capturing and outputting timing and auditing information.
 - __/network__
     - __/network/http\_helper.py__ - `Http_Helper` class that contains logic for checking if a URL has been redirected, and if so, storing redirect information including status code and redirect URLs.
@@ -110,8 +111,22 @@ For a class you want to use ExceptionHelper for outputting and potentially email
     # import ExceptionHandler
     from python_utilities.exceptions.exception_helper import ExceptionHelper
     
+    # import logging
+    import logging
+    
     # make instance
     my_exception_helper = ExceptionHelper()
+    
+    # by default, logs to logger with name "python_utilities.exceptions.exception_helper".
+    # if you want it to log to a different logger name, initialize that logger,
+    #    then pass it to the set_logger() method.  Example:
+    #
+    # my_logger = logging.getLogger( "logger_name_example" )
+    # my_exception_helper.set_logger( my_logger )
+    
+    # By default, ExceptionHelper logs exception information to logging.ERROR.
+    #    You can set the level at which your exception helper will log messages:
+    # my_exception_helper.set_logging_level( logging.DEBUG )
     
     # configure mail settings?
     '''
@@ -142,6 +157,52 @@ For a class you want to use ExceptionHelper for outputting and potentially email
     #-- END try-catch --#
 
 If you are going to be in a long-running or looping process, consider initializing at the beginning and storing instance in a variable, so you can reuse it.
+
+### /logging/logging_helper.py
+
+The `LoggingHelper` class can be used two ways:
+
+1. you can create an instance of it and use that to retrieve a python logger.
+
+        # import logging and LoggingHelper
+        import logging
+        from python_utilities.logging.logging_helper import LoggingHelper
+        
+        # make a Logger instance.
+        my_logger_factory = LoggingHelper()
+        
+        # set the logger name
+        my_logger_factory.set_logger_name( "test_logger" )
+        
+        # get a python logging.logger
+        my_logger = my_logger_factory.get_logger()
+        
+
+2. You can use it as a parent class for an existing class to add a variable for a logger and a logging application name and methods to get and set each to a class.
+
+        # import logging and Logger
+        import logging
+        from python_utilities.logging.logging_helper import LoggingHelper
+        
+        # make Logger the parent class
+        class MyClass( LoggingHelper ):
+        
+            # in your __init__() method, call parent __init__(), then set
+            #    self.logger_name to either __name__ or a name you prefer.
+            def __init__( self ):
+            
+                # call parent's __init__()
+                super( MyClass, self ).__init__()
+                
+                # set self.logger_name
+                self.set_logger_name( "MyClass" )
+                
+            #-- END __init__() method --#
+            
+            # then, to get logger instance, call self.get_logger().
+            
+        #-- END class MyClass --#        
+        
 
 ### /logging/summary\_helper.py
 

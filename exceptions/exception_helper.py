@@ -20,6 +20,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 
 # base python libraries
 import datetime
+import logging
 import sys
 import time
 import traceback
@@ -31,12 +32,13 @@ import traceback
 
 # python_utilities
 from python_utilities.email.email_helper import EmailHelper
+from python_utilities.logging.logging_helper import LoggingHelper
 
 #================================================================================
 # class ExceptionHelper
 #================================================================================
 
-class ExceptionHelper( object ):
+class ExceptionHelper( LoggingHelper ):
 
 
     #============================================================================
@@ -66,6 +68,9 @@ class ExceptionHelper( object ):
     # debug_flag
     debug_flag = False
     
+    # logging
+    logging_level = logging.ERROR
+    
     
     #---------------------------------------------------------------------------
     # __init__() method
@@ -78,6 +83,9 @@ class ExceptionHelper( object ):
         Constructor
         '''
         
+        # call parent's __init__()
+        super( ExceptionHelper, self ).__init__()
+
         # email
         self.email_helper = None
         self.email_status_address = ""
@@ -87,6 +95,15 @@ class ExceptionHelper( object ):
         
         # debug
         self.debug_flag = False
+        
+        # logging
+        
+        # set logger name (for LoggingHelper parent class: (LoggingHelper -->
+        #    BasicRateLimited --> ArticleCoder).
+        self.set_logger_name( "python_utilities.exceptions.exception_helper" )
+        
+        # log level
+        self.logging_level = logging.ERROR
 
     #-- END constructor --#
 
@@ -227,12 +244,64 @@ class ExceptionHelper( object ):
     #-- END method email_send_status() --#
     
     
+    def get_logging_level( self ):
+    
+        # return reference
+        value_OUT = None
+        
+        # get value
+        value_OUT = self.logging_level
+                
+        return value_OUT
+    
+    #-- END method get_logger_name --#
+
+    
+    def log_exception_info( self, message_IN, log_level_IN = "" ):
+    
+        '''
+        Accepts message string.  If debug is on, passes it to print().  If not,
+           does nothing for now.
+        '''
+        
+        # declare variables
+        my_logger = None
+        my_log_level = ""
+    
+        # got a message?
+        if ( message_IN ):
+        
+            # get logger
+            my_logger = self.get_logger()
+            
+            # Do we have a log level?
+            if ( ( log_level_IN is None ) or ( log_level_IN == "" ) ):
+            
+                # no - see if there is one in instance.
+                my_log_level = self.get_logging_level()
+            
+            else:
+            
+                # yes - use it.
+                my_log_level = log_level_IN
+            
+            #-- END check to see if app_name. --#
+           
+            # log the message.
+            my_logger.log( my_log_level, message_IN )
+        
+        #-- END check to see if message. --#
+    
+    #-- END method log_exception_info() --#
+
+
     def process_exception( self, exception_IN = None, message_IN = "", send_email_IN = False, email_subject_IN = "", print_details_IN = True, *args, **kwargs ):
     
         # return reference
         status_OUT = self.STATUS_SUCCESS
         
         # declare variables
+        my_logger = None
         exception_type = ""
         exception_value = ""
         exception_traceback = ""
@@ -244,6 +313,9 @@ class ExceptionHelper( object ):
         # got an exception?
         if ( ( exception_IN ) and ( exception_IN != None ) ):
         
+            # get logger.
+            my_logger = self.get_logger()
+            
             # get exception details:
             exception_type, exception_value, exception_traceback = sys.exc_info()
             
@@ -265,7 +337,7 @@ class ExceptionHelper( object ):
                 # print?
                 if ( print_details_IN == True ):
 
-                    print( temp_exception_string )
+                    self.log_exception_info( temp_exception_string )
 
                 #-- END check to see if we should print details --#
 
@@ -280,7 +352,7 @@ class ExceptionHelper( object ):
                 # print?
                 if ( print_details_IN == True ):
 
-                    print( temp_exception_string )
+                    self.log_exception_info( temp_exception_string )
 
                 #-- END check to see if we should print details --#
 
@@ -299,7 +371,7 @@ class ExceptionHelper( object ):
             # print?
             if ( print_details_IN == True ):
 
-                print( temp_exception_string )
+                self.log_exception_info( temp_exception_string )
 
             #-- END check to see if we should print details --#
 
@@ -319,35 +391,21 @@ class ExceptionHelper( object ):
 
             # create current line of text.
             temp_exception_string = "      - value = " + str( exception_value )
-            print( temp_exception_string )
+            self.log_exception_info( temp_exception_string )
 
             # add to details.
             exception_details += "\n" + temp_exception_string
             
-            # print?
-            if ( print_details_IN == True ):
-
-                print( temp_exception_string )
-
-            #-- END check to see if we should print details --#
-
             #-------------------------------------------------------------------#
             # exception stack trace
             #-------------------------------------------------------------------#
 
             # create current line of text.
             temp_exception_string = "      - traceback = " + str( traceback.format_exc() )
-            print( temp_exception_string )
+            self.log_exception_info( temp_exception_string )
 
             # add to details.
             exception_details += "\n" + temp_exception_string
-    
-            # print?
-            if ( print_details_IN == True ):
-
-                print( temp_exception_string )
-
-            #-- END check to see if we should print details --#
 
             #-------------------------------------------------------------------#
             # email?
@@ -360,7 +418,7 @@ class ExceptionHelper( object ):
                 error_email_subject = email_subject_IN
                 error_email_message = exception_details
                 status_OUT = self.email_send_status( error_email_message, error_email_subject )
-                print( "====> Error email status: " + status_OUT )
+                self.log_exception_info( "====> Error email status: " + status_OUT )
                 
             #-- END check to see if we've exceeded error limit. --#
         
@@ -376,6 +434,26 @@ class ExceptionHelper( object ):
         return status_OUT
     
     #-- END method process_exception() --#
+
+
+    def set_logging_level( self, value_IN ):
+        
+        '''
+        Accepts logging level.  Stores it and returns it.
+        '''
+        
+        # return reference
+        value_OUT = None
+        
+        # store value.
+        self.logging_level = value_IN
+        
+        # return it.
+        value_OUT = self.get_logging_level()
+        
+        return value_OUT
+        
+    #-- END method set_logging_level() --#
 
 
 #-- END class ExceptionHelper --#

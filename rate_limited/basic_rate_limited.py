@@ -64,7 +64,10 @@ import datetime
 import sys
 import time
 
-class BasicRateLimited( object ):
+# python utilities
+from python_utilities.logging.logging_helper import LoggingHelper
+
+class BasicRateLimited( LoggingHelper ):
 
 
     #============================================================================
@@ -95,6 +98,9 @@ class BasicRateLimited( object ):
 
     def __init__( self ):
 
+        # call parent's __init__()
+        super( BasicRateLimited, self ).__init__()
+
         # declare variables
 
         # rate limiting
@@ -102,6 +108,10 @@ class BasicRateLimited( object ):
         self.rate_limit_in_seconds = 2
         self.rate_limit_daily_limit = -1
         self.request_start_time = None
+
+        # set logger name (for Logger parent class: (LoggingHelper -->
+        #    BasicRateLimited).
+        self.set_logger_name( "python_utilities.rate_limited.basic_rate_limited" )
 
     #-- END method __init__() --#
 
@@ -135,6 +145,7 @@ class BasicRateLimited( object ):
         
         # declare variables
         me = "may_i_continue"
+        my_logger = None
         am_i_managing_time = False
         seconds_between_requests = -1
         request_start_dt = None
@@ -143,6 +154,9 @@ class BasicRateLimited( object ):
         difference_seconds = -1
         difference_microseconds = -1
         sleep_seconds = -1.0
+        
+        # get logger.
+        my_logger = self.get_logger()
         
         # first, check to see if do_manage_time is True.  If not, return True.
         am_i_managing_time = self.do_manage_time
@@ -185,21 +199,21 @@ class BasicRateLimited( object ):
             #    difference_seconds.
             difference_seconds = difference_seconds + ( difference_microseconds / 1000000.0 )
             
-            print( "In " + me + ": time elapsed = " + str( difference_seconds ) )
+            my_logger.info( "In " + me + ": time elapsed = " + str( difference_seconds ) )
     
             # is difference greater than or equal to our second limit?
             if ( difference_seconds >= seconds_between_requests ):
             
                 # yes - return True.
                 value_OUT = True
-                print( "In " + me + ": greater than " + str( seconds_between_requests ) + " seconds - OK to continue." )
+                my_logger.info( "In " + me + ": greater than " + str( seconds_between_requests ) + " seconds - OK to continue." )
                 
             else:
                 
                 # no - subtract difference from seconds we need between requests.
                 sleep_seconds = seconds_between_requests - difference_seconds
                 
-                print( "In " + me + ": less than " + str( seconds_between_requests ) + " seconds - sleep for " + str( sleep_seconds ) + " seconds." )
+                my_logger.info( "In " + me + ": less than " + str( seconds_between_requests ) + " seconds - sleep for " + str( sleep_seconds ) + " seconds." )
     
                 # sleep.
                 time.sleep( sleep_seconds )

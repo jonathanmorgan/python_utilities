@@ -31,7 +31,7 @@ Usage:
 # python standard libraries
 import logging
 
-class Logger( object ):
+class LoggingHelper( object ):
 
     '''
     This class encapsulates code for making, storing, and interacting with the
@@ -54,7 +54,7 @@ class Logger( object ):
     # all properties are stored in dictionaries.  There is also an optional
     #    description dictionary, for use in outputting.
     m_logger = None
-    m_application_name = ""
+    m_logger_name = ""
 
 
     #============================================================================
@@ -66,7 +66,7 @@ class Logger( object ):
         
         # initialize variables
         self.m_logger = None
-        self.m_application_name = ""
+        self.m_logger_name = "python_utilities.logging.logging_helper"
 
     #-- END method __init__() --#
 
@@ -76,26 +76,26 @@ class Logger( object ):
     #============================================================================
 
 
-    def get_application_name( self ):
+    def get_logger_name( self ):
     
         # return reference
         value_OUT = None
         
-        # get m_application_name
-        value_OUT = self.m_application_name
+        # get value
+        value_OUT = self.m_logger_name
                 
         return value_OUT
     
-    #-- END method get_application_name --#
+    #-- END method get_logger_name --#
 
     
-    def get_logger( self, application_name_IN = "" ):
+    def get_logger( self, logger_name_IN = "" ):
     
         # return reference
         value_OUT = None
         
         # declare variables
-        app_name = ""
+        logger_name = ""
         logger_instance = None
         
         # get m_logger
@@ -105,24 +105,30 @@ class Logger( object ):
         if ( value_OUT is None ):
         
             # no.  Do we have an application string?
-            app_name = application_name_IN
-            if ( ( app_name is None ) or ( app_name == "" ) ):
+            if ( ( logger_name_IN is None ) or ( logger_name_IN == "" ) ):
             
                 # no - see if there is one in instance.
-                app_name = self.get_application_name()
+                logger_name = self.get_logger_name()
+            
+            else:
+            
+                # yes - use it.
+                logger_name = logger_name_IN
             
             #-- END check to see if app_name. --#
             
-            # make logger instance.
-            if ( ( app_name is None ) or ( app_name == "" ) ):
+            #print( "logger name: " + logger_name )
             
-                # no app name.
+            # make logger instance.
+            if ( ( logger_name is None ) or ( logger_name == "" ) ):
+            
+                # no logger name.
                 logger_instance = logging.getLogger()
                 
             else:
             
-                # there is an app name.
-                logger_instance = logging.getLogger( app_name )
+                # there is a logger name.
+                logger_instance = logging.getLogger( logger_name )
                 
             #-- END check to see how we make a logger. --#
             
@@ -139,6 +145,26 @@ class Logger( object ):
     #-- END method get_logger --#
 
     
+    def set_logger_name( self, value_IN ):
+        
+        '''
+        Accepts application name.  Stores it and returns it.
+        '''
+        
+        # return reference
+        value_OUT = None
+        
+        # store value.
+        self.m_logger_name = value_IN
+        
+        # return it.
+        value_OUT = self.get_logger_name()
+        
+        return value_OUT
+        
+    #-- END method set_logger_name() --#
+
+
     def set_logger( self, instance_IN ):
         
         '''
@@ -159,4 +185,4 @@ class Logger( object ):
     #-- END method set_logger() --#
 
 
-#-- END class Logger --#
+#-- END class LoggingHelper --#
