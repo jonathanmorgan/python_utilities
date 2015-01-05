@@ -244,6 +244,83 @@ Example output:
     ==> End time: 2014-12-31 14:32:41.982753
     ==> Duration: 0:00:13.761687
 
+### /network/http_helper.py
+
+The `Http_Helper` class lets you configure an HTTP request in an instance of `Http_Helper` using its built in storage for request properties and headers, then submit the request using either the urllib2 ([https://docs.python.org/2/library/urllib2.html](https://docs.python.org/2/library/urllib2.html)), mechanize ([http://wwwsearch.sourceforge.net/mechanize/](http://wwwsearch.sourceforge.net/mechanize/)), or requests ([http://docs.python-requests.org/en/latest/](http://docs.python-requests.org/en/latest/)) packages.  For a given request and package, you can either get the page itself, or just submit a URL to find its final redirected URL.
+
+Example: using requests package to submit a post request.
+
+    # create Http_Helper
+    my_http_helper = Http_Helper()
+    
+    # set http headers
+    my_http_helper.set_http_header( "Content-Type", "text/plain" )
+    
+    # request type
+    my_http_helper.request_type = Http_Helper.REQUEST_TYPE_POST
+    
+    # place body of request in a variable.
+    request_data = "My dog has fleas, figaro, figaro, figaro!"
+    
+    # make the request using requests package:
+    requests_response = my_http_helper.load_url_requests( "http://yahoo.com", request_type_IN = Http_Helper.REQUEST_TYPE_POST, data_IN = request_data )
+    
+    # get raw text response:
+    requests_raw_text = requests_response.text
+    
+    # convert to a json object:
+    requests_response_json = requests_response.json()
+    
+    # to make request using mechanize (a full-featured web browser):
+    mechanize_response = my_http_helper.load_url_mechanize( "http://yahoo.com", request_type_IN = Http_Helper.REQUEST_TYPE_POST, data_IN = request_data )
+    
+    # to make request using urllib2:
+    urllib2_response = my_http_helper.load_url_urllib2( "http://yahoo.com", request_type_IN = Http_Helper.REQUEST_TYPE_POST, data_IN = request_data )
+        
+Troubleshooting:
+
+- If you are using the requests package and have data that you want to pass to the `load_url_requests()` method in variable `data_IN` that is a unicode string, if that unicode string has any non-ascii characters, you must encode the data before passing it in, else somewhere down in a library, something detects that the data is a unicode string and tries to encode it to "ASCII", which fails if there any non-ascii characters.  If you encode to UTF-8 before passing the data in, this converts to a byte string, and all works fine.
+
+    - An example of the stack trace and exception message you'll see if you have this problem:
+
+            File "<project_home>/python_utilities/network/http_helper.py", line 638, in load_url_requests
+              response_OUT = requests.post( url_IN, headers = headers, data = data_IN )
+            File "<home_dir>/.virtualenvs/sourcenet/local/lib/python2.7/site-packages/requests/api.py", line 99, in post
+              return request('post', url, data=data, json=json, **kwargs)
+            File "<home_dir>/.virtualenvs/sourcenet/local/lib/python2.7/site-packages/requests/api.py", line 49, in request
+              response = session.request(method=method, url=url, **kwargs)
+            File "<home_dir>/.virtualenvs/sourcenet/local/lib/python2.7/site-packages/requests/sessions.py", line 461, in request
+              resp = self.send(prep, **send_kwargs)
+            File "<home_dir>/.virtualenvs/sourcenet/local/lib/python2.7/site-packages/requests/sessions.py", line 573, in send
+              r = adapter.send(request, **kwargs)
+            File "<home_dir>/.virtualenvs/sourcenet/local/lib/python2.7/site-packages/requests/adapters.py", line 370, in send
+              timeout=timeout
+            File "<home_dir>/.virtualenvs/sourcenet/local/lib/python2.7/site-packages/requests/packages/urllib3/connectionpool.py", line 518, in urlopen
+              body=body, headers=headers)
+            File "<home_dir>/.virtualenvs/sourcenet/local/lib/python2.7/site-packages/requests/packages/urllib3/connectionpool.py", line 330, in _make_request
+              conn.request(method, url, **httplib_request_kw)
+            File "/usr/lib/python2.7/httplib.py", line 1001, in request
+              self._send_request(method, url, body, headers)
+            File "/usr/lib/python2.7/httplib.py", line 1035, in _send_request
+              self.endheaders(body)
+            File "/usr/lib/python2.7/httplib.py", line 997, in endheaders
+              self._send_output(message_body)
+            File "/usr/lib/python2.7/httplib.py", line 854, in _send_output
+              self.send(message_body)
+            File "/usr/lib/python2.7/httplib.py", line 826, in send
+              self.sock.sendall(data)
+            File "/usr/lib/python2.7/socket.py", line 224, in meth
+              return getattr(self._sock,name)(*args)
+            UnicodeEncodeError: 'ascii' codec can't encode character u'\u2014' in position 98: ordinal not in range(128)
+
+    - An example of encoding using StringHelper:
+    
+            encoded_data = StringHelper.encode_string( unicode_string, StringHelper.ENCODING_UTF8 )
+            
+    - An example of encoding using codecs:
+    
+            encoded_data = 
+
 ### /network/mechanize_tools.py
 
 Usage of SmartRedirectHandler to keep track of redirect steps:
