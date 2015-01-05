@@ -69,6 +69,7 @@ import requests
 
 # python_utilites DictHelper
 from python_utilities.dictionaries.dict_helper import DictHelper
+from python_utilities.strings.string_helper import StringHelper
 
 #================================================================================
 # class Http_Helper
@@ -121,6 +122,9 @@ class Http_Helper( object ):
     
     # request_type
     request_type = None
+    
+    # default encoding
+    default_encoding = ""
 
     # debug_flag
     debug_flag = False
@@ -153,7 +157,10 @@ class Http_Helper( object ):
         self.initialize_header_dict()
         
         # request_type
-        request_type = self.REQUEST_TYPE_DEFAULT
+        self.request_type = self.REQUEST_TYPE_DEFAULT
+        
+        # encoding
+        self.default_encoding = StringHelper.ENCODING_UTF8
     
         # debug
         self.debug_flag = False
@@ -165,6 +172,69 @@ class Http_Helper( object ):
     # instance methods
     #============================================================================
     
+
+    def encode_data( self, value_IN, encoding_IN = None ):
+        
+        '''
+        accepts data to be passed with request.  If data is a unicode string,
+           encodes it to the encoding passed in.  If no encoding passed in, uses
+           the default encoding (UTF-8).
+        '''
+        
+        # return reference
+        value_OUT = ""
+        
+        # declare variables
+        is_data_unicode = False
+        
+        # see if data is a unicode object.
+        is_data_unicode = StringHelper.is_unicode( value_IN )
+        if ( is_data_unicode == True ):
+        
+            # yes, its unicode.  Encode it.  Got an encoding?
+            if ( ( encoding_IN is not None ) and ( encoding_IN != "" ) ):
+            
+                # yes - use it.
+                my_encoding = encoding_IN
+                
+            else:
+            
+                # no - get default.
+                my_encoding = self.get_default_encoding()
+                
+            #-- END check for encoding. --#
+            
+            # Encode.
+            value_OUT = StringHelper.encode_string( value_IN, my_encoding )
+        
+        else:
+        
+            # not unicode. Use as-is.
+            value_OUT = value_IN
+        
+        #-- END check to see if data is unicode object --#
+
+        return value_OUT
+        
+    #-- END method encode_data() --#
+
+    
+    def get_default_encoding( self ):
+
+        '''
+        Retrieves default encoding type.
+        '''
+        
+        # return reference
+        value_OUT = None
+
+        # get Http_Helper instance.
+        value_OUT = self.default_encoding
+        
+        return value_OUT
+
+    #-- END get_content_type() --#
+
 
     def get_http_header( self, name_IN, default_IN = None, *args, **kwargs ):
         
@@ -595,7 +665,7 @@ class Http_Helper( object ):
     #-- END methot load_url_mechanize --#
     
     
-    def load_url_requests( self, url_IN, request_type_IN = "", data_IN = None, *args, **kwargs ):
+    def load_url_requests( self, url_IN, request_type_IN = "", data_IN = None, encoding_IN = None, *args, **kwargs ):
     
         '''
         Accepts a URL.  Tries to load that page using the "requests" HTTP
@@ -608,6 +678,10 @@ class Http_Helper( object ):
     
         # declare variables.
         my_request_type = ""
+        headers = None
+        is_data_unicode = False
+        my_encoding = ""
+        request_data = ""
         opener = None
         open_result = None
         
@@ -626,16 +700,19 @@ class Http_Helper( object ):
             # get header dict
             headers = self.get_http_header_dict()
             
+            # see if data is a unicode object.  If so, encode it.
+            request_data = self.encode_data( data_IN, encoding_IN )
+            
             # what type of request?
             if ( my_request_type == self.REQUEST_TYPE_GET ):
             
                 # get.
-                response_OUT = requests.get( url_IN, headers = headers, params = data_IN )
+                response_OUT = requests.get( url_IN, headers = headers, params = request_data )
             
             elif ( my_request_type == self.REQUEST_TYPE_POST ):
 
                 # post.
-                response_OUT = requests.post( url_IN, headers = headers, data = data_IN )
+                response_OUT = requests.post( url_IN, headers = headers, data = request_data )
             
             else:
             
@@ -656,6 +733,22 @@ class Http_Helper( object ):
     #-- END methot load_url_requests --#
     
     
+    def set_default_encoding( self, value_IN ):
+        
+        # return reference
+        value_OUT = ""
+        
+        # set value
+        self.default_encoding = value_IN
+        
+        # return instance
+        value_OUT = self.get_default_encoding()
+        
+        return value_OUT
+        
+    #-- END method set_default_encoding() --#
+    
+
     def set_http_header( self, name_IN, value_IN = None, *args, **kwargs ):
 
         '''
