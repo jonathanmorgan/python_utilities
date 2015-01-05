@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 '''
 OpenAnything: a kind and thoughtful library for HTTP web services
 

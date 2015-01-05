@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 '''
 Copyright 2012, 2013 Jonathan Morgan
 
