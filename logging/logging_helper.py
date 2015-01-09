@@ -58,6 +58,37 @@ class LoggingHelper( object ):
 
 
     #============================================================================
+    # Class methods
+    #============================================================================
+
+
+    @classmethod
+    def get_a_logger( cls, logger_name_IN = "" ):
+    
+        # return reference
+        value_OUT = None
+        
+        # declare variables
+
+        # make logger instance.
+        if ( ( logger_name_IN is None ) or ( logger_name_IN == "" ) ):
+        
+            # no logger name.
+            value_OUT = logging.getLogger()
+            
+        else:
+        
+            # there is a logger name.
+            value_OUT = logging.getLogger( logger_name_IN )
+            
+        #-- END check to see how we make a logger. --#
+        
+        return value_OUT
+    
+    #-- END class method get_a_logger() --#    
+
+
+    #============================================================================
     # Built-in Instance methods
     #============================================================================
 
@@ -120,17 +151,7 @@ class LoggingHelper( object ):
             #print( "logger name: " + logger_name )
             
             # make logger instance.
-            if ( ( logger_name is None ) or ( logger_name == "" ) ):
-            
-                # no logger name.
-                logger_instance = logging.getLogger()
-                
-            else:
-            
-                # there is a logger name.
-                logger_instance = logging.getLogger( logger_name )
-                
-            #-- END check to see how we make a logger. --#
+            logger_instance = LoggingHelper.get_a_logger( logger_name )
             
             # store the logger.
             self.set_logger( logger_instance )
