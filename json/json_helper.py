@@ -61,6 +61,36 @@ class JSONHelper( object ):
 
 
     @staticmethod
+    def get_json_object_property( json_object_IN, name_IN, default_IN = None ):
+
+        '''
+        Accepts name of a JSON property that you expect to be contained in the 
+           JSON object passed in.  Returns property that corresponds to name. If
+           not found, returns default value (which defaults to None).
+        '''
+        
+        # return reference
+        value_OUT = None
+        
+        # check if name is present.
+        if name_IN in json_object_IN:
+        
+            # yes - return the JSON that is mapped to that name.
+            value_OUT = json_object_IN[ name_IN ]
+        
+        else:
+        
+            # return default.
+            value_OUT = default_IN
+        
+        #-- END check to see if name in root --#
+        
+        return value_OUT
+
+    #-- END get_json_object_property() --#
+
+
+    @staticmethod
     def pretty_print_json( json_IN ):
     
         '''
