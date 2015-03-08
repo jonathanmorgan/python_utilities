@@ -38,6 +38,8 @@ Python 2 Utility classes.  Includes the following files:
     - __/parameters/param\_container.py__ - `ParamContainer` class contains logic for defining, loading, accessing, and outputting parameters stored in a dictionary.
 - __/rate\_limited/__
     - __/rate\_limited/basic\_rate\_limited.py__ - `BasicRateLimited` is a non-parallel parent class that contains variables and code for rate-limiting.  Details on extending TK below, in Usage Section.
+- __/sequences/__
+    - __/sequences/sequence\_helper.py__ - `SequenceHelper` class for methods to help with working with Sequences (Lists, etc.).  Only method there now is KnuthMorrisPratt(), used to find index in list of places where another list is reproduced in its entirety (looking for subsequences within sequences).
 - __/strings/__
     - __/strings/html\_helper.py__ - `HTMLHelper` class to help with parsing and dealing with HTML strings.  Right now, has one static method, `remove_html()`, that removes HTML from a string, allowing for a list of HTML elements you want left in, and within those elements, a list of attributes you want left in.  If something is not in one of those lists, it will be removed.
     - __/strings/string\_helper.py__ - `StringHelper` class with methods to help with unicode encoding, stripping HTML from strings.
