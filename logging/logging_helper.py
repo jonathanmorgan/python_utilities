@@ -47,14 +47,16 @@ class LoggingHelper( object ):
 
 
     #============================================================================
-    # Instance variables
+    # NOT Instance variables
+    # Class variables - overriden by __init__() per instance if same names, but
+    #    if not set there, shared!
     #============================================================================
 
 
     # all properties are stored in dictionaries.  There is also an optional
     #    description dictionary, for use in outputting.
-    m_logger = None
-    m_logger_name = ""
+    #m_logger = None
+    #m_logger_name = ""
 
 
     #============================================================================
