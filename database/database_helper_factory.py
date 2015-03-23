@@ -102,6 +102,7 @@ class Database_Helper_Factory( object ):
     # database types
     DATABASE_TYPE_MYSQLDB = "MySQLdb"
     DATABASE_TYPE_PSYCOPG2 = "psycopg2"
+    DATABASE_TYPE_PYMYSQL = "PyMySQL"
     
     # defaults
     DEFAULT_HOST = "localhost"
@@ -143,6 +144,12 @@ class Database_Helper_Factory( object ):
             # return PostgreSQL psycopg2 helper.
             from python_utilities.database.psycopg2_helper import psycopg2_Helper
             helper_OUT = psycopg2_Helper( db_host_IN, db_port_IN, db_username_IN, db_password_IN, db_database_IN )
+            
+        elif ( database_type_IN == cls.DATABASE_TYPE_PYMYSQL ):            
+        
+            # return MySQL PyMySQL helper.
+            from python_utilities.database.pymysql_helper import PyMySQL_Helper
+            helper_OUT = PyMySQL_Helper( db_host_IN, db_port_IN, db_username_IN, db_password_IN, db_database_IN )
             
         else:
         
