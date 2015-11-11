@@ -20,16 +20,31 @@ along with http://github.com/jonathanmorgan/python_utilities.  If not, see
 
 '''
 This class encapsulates code for sending emails in python.  It ain't that hard,
-   but I only want to have to write it once.
+   but I only want to have to write it once with all the error checking, etc.
+   I want.
 
 Example of what this class does under the hood:
->>> msg = MIMEText( message_IN )
->>> msg['Subject'] = 'Test message'
->>> msg['From'] = 'morga125@msu.edu'
->>> msg['To'] = 'jonathan.morgan.007@gmail.com'
->>> s = smtplib.SMTP('localhost')
->>> s.sendmail( 'morga125@msu.edu', 'jonathan.morgan.007@gmail.com', msg.as_string() )
->>> s.quit()
+
+    # make message
+    email_message = MIMEText( message_IN )
+    email_message[ 'Subject' ] = 'Test message'
+    email_message[ 'From' ] = 'morga125@msu.edu'
+    email_message[ 'To' ] = 'jonathan.morgan.007@gmail.com'
+    
+    # Make Non-SSL connection to SMTP server
+    #my_smtp_server = smtplib.SMTP('localhost')
+    
+    # OR SSL connection to SMTP server
+    my_smtp_server = smtplib.SMTP_SSL( 'localhost', 465 )
+    
+    # log in to SMTP server.
+    my_smtp_server.login( my_smtp_username, my_smtp_password )
+    
+    # Send mail
+    my_smtp_server.sendmail( 'morga125@msu.edu', 'jonathan.morgan.007@gmail.com', email_message.as_string() )
+    
+    # close connection.
+    my_smtp_server.quit()
 
 Usage Example:
 
