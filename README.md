@@ -13,6 +13,7 @@ Python 2 Utility classes.  Includes the following files:
     - __/database/database\_helper.py__ - `Database_Helper` abstract class encapsulates basic logic for dealing with creating connections and cursors using a Python DB API library.  Not fancy.  Opens, creates cursors and keeps track of all cursors it creates, and closes all related cursors and connection when you call close().  Nothing more.
     - __/database/psycopg2\_helper.py__ - `psycopg2_Helper` class encapsulates basic logic for dealing with creating connections and cursors using the psycopg2 library.  Not fancy.  Opens and closes, nothing more.
     - __/database/MySQLdb\_helper.py__ - `MySQLdb_Helper` class encapsulates basic logic for dealing with creating connections and cursors using the MySQLdb library.  Not fancy.  Opens and closes, nothing more.
+    - __/database/PyMySQL\_helper.py__ - `PyMySQL_Helper` class encapsulates basic logic for dealing with creating connections and cursors using the PyMySQL library.  Not fancy.  Opens and closes, nothing more.
 - __/dictionaries/__
     - __/dictionaries/dict\_helper.py__ - `DictHelper` class contains a function to retrieve a dict values as strings, integers, and lists that also accept a default, so you can convert to types and define default yourself when you look things up in a dict.
 - __/django\_utils/__
@@ -38,6 +39,8 @@ Python 2 Utility classes.  Includes the following files:
     - __/parameters/param\_container.py__ - `ParamContainer` class contains logic for defining, loading, accessing, and outputting parameters stored in a dictionary.
 - __/rate\_limited/__
     - __/rate\_limited/basic\_rate\_limited.py__ - `BasicRateLimited` is a non-parallel parent class that contains variables and code for rate-limiting.  Details on extending TK below, in Usage Section.
+- __/sequences/__
+    - __/sequences/sequence\_helper.py__ - `SequenceHelper` class for methods to help with working with Sequences (Lists, etc.).  Only method there now is KnuthMorrisPratt(), used to find index in list of places where another list is reproduced in its entirety (looking for subsequences within sequences).
 - __/strings/__
     - __/strings/html\_helper.py__ - `HTMLHelper` class to help with parsing and dealing with HTML strings.  Right now, has one static method, `remove_html()`, that removes HTML from a string, allowing for a list of HTML elements you want left in, and within those elements, a list of attributes you want left in.  If something is not in one of those lists, it will be removed.
     - __/strings/string\_helper.py__ - `StringHelper` class with methods to help with unicode encoding, stripping HTML from strings.
@@ -88,6 +91,12 @@ Before you can connect to Postgresql with this code, you need to do the followin
 - install the PostgreSQL client if it isn't already installed.  On linux, you'll also need to install a few dev packages (python-dev, libpq-dev) ( [source](http://initd.org/psycopg/install/) ).
 
 - install the psycopg2 python package.  Install using pip (`sudo pip install psycopg2`).
+
+### /database/PyMySQL\_helper.py
+
+Before you can connect to MySQL with this code, you need to do the following:
+
+- install the PyMySQL python package.  To install, use pip (`sudo pip install PyMySQL`) or conda if you are using anaconda (`conda install pymysql`).
 
 ### /network/*
 
