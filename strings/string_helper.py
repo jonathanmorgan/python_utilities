@@ -1,4 +1,4 @@
-# start to support Python 3:
+# a start to support Python 3:
 from __future__ import unicode_literals
 
 '''
@@ -287,8 +287,14 @@ class StringHelper( object ):
            
         Parameters:
         - string_IN - string we want to clean.
-        - char_list_IN - list of lists that contain two strings, the first the string you want replaced, and the second the string you want to replace with.  If nothing specified, defaults to replacing tabs and newlines.
-        - re_list_IN - list of lists that contain two strings, the first the regular expression you are looking to match, the second the string you want to replace matches with.  If nothing specified, defaults to replacing two or more contiguous spaces with one space.
+        - char_list_IN - list of lists that contain two strings, the first the
+            string you want replaced, and the second the string you want to
+            replace with.  If nothing specified, defaults to replacing tabs and
+            newlines.
+        - re_list_IN - list of lists that contain two strings, the first the
+            regular expression you are looking to match, the second the string
+            you want to replace matches with.  If nothing specified, defaults to
+            replacing two or more contiguous spaces with one space.
         '''
         
         # return reference
@@ -467,10 +473,15 @@ class StringHelper( object ):
            
         Parameters:
         - string_IN - string we want encoded in the output encoding specified.
-        - output_encoding_IN - encoding we want this string to be in.  Defaults to ascii.
+        - output_encoding_IN - encoding we want this string to be in.  Defaults
+            to ascii.
         - input_encoding_IN - optional encoding in which our string is encoded.
-        - encod_error_IN - what we want to do on encoding errors, when converting to safe string (default is "xmlcharrefreplace", which converts those characters to entities).
-        - entitize_4_byte_unicode_IN - Boolean, if True, after encoding, converts all 4-byte unicode characters to entities (for mysql that can't handle 4-byte unicode).  If false, doesn't.
+        - encode_error_IN - what we want to do on encoding errors, when
+            converting to safe string (default is "xmlcharrefreplace", which
+            converts those characters to entities).
+        - entitize_4_byte_unicode_IN - Boolean, if True, after encoding,
+            converts all 4-byte unicode characters to entities (for mysql that
+            can't handle 4-byte unicode).  If false, doesn't.
         '''
         
         # return reference
@@ -765,7 +776,12 @@ class StringHelper( object ):
 
 
     @classmethod
-    def replace_non_ascii_characters( cls, string_IN, default_replacement_IN = None, replacement_map_IN = {}, *args, **kwargs ):
+    def replace_non_ascii_characters( cls,
+                                      string_IN,
+                                      default_replacement_IN = None,
+                                      replacement_map_IN = {},
+                                      *args,
+                                      **kwargs ):
         
         """
         Accepts a unicode string, a blanket replacement string, and a map of
@@ -872,7 +888,9 @@ class StringHelper( object ):
            
         Parameters:
         - string_IN - string we want to replace white space within.
-        - replace_with_IN - what we want to replace white space with.  Defaults to single space (all white space blocks of one or more characters are collapsed to a single space).
+        - replace_with_IN - what we want to replace white space with.  Defaults
+            to single space (all white space blocks of one or more characters
+            are collapsed to a single space).
         """
     
         # return reference
