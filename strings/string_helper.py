@@ -1,4 +1,4 @@
-# start to support python 3:
+# start to support Python 3:
 from __future__ import unicode_literals
 
 '''
