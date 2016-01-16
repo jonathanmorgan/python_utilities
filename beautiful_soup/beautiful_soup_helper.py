@@ -49,6 +49,9 @@ class BeautifulSoupHelper( object ):
     BS_ELEMENT_NAME_COMMENT = BS_CLASS_COMMENT
     BS_ELEMENT_NAME_TEXT = BS_CLASS_NAVIGABLE_STRING
 
+    # HTML parsers
+    BS_PARSER_HTML5LIB = "html5lib"
+
 
     #============================================================================
     # Instance methods

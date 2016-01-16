@@ -65,6 +65,8 @@ import htmlentitydefs
 from HTMLParser import HTMLParser
 import re
 import six # help with supporting both python 2 and 3.
+import sys
+import unicodedata
 
 # Beautiful Soup
 #from bs4 import UnicodeDammit
@@ -161,6 +163,9 @@ class StringHelper( object ):
     DEFAULT_CHAR_SUB_LIST = [ [ "\n", "" ], [ "\t", "" ] ]
     DEFAULT_RE_SUB_LIST =  [ [ "\s\s+", " " ] ]
     
+    # clearing out punctuation
+    UNICODE_PUNCTUATION_TABLE = None
+
     # DEBUG
     DEBUG_FLAG = False
 
@@ -653,6 +658,58 @@ class StringHelper( object ):
 
 
     @classmethod
+    def get_unicode_punctuation_table( cls ):
+
+        '''
+        based on: http://stackoverflow.com/questions/11066400/remove-punctuation-from-unicode-formatted-strings/11066687#11066687
+        '''
+
+        # return reference
+        table_OUT = None
+
+        # declare variables
+        unicode_point = None
+        unicode_character = None
+        unicode_category = ""
+
+        # see if table is already made.
+        table_OUT = cls.UNICODE_PUNCTUATION_TABLE
+
+        if ( table_OUT is None ):
+
+            # not populated yet.  Build table, store it in class variable.
+            #table_OUT = dict.fromkeys(i for i in xrange(sys.maxunicode) if unicodedata.category(unichr(i)).startswith('P'))
+            table_OUT = {}
+
+            # loop over all unicode points to the system's max unicode value.
+            for unicode_point in xrange( sys.maxunicode ):
+
+                # convert to unicode character
+                unicode_character = unichr( unicode_point )
+                
+                # get unicode category for current character.
+                unicode_category = unicodedata.category( unicode_character )
+
+                # see if punctuation starts with "P"
+                if ( unicode_category.startswith( "P" ) == True ):
+
+                    # Add punctuation character to dictionary, translated to None.
+                    table_OUT[ unicode_point ] = None
+
+                #-- END check to see if category starts with "P" --#
+
+            #-- END loop over Unicode points supported on system --#
+
+            # store it off.
+            cls.UNICODE_PUNCTUATION_TABLE = table_OUT
+
+        #-- END check to see if table already populated. --#
+
+        return table_OUT
+
+    #-- END class method get_unicode_punctuation_table()
+
+    @classmethod
     def has_non_ascii_characters( cls, string_IN, *args, **kwargs ):
         
         """
@@ -773,6 +830,34 @@ class StringHelper( object ):
         return map_OUT
     
     #-- END map_non_ascii_characters() function --#
+
+
+    @classmethod
+    def remove_punctuation( cls, string_IN, *args, **kwargs ):
+
+        '''
+        based on: http://stackoverflow.com/questions/11066400/remove-punctuation-from-unicode-formatted-strings/11066687#11066687
+        '''
+
+        # return reference
+        string_OUT = ""
+
+        # declare variables
+        unicode_string = None
+        translate_table = None
+
+        # convert string to unicode
+        unicode_string = cls.convert_to_unicode( string_IN )
+
+        # get unicode punctuation translate table
+        translate_table = cls.get_unicode_punctuation_table()
+
+        # convert using translate()    
+        string_OUT = unicode_string.translate( translate_table )
+
+        return string_OUT
+
+    #-- END class method remove_punctuation() --#
 
 
     @classmethod

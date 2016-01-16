@@ -61,6 +61,39 @@ class JSONHelper( object ):
 
 
     @staticmethod
+    def escape_json_value( json_value_IN ):
+
+        '''
+        Accepts a JSON value, adds a back slash in front of all quotation marks
+           within the value.  Returns the escaped string.  Will add more things
+           as I find them.
+        '''
+        
+        # return reference
+        value_OUT = None
+        
+        # got a value?
+        if ( ( json_value_IN is not None ) and ( json_value_IN != "" ) ):
+        
+            # yes
+            value_OUT = json_value_IN
+
+            # precede all quotation marks with a backslash ( "\" )
+            value_OUT = value_OUT.replace( "\"", "\\\"" )
+        
+        else:
+        
+            # no return empty string.
+            value_OUT = ""
+        
+        #-- END check to see if value passed in. --#
+        
+        return value_OUT
+
+    #-- END escape_json_value() --#
+
+
+    @staticmethod
     def get_json_object_property( json_object_IN, name_IN, default_IN = None ):
 
         '''
