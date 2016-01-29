@@ -90,6 +90,62 @@ class LoggingHelper( object ):
     #-- END class method get_a_logger() --#    
 
 
+    @classmethod
+    def output_debug( cls, message_IN, method_IN = "", indent_with_IN = "", logger_name_IN = "" ):
+        
+        '''
+        Accepts message string.  If debug is on, logs it.  If not,
+           does nothing for now.
+        '''
+        
+        # declare variables
+        my_message = ""
+        my_logger = None
+        my_logger_name = ""
+    
+        # got a message?
+        if ( message_IN ):
+        
+            my_message = message_IN
+        
+            # got a method?
+            if ( method_IN ):
+            
+                # We do - append to front of message.
+                my_message = "In " + method_IN + ": " + my_message
+                
+            #-- END check to see if method passed in --#
+            
+            # indent?
+            if ( indent_with_IN ):
+                
+                my_message = indent_with_IN + my_message
+                
+            #-- END check to see if we indent. --#
+        
+            # debug is on.  Start logging rather than using print().
+            #print( my_message )
+            
+            # got a logger name?
+            my_logger_name = "sourcenet.tests"
+            if ( ( logger_name_IN is not None ) and ( logger_name_IN != "" ) ):
+            
+                # use logger name passed in.
+                my_logger_name = logger_name_IN
+                
+            #-- END check to see if logger name --#
+                
+            # get logger
+            my_logger = cls.get_a_logger( my_logger_name )
+            
+            # log debug.
+            my_logger.debug( my_message )
+        
+        #-- END check to see if message. --#
+    
+    #-- END method output_debug() --#
+    
+    
     #============================================================================
     # Built-in Instance methods
     #============================================================================
