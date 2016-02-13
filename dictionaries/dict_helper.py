@@ -151,8 +151,8 @@ class DictHelper( object ):
         list_OUT = []
         
         # declare variables
+        me = "get_dict_value_as_list"
         list_param_value = ""
-        param_type = ""
         working_list = []
         current_value = ""
         current_value_clean = ""
@@ -163,16 +163,13 @@ class DictHelper( object ):
         # get raw value
         list_param_value = cls.get_dict_value( dict_IN, name_IN, None )
         
-        # get type string
-        param_type = type( list_param_value )
-        
         # check if list
-        if param_type == list:
+        if ( isinstance( list_param_value, list ) == True ):
         
             # already a list - return it.
             list_OUT = list_param_value
             
-        if ( ( param_type == str ) and ( list_param_value == "" ) ):
+        elif ( ( isinstance( list_param_value, str ) == True ) and ( list_param_value == "" ) ):
         
             # empty string - return empty list
             list_OUT = []
