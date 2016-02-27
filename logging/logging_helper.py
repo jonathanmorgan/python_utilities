@@ -46,6 +46,9 @@ class LoggingHelper( object ):
     #============================================================================
 
 
+    LOGGER_NAME = "python_utilities.logging.logging_helper"
+
+
     #============================================================================
     # NOT Instance variables
     # Class variables - overriden by __init__() per instance if same names, but
@@ -127,7 +130,7 @@ class LoggingHelper( object ):
             #print( my_message )
             
             # got a logger name?
-            my_logger_name = "sourcenet.tests"
+            my_logger_name = cls.LOGGER_NAME
             if ( ( logger_name_IN is not None ) and ( logger_name_IN != "" ) ):
             
                 # use logger name passed in.
@@ -155,7 +158,7 @@ class LoggingHelper( object ):
         
         # initialize variables
         self.m_logger = None
-        self.m_logger_name = "python_utilities.logging.logging_helper"
+        self.m_logger_name = self.LOGGER_NAME
 
     #-- END method __init__() --#
 
