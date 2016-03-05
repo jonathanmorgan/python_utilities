@@ -159,6 +159,7 @@ class LoggingHelper( object ):
         # initialize variables
         self.m_logger = None
         self.m_logger_name = self.LOGGER_NAME
+        self.logger_debug_flag = False
 
     #-- END method __init__() --#
 
@@ -227,6 +228,70 @@ class LoggingHelper( object ):
     #-- END method get_logger --#
 
     
+    def output_debug_message( self, message_IN, method_IN = "", indent_with_IN = "", logger_name_IN = "" ):
+        
+        '''
+        Accepts message string.  If debug is on, logs it.  If not,
+           does nothing for now.
+        '''
+        
+        # declare variables
+        my_message = ""
+        my_logger = None
+        my_logger_name = ""
+    
+        # got a message?
+        if ( message_IN ):
+        
+            # only print if debug is on.
+            if ( self.logger_debug_flag == True ):
+            
+                my_message = message_IN
+            
+                # got a method?
+                if ( method_IN ):
+                
+                    # We do - append to front of message.
+                    my_message = "In " + method_IN + ": " + my_message
+                    
+                #-- END check to see if method passed in --#
+                
+                # indent?
+                if ( indent_with_IN ):
+                    
+                    my_message = indent_with_IN + my_message
+                    
+                #-- END check to see if we indent. --#
+            
+                # debug is on.  Start logging rather than using print().
+                #print( my_message )
+                
+                # got a logger name?
+                if ( ( logger_name_IN is not None ) and ( logger_name_IN != "" ) ):
+                
+                    # use logger name passed in.
+                    my_logger_name = logger_name_IN
+                    
+                    # get logger
+                    my_logger = LoggingHelper.get_a_logger( my_logger_name )
+                    
+                else:
+                
+                    # no custom logger name - get nested logger.
+                    my_logger = self.get_logger()
+                
+                #-- END check to see if logger name --#
+                    
+                # log debug.
+                my_logger.debug( my_message )
+            
+            #-- END check to see if debug is on --#
+        
+        #-- END check to see if message. --#
+    
+    #-- END method output_debug() --#
+
+
     def set_logger_name( self, value_IN ):
         
         '''
