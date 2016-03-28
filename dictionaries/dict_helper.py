@@ -28,6 +28,9 @@ along with http://github.com/jonathanmorgan/python_utilities.  If not, see
 
 import six # help with supporting both python 2 and 3.
 
+# python_utilities.lists.list_helper - ListHelper
+from python_utilities.lists.list_helper import ListHelper
+
 
 #================================================================================
 # class definitions
@@ -169,7 +172,7 @@ class DictHelper( object ):
             # already a list - return it.
             list_OUT = list_param_value
             
-        elif ( ( isinstance( list_param_value, str ) == True ) and ( list_param_value == "" ) ):
+        elif ( ( isinstance( list_param_value, six.string_types ) == True ) and ( list_param_value == "" ) ):
         
             # empty string - return empty list
             list_OUT = []
@@ -186,18 +189,8 @@ class DictHelper( object ):
             # got a value?
             if ( ( list_param_value != "" ) and ( list_param_value != missing_string ) ):
             
-                # yes - split on delimiter into a list
-                working_list = list_param_value.split( delimiter_IN )
-                
-                # loop over the IDs, strip()-ing each then appending it to list_OUT.
-                list_OUT = []
-                for current_value in working_list:
-             
-                    # strip
-                    current_value_clean = current_value.strip()
-                    list_OUT.append( current_value_clean )
-        
-                #-- END loop over unique IDs passed in --#
+                # yes - use ListHelper to convert to list.
+                list_OUT = ListHelper.get_value_as_list( list_param_value, delimiter_IN )
             
             elif list_param_value == "":
             
