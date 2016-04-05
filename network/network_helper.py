@@ -57,7 +57,12 @@ Example:
 
 # python libraries
 import re
-import urlparse
+
+# six for python 2 and 3 support
+import six
+
+# import urlparse
+from six.moves.urllib.parse import urlparse
 
 #================================================================================
 # class Http_Helper
@@ -313,7 +318,7 @@ class Network_Helper( object ):
             if ( use_last_parse_result_IN == False ):
             
                 # don't use last parse result - parse anew.
-                parse_result = urlparse.urlparse( URL_IN )
+                parse_result = urlparse( URL_IN )
                 
                 # store the result
                 self.latest_parse_result = parse_result

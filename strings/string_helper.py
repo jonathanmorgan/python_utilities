@@ -61,18 +61,29 @@ if ( has_non_ascii == True ):
 
 # base python modules
 import codecs
-import htmlentitydefs
-from HTMLParser import HTMLParser
 import re
 import six # help with supporting both python 2 and 3.
 import sys
 import unicodedata
 
+#=============
+# six imports
+#=============
+
+#import htmlentitydefs
+from six.moves import html_entities
+
+#from HTMLParser import HTMLParser
+from six.moves.html_parser import HTMLParser
+
+# xrange() function
+from six.moves import range
+
 # Beautiful Soup
 #from bs4 import UnicodeDammit
 
 # define MLStripper class (from: http://stackoverflow.com/questions/753052/strip-html-from-strings-in-python )
-class MLStripper(HTMLParser):
+class MLStripper( HTMLParser ):
     def __init__(self):
         self.reset()
         self.fed = []
@@ -102,11 +113,11 @@ class HTMLTextExtractor( HTMLParser ):
 
     def handle_charref(self, number):
         codepoint = int(number[1:], 16) if number[0] in (u'x', u'X') else int(number)
-        self.result.append(unichr(codepoint))
+        self.result.append( six.unichr( codepoint ) )
 
     def handle_entityref(self, name):
-        codepoint = htmlentitydefs.name2codepoint[name]
-        self.result.append(unichr(codepoint))
+        codepoint = html_entities.name2codepoint[ name ]
+        self.result.append( six.unichr( codepoint ) )
 
     def get_text(self):
         return u''.join(self.result)
@@ -251,10 +262,10 @@ class StringHelper( object ):
     
         for char in string_IN:
 
-            if ord( char ) in htmlentitydefs.codepoint2name:
+            if ord( char ) in html_entities.codepoint2name:
 
-                name = htmlentitydefs.codepoint2name.get( ord( char ) )
-                entity = htmlentitydefs.name2codepoint.get( name )
+                name = html_entities.codepoint2name.get( ord( char ) )
+                entity = html_entities.name2codepoint.get( name )
                 string_OUT += "&#" + str(entity) + ";"
     
             else:
@@ -678,14 +689,14 @@ class StringHelper( object ):
         if ( table_OUT is None ):
 
             # not populated yet.  Build table, store it in class variable.
-            #table_OUT = dict.fromkeys(i for i in xrange(sys.maxunicode) if unicodedata.category(unichr(i)).startswith('P'))
+            #table_OUT = dict.fromkeys(i for i in range(sys.maxunicode) if unicodedata.category( six.unichr( i ) ).startswith('P'))
             table_OUT = {}
 
             # loop over all unicode points to the system's max unicode value.
-            for unicode_point in xrange( sys.maxunicode ):
+            for unicode_point in range( sys.maxunicode ):
 
                 # convert to unicode character
-                unicode_character = unichr( unicode_point )
+                unicode_character = six.unichr( unicode_point )
                 
                 # get unicode category for current character.
                 unicode_category = unicodedata.category( unicode_character )
@@ -830,6 +841,53 @@ class StringHelper( object ):
         return map_OUT
     
     #-- END map_non_ascii_characters() function --#
+
+
+    @classmethod
+    def object_to_unicode_string( cls, object_IN, encoding_IN = None, *args, **kwargs ):
+
+        '''
+        Accepts object instance, converts to string based on which python
+            version we are using.
+        '''
+
+        # return reference
+        string_OUT = ""
+
+        # declare variables
+
+        # convert object to string - different in python 2 and 3.
+        if ( six.PY2 == True ):
+        
+            # Python 2 - use unicode in case of special characters.
+            # got an encoding?
+            if ( ( encoding_IN is not None ) and ( encoding_IN != "" ) ):
+            
+                # yes, use it.
+                string_OUT = unicode( object_IN, encoding_IN )
+                
+            else:
+            
+                # no, just call unicode()
+                string_OUT = unicode( object_IN )
+                
+            #-- END check to see if encoding passed in. --#
+            
+        elif ( six.PY3 == True ):
+        
+            # Python 3 - use str()
+            string_OUT = str( object_IN )
+            
+        else:
+        
+            # neither python 2 or 3...  call str()?
+            string_OUT = str( object_IN )
+            
+        #-- END check to see what version of Python we are running. --#
+
+        return string_OUT
+
+    #-- END class method object_to_unicode_string() --#
 
 
     @classmethod

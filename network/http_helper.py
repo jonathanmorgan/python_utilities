@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
 '''
-Copyright 2012, 2013 Jonathan Morgan
+Copyright 2012-present (currently 2016) Jonathan Morgan
 
 This file is part of http://github.com/jonathanmorgan/python_utilities.
 
@@ -52,19 +52,24 @@ requests_response = my_http_helper.load_url_requests( calais_REST_API_URL, data_
 
 #!/usr/bin/python
 
-#================================================================================
+#===============================================================================
 # imports
-#================================================================================
+#===============================================================================
 
-# python libraries
-import urllib2
+# six
+import six
 
-# mechanize
-import mechanize
+#=============
+# six imports
+#=============
+
+# import urllib2
+from six.moves import urllib
+from six.moves.urllib.request import Request
+from six.moves.urllib.request import build_opener
 
 # python_utilites.network
-import mechanize_tools
-import openanything
+from python_utilities.network import openanything
 
 # import requests
 import requests
@@ -316,7 +321,7 @@ class Http_Helper( object ):
     def get_redirect_url( self, url_IN, *args, **kwargs ):
     
         '''
-        method defaults to calling mechanize methods, not urllib2.  If this
+        method defaults to calling urllib2 methods.  If this
            becomes a problem, could do fancy things here to choose which is
            called.
         '''
@@ -325,7 +330,7 @@ class Http_Helper( object ):
         url_OUT = ""
         
         # call method implementation.
-        url_OUT = self.get_redirect_url_mechanize( url_IN, args, kwargs )
+        url_OUT = self.get_redirect_url_urllib2( url_IN, args, kwargs )
         
         return url_OUT
         
@@ -394,57 +399,18 @@ class Http_Helper( object ):
     def get_redirect_url_mechanize( self, url_IN, *args, **kwargs ):
     
         '''
-        Accepts a URL.  Tries to load that page.  If page loads, checks to see if
-           redirect. If yes, returns URL to which we were redirected and stores
-           the list of redirect codes in self.redirect_status_list.  If no,
-           returns None.  If there is an error loading the page, will throw an
-           exception.  Return of None DOES NOT imply error in this case.
+        Removing mechanize, keeping this method around for backward
+            compatibility, but it just calls get_redirect_url_urllib2().
         '''
     
         # return reference
-        url_OUT = None
-    
-        # declare variables.
-        request = None
-        opener = None
-        open_result = None
+        url_OUT = ""
         
-        # got a url?
-        if ( ( url_IN ) and ( url_IN != None ) and ( url_IN != "" ) ):
-
-            # load URL
-            open_result = self.load_url_mechanize( url_IN, args, kwargs )
-            
-            # if redirected, there will be a status_list attribute
-            if ( hasattr( open_result, "status_list" ) == True ):
-            
-                # redirected - list of statuses from redirects will be in
-                #    open_result.status_list - store it.
-                self.redirect_status_list = open_result.status_list
-                
-                # redirected - list of urls of redirects will be in
-                #    open_result.url_list - store it.
-                self.redirect_url_list = open_result.url_list
-                
-                # return URL from result
-                url_OUT = open_result.geturl()
-                
-            else:
-            
-                # no redirect.  Return None.
-                url_OUT = None
-            
-            #-- END check to see if redirect --#
-            
-        else:
+        # call method implementation.
+        url_OUT = self.get_redirect_url_urllib2( url_IN, args, kwargs )
         
-            # No URL passed in, return None.
-            url_OUT = None
-        
-        #-- END check to see of URL string passed in. --#            
-                
         return url_OUT
-    
+        
     #-- END methot get_redirect_url_mechanize --#    
 
 
@@ -565,7 +531,7 @@ class Http_Helper( object ):
     def load_url( self, url_IN, *args, **kwargs ):
     
         '''
-        method defaults to calling mechanize methods, not urllib2.  If this
+        method defaults to calling urllib2 methods.  If this
            becomes a problem, could do fancy things here to choose which is
            called.
         '''
@@ -574,7 +540,7 @@ class Http_Helper( object ):
         response_OUT = ""
         
         # call method implementation.
-        response_OUT = self.load_url_mechanize( url_IN, args, kwargs )
+        response_OUT = self.load_url_urllib2( url_IN, args, kwargs )
         
         return response_OUT
         
@@ -605,10 +571,10 @@ class Http_Helper( object ):
             headers = self.get_http_header_dict()
 
             # create request for a URL (must include a protocol - http://, etc.).
-            request = urllib2.Request( url_IN, post_data_IN, headers )
+            request = Request( url_IN, post_data_IN, headers )
         
             # make an opener, passing it an instance of our SmartRedirectHandler()
-            opener = urllib2.build_opener( openanything.SmartRedirectHandler() )
+            opener = build_opener( openanything.SmartRedirectHandler() )
             
             # open the URL
             response_OUT = opener.open(request)
@@ -628,42 +594,18 @@ class Http_Helper( object ):
     def load_url_mechanize( self, url_IN, post_data_IN = None, *args, **kwargs ):
     
         '''
-        Accepts a URL.  Tries to load that page using the mechanize package.  If
-           page loads, returns response.  If not, returns None.
+        Removing mechanize, keeping this method around for backward
+            compatibility, but it just calls load_url_urllib2().
         '''
     
         # return reference
-        response_OUT = None
-    
-        # declare variables.
-        request = None
-        opener = None
-        open_result = None
+        response_OUT = ""
         
-        # got a url?
-        if ( ( url_IN ) and ( url_IN != None ) and ( url_IN != "" ) ):
-
-            # get header dict
-            headers = self.get_http_header_dict()
-
-            # create request for a URL (must include a protocol - http://, etc.).
-            request = mechanize.Request( url_IN, post_data_IN, headers )
+        # call method implementation.
+        response_OUT = self.load_url_urllib2( url_IN, args, kwargs )
         
-            # make an opener, passing it an instance of our SmartRedirectHandler()
-            opener = mechanize.build_opener( mechanize_tools.SmartRedirectHandler() )
-            
-            # open the URL
-            response_OUT = opener.open( request )
-            
-        else:
-        
-            # No URL passed in, return None.
-            response_OUT = None
-        
-        #-- END check to see of URL string passed in. --#            
-                
         return response_OUT
-    
+        
     #-- END methot load_url_mechanize --#
     
     
