@@ -182,12 +182,12 @@ class StringHelper( object ):
 
 
     #============================================================================
-    # static methods
+    # ! static methods
     #============================================================================
 
 
     @staticmethod
-    def find_substring_iter( look_in_string_IN, look_for_string_IN ):
+    def find_substring_iter( look_in_string_IN, look_for_string_IN, ignore_case_IN = False ):
 
         ''' Yields all starting positions of copies of substring
             'look_for_string_IN' in string 'look_in_string_IN'.'''
@@ -195,11 +195,31 @@ class StringHelper( object ):
         # based on KnuthMorrisPratt in Martelli, A., Ravenscroft, A., & Ascher, D. (2005). Python Cookbook (Second Edition edition). Beijing; Sebastopol, CA: O'Reilly Media., recipe 5.13 
 
         # declare variables
+        me = "find_substring_iter"
+        look_in_string = ""
+        look_for_string = ""
         current_index = -1
+
+        # if ignore case, convert strings to lower case.
+        
+        # ignore case?
+        if ( ignore_case_IN == True ):
+        
+            # yes.  Convert to lower case.
+            look_in_string = look_in_string_IN.lower()
+            look_for_string = look_for_string_IN.lower()
+        
+        else:
+        
+            # no - use as passed in.
+            look_in_string = look_in_string_IN
+            look_for_string = look_for_string_IN
+        
+        #-- END check to see if ignore case. --#
 
         while True:
 
-            current_index = look_in_string_IN.find( look_for_string_IN, current_index + 1 )
+            current_index = look_in_string.find( look_for_string, current_index + 1 )
 
             if current_index < 0:
             
@@ -282,17 +302,79 @@ class StringHelper( object ):
 
 
     #============================================================================
-    # class methods
+    # ! class methods
     #============================================================================
 
     
     @classmethod
+    def capitalize_each_word( cls, string_IN, word_delimiter_IN = None, join_string_IN = " ", *args, **kwargs ):
+
+        '''
+        Parses string passed into words (either using default .split() behavior,
+            white space, or word_delimiter_IN as delimiter).  Capitalizes each
+            item in split list.  Joins items back together using join_string_IN,
+            which defaults to joining on " ".
+        '''
+        
+        # return reference
+        string_OUT = ""
+        
+        # declare variables
+        word_list = []
+        capitalized_list = []
+        current_word = ""
+        capitalized_word = ""
+        
+        # got a string?
+        if ( ( string_IN is not None ) and ( string_IN != "" ) ):
+        
+            # yes.  Got a word delimiter?
+            if ( ( word_delimiter_IN is not None ) and ( word_delimiter_IN != "" ) ):
+            
+                # yes.  split on it.
+                word_list = string_IN.split( word_delimiter_IN )
+                
+            else:
+            
+                # no delimiter.  Just split on white space.
+                word_list = string_IN.split()
+                
+            #-- END check to see if delimiter passed in. --#
+            
+            # capitalize the words.
+            capitalized_list = []
+            for current_word in word_list:
+            
+                # capitalize.
+                capitalized_word = current_word.capitalize()
+                
+                # add to list.
+                capitalized_list.append( capitalized_word )
+                
+            #-- END loop over words. --#
+            
+            # finally, join words together using join_string_IN.
+            string_OUT = join_string_IN.join( capitalized_list )
+            
+        else:
+        
+            # no.  Return what was passed in.
+            string_OUT = string_IN
+            
+        #-- END check to see if string has a value. --#
+        
+        return string_OUT
+        
+    #-- END class method capitalize_each_word() --#
+
+            
+    @classmethod
     def clean_string( cls,
-                       string_IN,
-                       char_list_IN = DEFAULT_CHAR_SUB_LIST,
-                       re_list_IN = DEFAULT_RE_SUB_LIST,
-                       *args,
-                       **kwargs ):
+                      string_IN,
+                      char_list_IN = DEFAULT_CHAR_SUB_LIST,
+                      re_list_IN = DEFAULT_RE_SUB_LIST,
+                      *args,
+                      **kwargs ):
         
         '''
         Accepts a string.  First, loops over list of character substitutions,
@@ -640,7 +722,7 @@ class StringHelper( object ):
 
 
     @classmethod
-    def find_substring_match_list( cls, look_in_string_IN, look_for_string_IN ):
+    def find_substring_match_list( cls, look_in_string_IN, look_for_string_IN, ignore_case_IN = False ):
 
         '''
         uses find_substring_iter to retrieve all matches of substring in a
@@ -656,7 +738,7 @@ class StringHelper( object ):
         current_index = -1
 
         # loop using find_substring_iter
-        for current_index in cls.find_substring_iter( look_in_string_IN, look_for_string_IN ):
+        for current_index in cls.find_substring_iter( look_in_string_IN, look_for_string_IN, ignore_case_IN = ignore_case_IN ):
         
             # add match to list.
             list_OUT.append( current_index )

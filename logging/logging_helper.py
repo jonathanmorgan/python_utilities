@@ -94,7 +94,7 @@ class LoggingHelper( object ):
 
 
     @classmethod
-    def output_debug( cls, message_IN, method_IN = "", indent_with_IN = "", logger_name_IN = "" ):
+    def output_debug( cls, message_IN, method_IN = "", indent_with_IN = "", logger_name_IN = "", do_print_IN = False ):
         
         '''
         Accepts message string.  If debug is on, logs it.  If not,
@@ -143,6 +143,14 @@ class LoggingHelper( object ):
             
             # log debug.
             my_logger.debug( my_message )
+            
+            # print also?
+            if ( do_print_IN == True ):
+            
+                # yes.
+                print( my_message )
+                
+            #-- END check to see if we print also. --#
         
         #-- END check to see if message. --#
     
@@ -160,6 +168,7 @@ class LoggingHelper( object ):
         self.m_logger = None
         self.m_logger_name = self.LOGGER_NAME
         self.logger_debug_flag = False
+        self.logger_also_print_flag = False
 
     #-- END method __init__() --#
 
@@ -228,7 +237,7 @@ class LoggingHelper( object ):
     #-- END method get_logger --#
 
     
-    def output_debug_message( self, message_IN, method_IN = "", indent_with_IN = "", logger_name_IN = "" ):
+    def output_debug_message( self, message_IN, method_IN = "", indent_with_IN = "", logger_name_IN = "", do_print_IN = False ):
         
         '''
         Accepts message string.  If debug is on, logs it.  If not,
@@ -284,6 +293,14 @@ class LoggingHelper( object ):
                     
                 # log debug.
                 my_logger.debug( my_message )
+                
+                # also print?
+                if ( ( do_print_IN == True ) or ( self.logger_also_print_flag == True ) ):
+
+                    # we have been requested to also print.
+                    print( my_message )
+                    
+                #-- END check to see if we also print. --#
             
             #-- END check to see if debug is on --#
         
