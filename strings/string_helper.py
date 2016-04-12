@@ -61,10 +61,13 @@ if ( has_non_ascii == True ):
 
 # base python modules
 import codecs
-import re
 import six # help with supporting both python 2 and 3.
 import sys
 import unicodedata
+
+# regular expressions
+#import re
+import regex as re
 
 #=============
 # six imports
@@ -720,6 +723,88 @@ class StringHelper( object ):
     
     #-- END entitize_4_byte_unicode() function --#
 
+
+    @classmethod
+    def find_regex_matches( cls, string_IN, regex_list_IN, default_value_IN = None, return_all_matches_IN = False, *args, **kwargs ):
+        
+        '''
+        Accepts a string in which we want to look for matches, and a list of
+            regular expressions we want to evaluate.  Loops through regular
+            expressions, evaluates each against the string passed in.
+            
+        Postconditions: returns the most recent match found within the string
+            passed in, or the default value in "default_value_IN" (defaults to
+            None) if no matches found. When optional param return_all_matches_IN
+            is True, returns list of matches with most recent first
+            ( value_OUT[ 0 ] ), least recent last.  If no matches found, returns
+            an empty list.
+        '''
+        
+        # return reference
+        value_OUT = ""
+        
+        # declare variables
+        me = "find_regex_matches"
+        match_list = []
+        current_regex = ""
+        regex_match = None
+        regex_match_value = ""
+        
+        # got a string?
+        if ( ( string_IN is not None ) and ( string_IN != "" ) ):
+        
+            # got at least one regex?
+            if ( ( regex_list_IN is not None ) and ( len( regex_list_IN ) > 0 ) ):
+        
+                # yes.  Loop over regular expressions, checking for match for each
+                #     in string_IN.
+                for current_regex in regex_list_IN:
+                
+                    # look for match
+                    regex_match = re.search( current_regex, string_IN )
+    
+                    # got match?
+                    if ( regex_match is not None ):
+    
+                        # yes.  store it.
+                        regex_match_value = regex_match.group()
+                        match_list.insert( 0, regex_match_value )
+                        
+                    #-- END check to see if regex matches string. --#
+                    
+                #-- END loop over regular expressions --#
+                
+            #-- END check to see if regular expression list populated. --#
+        
+        #-- END check to see if string --#
+        
+        # set value_OUT
+        if ( return_all_matches_IN == True ):
+        
+            # return list of matches.
+            value_OUT = match_list
+            
+        else:
+        
+            # return first item in list.
+            if ( ( match_list is not None ) and ( len( match_list ) > 0 ) ):
+            
+                # return first item
+                value_OUT = match_list[ 0 ]
+                
+            else:
+            
+                # no match.  Return default.
+                value_OUT = default_value_IN
+            
+            #-- END check to see if anything in match_list --#
+
+        #-- END check to see if we want the last match, or all matches. --#
+        
+        return value_OUT
+        
+    #-- END method find_regex_matches() --#
+    
 
     @classmethod
     def find_substring_match_list( cls, look_in_string_IN, look_for_string_IN, ignore_case_IN = False ):
