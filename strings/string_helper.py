@@ -925,6 +925,64 @@ class StringHelper( object ):
 
 
     @classmethod
+    def is_in_string_list( cls, string_IN, string_list_IN, ignore_case_IN = False, *args, **kwargs ):
+        
+        """
+        Accepts a string and a list of strings.  Looks to see if the string
+            passed in is in the list of strings, optionally ignoring case.  If
+            yes, returns True.  If no, returns False.
+        """
+    
+        # return reference
+        value_OUT = False
+        
+        # declare variables
+        string_lower = ""
+        current_string = ""
+        
+        # got a string list?
+        if ( ( string_list_IN is not None )
+            and ( isinstance( string_list_IN, list ) )
+            and ( len( string_list_IN ) > 0 ) ):
+            
+            # yes.  Ignoring case?
+            if ( ignore_case_IN == True ):
+            
+                # lower-case string
+                string_lower = string_IN.lower()
+            
+                # loop.
+                for current_string in string_list_IN:
+                    
+                    if ( string_lower == current_string.lower() ):
+                
+                        # a match!
+                        value_OUT = True
+                        
+                    #-- END check to see if author_string is staff --#
+                    
+                #-- END loop over staff author strings. --#
+
+            else:
+            
+                # Case-sensitive.  Just use "in".
+                value_OUT = string_IN in string_list_IN
+                
+            #-- END check to see if ignoring case. --#
+            
+        else:
+        
+            # no list.  Return False.
+            value_OUT = False
+            
+        #-- END check to see if list. --#
+        
+        return value_OUT
+    
+    #-- END is_in_string_list() function --#
+
+
+    @classmethod
     def is_unicode( cls, string_IN, *args, **kwargs ):
         
         """
