@@ -291,6 +291,25 @@ class StatusContainer( object ):
     #-- END method get_message_list() --#
     
     
+    def get_tag_count( self, *args, **kwargs ):
+        
+        # return reference
+        value_OUT = ""
+        
+        # declare variables
+        tag_list = None
+        
+        # retrieve tag list.
+        tag_list = self.get_tag_list()
+        
+        # get len()
+        value_OUT = len( tag_list )
+        
+        return value_OUT
+        
+    #-- END method get_tag_count() --#
+    
+    
     def get_tag_list( self, *args, **kwargs ):
         
         # return reference
