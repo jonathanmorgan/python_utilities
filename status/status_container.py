@@ -67,6 +67,9 @@ class StatusContainer( object ):
         self.status_details_dict = {}
         self.status_container_list = []
         
+        # and a place to store a return reference
+        self.return_reference = None
+                
     #-- END method __init__() --#
 
 
