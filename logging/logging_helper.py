@@ -42,11 +42,12 @@ class LoggingHelper( object ):
 
 
     #============================================================================
-    # Constants-ish
+    # ! ==> Constants-ish
     #============================================================================
 
 
     LOGGER_NAME = "python_utilities.logging.logging_helper"
+    CLASS_RESOURCE_STRING = ""
 
 
     #============================================================================
@@ -63,8 +64,39 @@ class LoggingHelper( object ):
 
 
     #============================================================================
-    # Class methods
+    # ! ==> Class methods
     #============================================================================
+
+
+    @classmethod
+    def add_to_class_resource_string( cls, resource_string_IN = "" ):
+    
+        # return reference
+        value_OUT = None
+        
+        # declare variables
+        class_resource_string = ""
+        
+        # got a resource string passed in?
+        if ( ( resource_string_IN is not None ) and ( resource_string_IN != "" ) ):
+        
+            # yes - get class resource string
+            class_resource_string = cls.CLASS_RESOURCE_STRING
+            
+            # add the value passed in to the tail end.
+            class_resource_string += resource_string_IN
+            
+            # make sure the updated string is stored.
+            cls.CLASS_RESOURCE_STRING = class_resource_string
+
+        #-- END check to see if resource string. --#
+        
+        # return the entire resource string
+        value_OUT = cls.CLASS_RESOURCE_STRING
+        
+        return value_OUT
+    
+    #-- END class method add_to_class_resource_string() --#    
 
 
     @classmethod
@@ -94,7 +126,42 @@ class LoggingHelper( object ):
 
 
     @classmethod
-    def output_debug( cls, message_IN, method_IN = "", indent_with_IN = "", logger_name_IN = "", do_print_IN = False ):
+    def is_logging_active( cls, resource_string_IN = None ):
+    
+        # return reference
+        is_active_OUT = False
+        
+        # declare variables
+        class_resource_string = ""
+        
+        # get class-level resource string.
+        class_resource_string = cls.CLASS_RESOURCE_STRING
+        
+        # got a resource string passed in?
+        if ( ( resource_string_IN is not None ) and ( resource_string_IN != "" ) ):
+        
+            # yes.  See if the class-level resource string contains it.
+            if ( resource_string_IN in class_resource_string ):
+            
+                # it does.  Logging is active at the class level.
+                is_active_OUT = True
+                
+            else:
+            
+                # it does not.  Logging not active.
+                is_active_OUT = False
+                
+            #-- END check to see if logging active.
+        
+        #-- END check to see if resource string --#
+        
+        return is_active_OUT
+    
+    #-- END method is_logging_active() --#
+    
+        
+    @classmethod
+    def output_debug( cls, message_IN, method_IN = "", indent_with_IN = "", logger_name_IN = "", do_print_IN = False, resource_string_IN = None ):
         
         '''
         Accepts message string.  If debug is on, logs it.  If not,
@@ -102,63 +169,118 @@ class LoggingHelper( object ):
         '''
         
         # declare variables
+        do_output = True
         my_message = ""
         my_logger = None
         my_logger_name = ""
+        
+        # got a resource string?
+        if ( ( resource_string_IN is not None ) and ( resource_string_IN != "" ) ):
+        
+            # check if resource string is in the class-level resource string.
+            do_output = cls.is_logging_active( resource_string_IN )
+        
+        else:
+        
+            # if no resource string, do output.
+            do_output = True
+        
+        #-- END check to see if resource string.
     
-        # got a message?
-        if ( message_IN ):
-        
-            my_message = message_IN
-        
-            # got a method?
-            if ( method_IN ):
+        # do we output?
+        if ( do_output == True ):
+
+            # got a message?
+            if ( message_IN ):
             
-                # We do - append to front of message.
-                my_message = "In " + method_IN + ": " + my_message
+                my_message = message_IN
+            
+                # got a method?
+                if ( method_IN ):
                 
-            #-- END check to see if method passed in --#
-            
-            # indent?
-            if ( indent_with_IN ):
+                    # We do - append to front of message.
+                    my_message = "In " + method_IN + ": " + my_message
+                    
+                #-- END check to see if method passed in --#
                 
-                my_message = indent_with_IN + my_message
+                # indent?
+                if ( indent_with_IN ):
+                    
+                    my_message = indent_with_IN + my_message
+                    
+                #-- END check to see if we indent. --#
+            
+                # debug is on.  Start logging rather than using print().
+                #print( my_message )
                 
-            #-- END check to see if we indent. --#
-        
-            # debug is on.  Start logging rather than using print().
-            #print( my_message )
-            
-            # got a logger name?
-            my_logger_name = cls.LOGGER_NAME
-            if ( ( logger_name_IN is not None ) and ( logger_name_IN != "" ) ):
-            
-                # use logger name passed in.
-                my_logger_name = logger_name_IN
+                # got a logger name?
+                my_logger_name = cls.LOGGER_NAME
+                if ( ( logger_name_IN is not None ) and ( logger_name_IN != "" ) ):
                 
-            #-- END check to see if logger name --#
+                    # use logger name passed in.
+                    my_logger_name = logger_name_IN
+                    
+                #-- END check to see if logger name --#
+                    
+                # get logger
+                my_logger = cls.get_a_logger( my_logger_name )
                 
-            # get logger
-            my_logger = cls.get_a_logger( my_logger_name )
-            
-            # log debug.
-            my_logger.debug( my_message )
-            
-            # print also?
-            if ( do_print_IN == True ):
-            
-                # yes.
-                print( my_message )
+                # log debug.
+                my_logger.debug( my_message )
                 
-            #-- END check to see if we print also. --#
-        
-        #-- END check to see if message. --#
+                # print also?
+                if ( do_print_IN == True ):
+                
+                    # yes.
+                    print( my_message )
+                    
+                #-- END check to see if we print also. --#
+            
+            #-- END check to see if message. --#
+            
+        #-- END check to see if we do_output? --#
     
     #-- END method output_debug() --#
     
     
+    @classmethod
+    def remove_from_class_resource_string( cls, resource_string_IN = "" ):
+    
+        # return reference
+        value_OUT = None
+        
+        # declare variables
+        class_resource_string = ""
+        
+        # got a resource string passed in?
+        if ( ( resource_string_IN is not None ) and ( resource_string_IN != "" ) ):
+        
+            # yes - get class resource string
+            class_resource_string = cls.CLASS_RESOURCE_STRING
+            
+            # does the class resource string contain the string passed in?
+            if ( resource_string_IN in class_resource_string ):
+            
+                # yes - replace with "".
+                class_resource_string = class_resource_string.replace( resource_string_IN, "" )
+            
+                # make sure the updated string is stored.
+                cls.CLASS_RESOURCE_STRING = class_resource_string
+                
+            #-- END check to see if the string is present --#
+
+        #-- END check to see if resource string passed in. --#
+        
+        # return the entire resource string
+        value_OUT = cls.CLASS_RESOURCE_STRING
+        
+        return value_OUT
+    
+    #-- END class method remove_from_class_resource_string() --#    
+
+
     #============================================================================
-    # Built-in Instance methods
+    # ! ==> Built-in Instance methods
     #============================================================================
 
 
@@ -169,13 +291,44 @@ class LoggingHelper( object ):
         self.m_logger_name = self.LOGGER_NAME
         self.logger_debug_flag = False
         self.logger_also_print_flag = False
+        self.logger_resource_string = ""
 
     #-- END method __init__() --#
 
 
     #============================================================================
-    # Instance methods
+    # ! ==> Instance methods
     #============================================================================
+
+
+    def add_to_my_resource_string( self, resource_string_IN = "" ):
+    
+        # return reference
+        value_OUT = None
+        
+        # declare variables
+        my_resource_string = ""
+        
+        # got a resource string passed in?
+        if ( ( resource_string_IN is not None ) and ( resource_string_IN != "" ) ):
+        
+            # yes - get class resource string
+            my_resource_string = self.logger_resource_string
+            
+            # add the value passed in to the tail end.
+            my_resource_string += resource_string_IN
+            
+            # make sure the updated string is stored.
+            self.logger_resource_string = my_resource_string
+
+        #-- END check to see if resource string. --#
+        
+        # return the entire resource string
+        value_OUT = self.logger_resource_string
+        
+        return value_OUT
+    
+    #-- END class method add_to_my_resource_string() --#    
 
 
     def get_logger_name( self ):
@@ -237,7 +390,61 @@ class LoggingHelper( object ):
     #-- END method get_logger --#
 
     
-    def output_debug_message( self, message_IN, method_IN = "", indent_with_IN = "", logger_name_IN = "", do_print_IN = False ):
+    def is_my_logging_active( self, resource_string_IN = None ):
+    
+        # return reference
+        is_active_OUT = False
+        
+        # declare variables
+        my_resource_string = ""
+        
+        # if debug flag is true, logging is active.
+        if ( self.logger_debug_flag == True ):
+        
+            # logging is active
+            is_active_OUT = True
+            
+        else:
+        
+            # got a resource string?
+            if ( ( resource_string_IN is not None ) and ( resource_string_IN != "" ) ):
+            
+                # yes.  Does the class-level resource string contain it?
+                is_active_OUT = self.is_logging_active( resource_string_IN )
+                
+                if ( is_active_OUT == False ):
+                
+                    # not active at class level.  How about instance level?
+                    my_resource_string = self.logger_resource_string
+                    if ( resource_string_IN in my_resource_string ):
+                    
+                        # it is in instance string.  Logging is active.
+                        is_active_OUT = True
+                        
+                    else:
+                    
+                        # not in instance strings.  Logging not active.
+                        is_active_OUT = False
+                        
+                    #-- END check to see if logging active.
+                    
+                #-- END check to see if resource is present at class level --#
+            
+            else:
+            
+                # no resource string - not active.
+                is_active_OUT = False
+            
+            #-- END check to see if resource string --#
+            
+        #-- END check to see if logger flag is True. --#
+        
+        return is_active_OUT
+    
+    #-- END method is_my_logging_active() --#
+    
+        
+    def output_debug_message( self, message_IN, method_IN = "", indent_with_IN = "", logger_name_IN = "", do_print_IN = False, resource_string_IN = None ):
         
         '''
         Accepts message string.  If debug is on, logs it.  If not,
@@ -248,12 +455,17 @@ class LoggingHelper( object ):
         my_message = ""
         my_logger = None
         my_logger_name = ""
+        do_output = False
     
         # got a message?
         if ( message_IN ):
         
-            # only print if debug is on.
-            if ( self.logger_debug_flag == True ):
+            # do output?
+            do_output = self.is_my_logging_active( resource_string_IN )
+        
+            # only print if debug is on or resource_string_IN is found in the
+            #     self.logger_resource_string variable contents.
+            if ( do_output == True ):
             
                 my_message = message_IN
             
@@ -306,7 +518,42 @@ class LoggingHelper( object ):
         
         #-- END check to see if message. --#
     
-    #-- END method output_debug() --#
+    #-- END method output_debug_message() --#
+
+
+    def remove_from_my_resource_string( self, resource_string_IN = "" ):
+    
+        # return reference
+        value_OUT = None
+        
+        # declare variables
+        my_resource_string = ""
+        
+        # got a resource string passed in?
+        if ( ( resource_string_IN is not None ) and ( resource_string_IN != "" ) ):
+        
+            # yes - get instance resource string
+            my_resource_string = self.logger_resource_string
+            
+            # does the class resource string contain the string passed in?
+            if ( resource_string_IN in my_resource_string ):
+            
+                # yes - replace with "".
+                my_resource_string = my_resource_string.replace( resource_string_IN, "" )
+            
+                # make sure the updated string is stored.
+                self.logger_resource_string = my_resource_string
+                
+            #-- END check to see if the string is present --#
+
+        #-- END check to see if resource string passed in. --#
+        
+        # return the entire resource string
+        value_OUT = self.logger_resource_string
+        
+        return value_OUT
+    
+    #-- END class method remove_from_my_resource_string() --#    
 
 
     def set_logger_name( self, value_IN ):
