@@ -72,9 +72,10 @@ R_kripp_alpha = kripp_alpha_result[ str( "value" ) ]
 import pyRserve
 
 # python_utilities
+from python_utilities.exceptions.exception_helper import ExceptionHelper
 from python_utilities.logging.logging_helper import LoggingHelper
 
-class RserveHelper( LoggingHelper ):
+class RserveHelper( ExceptionHelper ):
 
     '''
     This class encapsulates code for making, storing, and interacting with an R

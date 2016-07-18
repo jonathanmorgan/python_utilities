@@ -339,6 +339,112 @@ class DictHelper( object ):
 
 
     @classmethod
+    def increment_decimal_dict_value( cls, dict_IN, name_IN, value_IN = decimal.Decimal( 1 ), *args, **kwargs ):
+        
+        '''
+        Accepts name, and optional increment value.  Increment value defaults to
+           1.  Retrieves value as decimal.Decimal, adds value_IN to it, then
+           stores and returns the result.  Returns None if error.
+        '''
+        
+        # return reference
+        value_OUT = None
+        
+        # declare variables
+        my_value = -1
+        value_to_add = -1
+        
+        # got dict?
+        if ( cls.is_dict( dict_IN ) == True ):
+        
+            # yes.  Got name?
+            if ( ( name_IN ) and ( name_IN != None ) ):
+            
+                # yes.  Retrieve value for name as decimal.Decimal.
+                my_value = cls.get_dict_value_as_decimal( dict_IN, name_IN )
+                
+                # make sure value_IN is a decimal.Decimal.
+                value_to_add = decimal.Decimal( value_IN )
+                
+                # add value_IN
+                my_value = my_value + value_to_add
+                
+                # store result and set return value
+                value_OUT = cls.set_dict_value( dict_IN, name_IN, my_value )
+            
+            else:
+            
+                # no name.  error - return None
+                value_OUT = None
+            
+            #-- END check to see if name --#
+
+        else:
+        
+            # error - no dict.  Return None.
+            value_OUT = None
+        
+        #-- END check to see if dict. --#
+        
+        return value_OUT
+        
+    #-- END method increment_decimal_dict_value() --#
+
+
+    @classmethod
+    def increment_float_dict_value( cls, dict_IN, name_IN, value_IN = float( 1 ), *args, **kwargs ):
+        
+        '''
+        Accepts name, and optional increment value.  Increment value defaults to
+           1.  Retrieves value as float, adds value_IN to it, then stores and
+           returns the result.  Returns None if error.
+        '''
+        
+        # return reference
+        value_OUT = None
+        
+        # declare variables
+        my_value = -1
+        value_to_add = -1
+        
+        # got dict?
+        if ( cls.is_dict( dict_IN ) == True ):
+        
+            # yes.  Got name?
+            if ( ( name_IN ) and ( name_IN != None ) ):
+            
+                # yes.  Retrieve value for name as float.
+                my_value = cls.get_dict_value_as_float( dict_IN, name_IN )
+                
+                # make sure value_IN is a float.
+                value_to_add = float( value_IN )
+                
+                # add value_IN
+                my_value = my_value + value_to_add
+                
+                # store result and set return value
+                value_OUT = cls.set_dict_value( dict_IN, name_IN, my_value )
+            
+            else:
+            
+                # no name.  error - return None
+                value_OUT = None
+            
+            #-- END check to see if name --#
+
+        else:
+        
+            # error - no dict.  Return None.
+            value_OUT = None
+        
+        #-- END check to see if dict. --#
+        
+        return value_OUT
+        
+    #-- END method increment_float_dict_value() --#
+
+
+    @classmethod
     def increment_int_dict_value( cls, dict_IN, name_IN, value_IN = 1, *args, **kwargs ):
         
         '''
@@ -349,6 +455,7 @@ class DictHelper( object ):
         
         # return reference
         value_OUT = None
+        value_to_add = -1
         
         # declare variables
         my_value = -1
@@ -362,9 +469,12 @@ class DictHelper( object ):
                 # yes.  Retrieve value for name as int.
                 my_value = cls.get_dict_value_as_int( dict_IN, name_IN )
                 
-                # add value_IN
-                my_value += value_IN
+                # make sure value_IN is an int.
+                value_to_add = int( value_IN )
                 
+                # add value_IN
+                my_value = my_value + value_to_add
+                                
                 # store result and set return value
                 value_OUT = cls.set_dict_value( dict_IN, name_IN, my_value )
             
@@ -700,6 +810,56 @@ class DictHelper( object ):
     #-- END function get_value_as_str --#
 
 
+    def increment_decimal_value( self, name_IN, value_IN = decimal.Decimal( 1 ), *args, **kwargs ):
+        
+        '''
+        Accepts name, and optional increment value.  Increment value defaults to
+           1.  Retrieves value as decimal.Decimal, adds value_IN to it, then
+           stores and returns the result.  Returns None if error.
+        '''
+        
+        # return reference
+        value_OUT = None
+        
+        # declare variables
+        my_dictionary = None
+        
+        # got dict?
+        my_dictionary = self.get_dictionary()
+        
+        # call class method.
+        value_OUT = DictHelper.increment_decimal_dict_value( my_dictionary, name_IN, value_IN, *args, **kwargs )
+        
+        return value_OUT
+        
+    #-- END method increment_decimal_value() --#
+
+
+    def increment_float_value( self, name_IN, value_IN = float( 1 ), *args, **kwargs ):
+        
+        '''
+        Accepts name, and optional increment value.  Increment value defaults to
+           1.  Retrieves value as float, adds value_IN to it, then stores and
+           returns the result.  Returns None if error.
+        '''
+        
+        # return reference
+        value_OUT = None
+        
+        # declare variables
+        my_dictionary = None
+        
+        # got dict?
+        my_dictionary = self.get_dictionary()
+        
+        # call class method.
+        value_OUT = DictHelper.increment_float_dict_value( my_dictionary, name_IN, value_IN, *args, **kwargs )
+        
+        return value_OUT
+        
+    #-- END method increment_float_value() --#
+
+
     def increment_int_value( self, name_IN, value_IN = 1, *args, **kwargs ):
         
         '''
@@ -713,37 +873,12 @@ class DictHelper( object ):
         
         # declare variables
         my_dictionary = None
-        my_value = -1
         
         # got dict?
         my_dictionary = self.get_dictionary()
-        if ( cls.is_dict( my_dictionary ) == True ):
         
-            # yes.  Got name?
-            if ( ( name_IN ) and ( name_IN != None ) ):
-            
-                # yes.  Retrieve value for name as int.
-                my_value = self.get_value_as_int( name_IN )
-                
-                # add value_IN
-                my_value += value_IN
-                
-                # store result and set return value
-                value_OUT = cls.set_value( name_IN, my_value )
-            
-            else:
-            
-                # no name.  error - return None
-                value_OUT = None
-            
-            #-- END check to see if name --#
-
-        else:
-        
-            # error - no dict.  Return None.
-            value_OUT = None
-        
-        #-- END check to see if dict. --#
+        # call class method.
+        value_OUT = DictHelper.increment_int_dict_value( my_dictionary, name_IN, value_IN, *args, **kwargs )
         
         return value_OUT
         
