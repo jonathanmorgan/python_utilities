@@ -100,9 +100,15 @@ class ListHelper( object ):
                 
             #-- END check to see if empty string.
             
+        # ...check if None...
+        elif ( list_param_value is None ):
+        
+            # if None, just return None, don't wrap it in a list.
+            list_OUT = list_param_value
+        
         else:
         
-            # not list or string, just take the thing and put it in a list.
+            # not list or string or None, take the thing and put it in a list.
             list_OUT = [ list_param_value ]
         
         #-- END check to see if already a list --#

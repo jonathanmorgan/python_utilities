@@ -248,50 +248,82 @@ class DictHelper( object ):
         # first, try getting raw param, see if it is already a list.
         
         # get raw value
-        list_param_value = cls.get_dict_value( dict_IN, name_IN, None )
+        list_param_value = cls.get_dict_value( dict_IN, name_IN, default_IN = missing_string )
         
+        # check if None
+        if ( list_param_value is None ):
+        
+            # None is a valid value - return it.
+            list_OUT = list_param_value
+        
+            #print( "None!" )
+
         # check if list
-        if ( isinstance( list_param_value, list ) == True ):
+        elif ( isinstance( list_param_value, list ) == True ):
         
             # already a list - return it.
             list_OUT = list_param_value
             
-        elif ( ( isinstance( list_param_value, six.string_types ) == True ) and ( list_param_value == "" ) ):
+            #print( "List! : " + str( list_param_value ) )
+            
+        # string
+        elif ( isinstance( list_param_value, six.string_types ) == True ):
         
-            # empty string - return empty list
-            list_OUT = []
+            #print( "String! : " + str( list_param_value ) )
+            
+            # it is a string.  Is it missing_string?
+            if ( list_param_value == missing_string ):
+            
+                # value not present in dictionary - return default.
+                list_OUT = default_IN
+            
+            # empty string?
+            elif ( list_param_value == "" ):
         
-        else:
-        
-            # not a list.  assume string.
-        
-            # get list param's original value
-            list_param_value = cls.get_dict_value_as_str( dict_IN, name_IN, missing_string )
-            
-            # print( "====> list param value: " + list_param_value )
-            
-            # got a value?
-            if ( ( list_param_value != "" ) and ( list_param_value != missing_string ) ):
-            
-                # yes - use ListHelper to convert to list.
-                list_OUT = ListHelper.get_value_as_list( list_param_value, delimiter_IN )
-            
-            elif list_param_value == "":
-            
-                # return empty list.
-                list_OUT = []
-                
-            elif list_param_value == missing_string:
-            
-                # return default
+                # empty string - return default
                 list_OUT = default_IN
                 
             else:
             
-                # not sure how we got here - return default.
-                list_OUT = default_IN
-            
-            #-- END check to see what was in value. --#
+                # Not missing, and not an empty string.  Try parsing as
+                #     delimited list.
+                
+                # get list param's original value as str()
+                list_param_value = cls.get_dict_value_as_str( dict_IN, name_IN, missing_string )
+                
+                # print( "====> list param value: " + list_param_value )
+                
+                # sanity check - still got a value?
+                if ( ( list_param_value != "" ) and ( list_param_value != missing_string ) ):
+                
+                    # yes - use ListHelper to convert to list.
+                    list_OUT = ListHelper.get_value_as_list( list_param_value, delimiter_IN )
+                
+                elif list_param_value == "":
+                
+                    # empty string - return default.
+                    list_OUT = default_IN
+                    
+                elif list_param_value == missing_string:
+                
+                    # missing key-value pair
+                    list_OUT = default_IN
+                    
+                else:
+                
+                    # not sure how we got here - return default.
+                    list_OUT = default_IN
+                
+                #-- END check to see what was in value. --#
+                
+            #-- END check for empty string --#
+        
+        else:
+        
+            # not None, a list or a string...  place the reference in a
+            #     single-item list.
+            list_OUT = []
+            list_OUT.append( list_param_value )
             
         #-- END check to see if already a list --#
         
@@ -771,7 +803,7 @@ class DictHelper( object ):
         my_dictionary = self.get_dictionary()
 
         # call corresponding class method.
-        list_OUT = DictHelper.get_dict_value_as_list( my_dictionary, name_IN, default_IN, delimiter_IN )
+        list_OUT = DictHelper.get_dict_value_as_list( my_dictionary, name_IN, default_IN = default_IN, delimiter_IN = delimiter_IN )
         
         return list_OUT
         
