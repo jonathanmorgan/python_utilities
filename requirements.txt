@@ -2,7 +2,7 @@ beautifulsoup4
 chardet
 cchardet
 bleach
-MySQL-python
+mysqlclient
 psycopg2
 mechanize
 six
