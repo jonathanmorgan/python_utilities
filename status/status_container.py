@@ -50,6 +50,7 @@ class StatusContainer( object ):
     STATUS_CODE_SUCCESS = "success"
     STATUS_CODE_WARNING = "warning"
     STATUS_CODE_ERROR = "error"
+    VALID_STATUS_LIST = [ STATUS_CODE_SUCCESS, STATUS_CODE_WARNING, STATUS_CODE_ERROR ]
 
 
     #---------------------------------------------------------------------------

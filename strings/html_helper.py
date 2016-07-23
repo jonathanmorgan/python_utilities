@@ -70,6 +70,9 @@ from bs4 import UnicodeDammit
 # import bleach for HTML cleaning
 import bleach
 
+# import w3lib for HTML cleaning (since bleach isn't compatible with latest html5lib)
+#import w3lib
+
 # define HTMLHelper class.
 class HTMLHelper( object ):
 
@@ -112,6 +115,7 @@ class HTMLHelper( object ):
         # declare variables
         string_bs = None
         text_list = None
+        allowed_tags = None
         
         # String passed in?
         if ( ( string_IN is not None ) and ( string_IN != "" ) ):
@@ -121,6 +125,10 @@ class HTMLHelper( object ):
             
                 # yes - call the bleach.clean() method.
                 string_OUT = bleach.clean( string_IN, allowed_tags_IN, allowed_attrs_IN, strip = True )
+                
+                # use w3lib
+                #allowed_tags = tuple( allowed_tags_IN )
+                #string_OUT = w3lib.html.remove_tags( string_IN, keep = allowed_tags )
                 
             else:
             
