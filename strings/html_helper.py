@@ -87,12 +87,122 @@ class HTMLHelper( object ):
 
 
     #============================================================================
-    # static methods
+    # class methods
     #============================================================================
 
 
-    @staticmethod
-    def remove_html( string_IN, allowed_tags_IN = [], allowed_attrs_IN = {}, bs_parser_IN = "", *args, **kwargs ):
+    @classmethod
+    def filter_attributes( cls, string_IN, allowed_attrs_IN, bs_parser_IN = "", string_bs_IN = None, *args, **kwargs ):
+        
+        """
+        filters attributes in HTML string passed in.  Accepts
+           map of element names to attribute names of attributes to leave in.
+           For elements in the map, removes any attributes not in the attribute
+           list associated with the element.
+
+        Example - only let <p> tags have "id" attributes:
+           
+           allowed_attrs = {
+               'p' : [ 'id', ],
+           }
+           cleaned_string = HTMLHelper.filter_attributes( html_string, allowed_attrs )
+        """
+    
+        # return reference
+        string_OUT = ""
+        
+        # declare variables
+        string_bs = None
+        allowed_tags = None
+        tag_name = ""
+        allowed_attribute_list = None
+        tag_list_bs = None
+        current_tag = None
+        attribute_dict = None
+        attr_name = ""
+        attr_value = ""
+        
+        # String passed in?
+        if ( ( string_IN is not None ) and ( string_IN != "" ) ):
+
+            # yes - have we been asked to white list certain tags and attributes?
+            if ( ( allowed_attrs is not None ) and ( len( allowed_attrs ) > 0 ) ):
+            
+                # use Beautiful Soup to filter attributes.
+                
+                # already BeautifulSoup-ed?
+                if ( string_bs_IN is not None ):
+                
+                    # yes.  Use it.
+                    string_bs = string_bs_IN
+                
+                else:
+
+                    # particular parser requested?
+                    if ( ( bs_parser_IN is not None ) and ( bs_parser_IN != "" ) ):
+    
+                        # yes.  Request it.
+                        string_bs = BeautifulSoup( string_IN, bs_parser_IN )
+    
+                    else:
+    
+                        # no.  Let BeautfiulSoup pick.
+                        string_bs = BeautifulSoup( string_IN )
+    
+                    #-- END check to see if specific parser requested. --#
+                    
+                #-- END check to see if BeautifulSoup instance with HTML already in it passed in --#
+                
+                # ! TODO - loop over elements in the dictionary.
+                for tag_name, allowed_attribute_list in six.iteritems( allowed_attrs ):
+                
+                    # get all the instances of the current tag.
+                    tag_list_bs = string_bs.find_all( tag_name )
+                    
+                    # loop over tag instances.
+                    for current_tag in tag_list_bs:
+                    
+                        # get attributes.
+                        attribute_dict = current_tag.attrs
+                        
+                        # loop over list of keys in the attribute list.
+                        attr_name_list = list( attribute_dict.keys() )
+                        for attr_name in attr_name_list:
+                        
+                            # is attribute name in the allowed_attribute_list?
+                            if ( attr_name not in allowed_attribute_list ):
+                            
+                                # no.  Remove the attribute.
+                                attribute_dict.pop( attr_name )
+                            
+                            #-- END check to see if attribute in allowed list. --#
+                        
+                        #-- END loop over attributes. --#
+                    
+                    #-- END loop over tag instances --#
+                
+                #-- END loop over tag to allowed attributes map --#
+                
+                # convert back to string.
+                string_OUT = str( string_bs )
+                
+            else:
+            
+                # no attribute filters defined, so just return what was passed
+                #     in.
+                string_OUT = string_IN
+                
+            #-- END check to see if we have attributes to filter. --#
+            
+        #-- END check to make sure we have a string passed in. --#
+
+        return string_OUT
+    
+    #-- END filter_attributes() function --#
+
+
+    @classmethod
+    def remove_html( cls, string_IN, allowed_tags_IN = [], allowed_attrs_IN = {}, bs_parser_IN = "", string_bs_IN = None, *args, **kwargs ):
         
         """
         strips out HTML from string.  Accepts list of attributes to leave in, and
@@ -126,26 +236,45 @@ class HTMLHelper( object ):
                 # yes - call the bleach.clean() method.
                 string_OUT = bleach.clean( string_IN, allowed_tags_IN, allowed_attrs_IN, strip = True )
                 
+                '''
                 # use w3lib
-                #allowed_tags = tuple( allowed_tags_IN )
-                #string_OUT = w3lib.html.remove_tags( string_IN, keep = allowed_tags )
+                allowed_tags = tuple( allowed_tags_IN )
+                string_OUT = w3lib.html.remove_tags( string_IN, keep = allowed_tags )
+                
+                # filter attributes?
+                if ( ( allowed_attrs_IN is not None ) and ( len( allowed_attrs_IN ) > 0 ) ):
+
+                    string_OUT = cls.filter_attributes( string_OUT, allowed_attrs_IN, bs_parser_IN = bs_parser_IN, string_bs_IN = string_bs_IN )
+
+                #-- END check to see if we need to filter attributes --#
+                '''
                 
             else:
             
                 # no - use Beautiful Soup to strip HTML.
 
-                # particular parser requested?
-                if ( ( bs_parser_IN is not None ) and ( bs_parser_IN != "" ) ):
-
-                    # yes.  Request it.
-                    string_bs = BeautifulSoup( string_IN, bs_parser_IN )
-
+                # already BeautifulSoup-ed?
+                if ( string_bs_IN is not None ):
+                
+                    # yes.  Use it.
+                    string_bs = string_bs_IN
+                
                 else:
 
-                    # no.  Let it pick.
-                    string_bs = BeautifulSoup( string_IN )
-
-                #-- END check to see if specific parser requested. --#
+                    # particular parser requested?
+                    if ( ( bs_parser_IN is not None ) and ( bs_parser_IN != "" ) ):
+    
+                        # yes.  Request it.
+                        string_bs = BeautifulSoup( string_IN, bs_parser_IN )
+    
+                    else:
+    
+                        # no.  Let BeautfiulSoup pick.
+                        string_bs = BeautifulSoup( string_IN, allowed_attrs_IN )
+    
+                    #-- END check to see if specific parser requested. --#
+                    
+                #-- END check to see if BeautifulSoup instance with HTML already in it passed in --#
                 
                 # parse out all text
                 #text_list = string_bs.findAll( text = True )
