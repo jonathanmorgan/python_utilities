@@ -8,3 +8,4 @@ mechanize
 six
 requests
 regex
+w3lib
