@@ -3,6 +3,7 @@ chardet
 cchardet
 bleach
 mysqlclient
+pymysql
 psycopg2
 mechanize
 six
