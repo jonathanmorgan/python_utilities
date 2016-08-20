@@ -286,6 +286,9 @@ class LoggingHelper( object ):
 
     def __init__( self, *args, **kwargs ):
         
+        # always call parent's __init__()
+        super( LoggingHelper, self ).__init__()
+        
         # initialize variables
         self.m_logger = None
         self.m_logger_name = self.LOGGER_NAME

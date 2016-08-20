@@ -22,7 +22,37 @@ Usage:
     # make an instance
     my_status_container = StatusContainer()
     
-    # more TK
+    # set status code
+    my_status_container.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
+    
+    # set non-standard status code
+    my_status_container.set_status_code( "banana", require_known_IN = False )
+    
+    # add a status message
+    status_message = "This is totally a success!"
+    my_status_container.add_message( status_message )
+    
+    # add a tag
+    my_status_container.add_tag( "linux" )
+    
+    # you can also build a dictionary of name-value pair details.
+    my_status_container.set_detail_value( "detail_name_1", "detail_value_1" )
+    my_status_container.set_detail_value( "detail_name_2", "detail_value_2" )
+    my_status_container.set_detail_value( "detail_name_3", "detail_value_3" )
+    
+    # and, nest other status containers if you want...
+    other_status = tell_me_a_status()
+    my_status_container.add_status_container( other_status )
+    
+    # is it a success?
+    is_success = my_status_container.is_success()
+    
+    # is it a warning?
+    is_warning = my_status_container.is_warning()
+    
+    # is it an error?
+    is_error = my_status_container.is_error()
+    
 '''
 
 #===============================================================================
@@ -201,9 +231,26 @@ class StatusContainer( object ):
         dict_OUT = ""
         
         # declare variables
+        details_dict = None
         
         # retrieve value
-        dict_OUT = self.status_details_dict
+        details_dict = self.status_details_dict
+        
+        # None?
+        if ( details_dict is None ):
+        
+            # None.  Make one.
+            details_dict = {}
+            
+            # store it.
+            self.set_details( details_dict )
+            
+            # get it
+            details_dict = self.get_details_dict()
+            
+        #-- END check to see if dictionary --#
+        
+        dict_OUT = details_dict
         
         return dict_OUT
         
@@ -271,8 +318,8 @@ class StatusContainer( object ):
         # declare variables
         my_dict = None
 
-        # call get_param()
-        my_dict = self.get_parameters()
+        # call get_details_dict()
+        my_dict = self.get_details_dict()
         value_OUT = DictHelper.get_dict_value_as_str( my_dict, name_IN, default_IN )
         
         return value_OUT
@@ -293,6 +340,18 @@ class StatusContainer( object ):
         return value_OUT
         
     #-- END method get_message_list() --#
+    
+    
+    def get_status_code( self, *args, **kwargs ):
+        
+        # return reference
+        value_OUT = ""
+        
+        value_OUT = self.status_code
+        
+        return value_OUT
+        
+    #-- END method get_status_code() --#
     
     
     def get_tag_count( self, *args, **kwargs ):
@@ -478,13 +537,51 @@ class StatusContainer( object ):
         my_dict = None
 
         # call get_param()
-        my_dict = self.get_parameters()
+        my_dict = self.get_details_dict()
         my_dict[ name_IN ] = value_IN
         value_OUT = value_IN
         
         return value_OUT
         
     #-- END method get_detail_value_as_str() --#
+    
+
+    def set_status_code( self, value_IN, require_known_IN = True, *args, **kwargs ):
+        
+        # return reference
+        status_code_OUT = None
+        
+        # declare variables
+        
+        # require a known status?
+        if ( require_known_IN == True ):
+        
+            # see if known
+            if ( value_IN in self.VALID_STATUS_LIST ):
+            
+                # known.  set it.
+                self.status_code = value_IN
+                status_code_OUT = self.get_status_code()
+                
+            else:
+            
+                # no known.
+                status_code_OUT = None
+                
+            #-- END check if status code is known. --#
+        
+        else:
+        
+            # no.  Set it.
+            self.status_code = value_IN
+            
+            status_code_OUT = self.get_status_code()
+            
+        #-- END check to see if we require a known status --#
+
+        return status_code_OUT
+        
+    #-- END method set_status_code() --#
     
 
 #-- END class ParamContainer --#
