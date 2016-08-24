@@ -53,6 +53,9 @@ Usage:
     # is it an error?
     is_error = my_status_container.is_error()
     
+    # get list of status messages
+    my_status_message_list = my_status_container.get_message_list()
+    
 '''
 
 #===============================================================================
