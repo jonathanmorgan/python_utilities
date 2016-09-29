@@ -30,7 +30,8 @@ import decimal
 
 import six # help with supporting both python 2 and 3.
 
-# python_utilities.lists.list_helper - ListHelper
+# python_utilities
+from python_utilities.booleans.boolean_helper import BooleanHelper
 from python_utilities.lists.list_helper import ListHelper
 
 
@@ -114,6 +115,44 @@ class DictHelper( object ):
         return value_OUT
     
     #-- END function get_dict_value --#
+
+
+    @classmethod
+    def get_dict_value_as_boolean( cls, dict_IN, name_IN, default_IN = False ):
+    
+        '''
+        Accepts dictionary, name, and optional default value (if no default
+           provided, default is -1).  If dictionary or name missing, returns
+           default.  If name not present in dictionary, returns default.  If name
+           in dictionary, returns whatever is mapped to name, converted to a decimal.Decimal instance
+           through call to decimal.Decimal().
+           
+        Parameters:
+        - dict_IN - dictionary we are looking in.
+        - name_IN - name we are looking for in dictionary.
+        - default_IN (defaults to -1) - default value to return if problem or not found in dict.
+        
+        Returns:
+        - value_OUT - value mapped to name_IN in dict_IN, converted to int(), else the default value if problems or if not found in dict.
+        '''
+    
+        # return reference
+        value_OUT = None
+        
+        # first, get value.
+        value_OUT = cls.get_dict_value( dict_IN, name_IN, default_IN )
+        
+        # convert to int unless value is None.
+        if ( value_OUT != None ):
+
+            # value is not None.
+            value_OUT = BooleanHelper.convert_value_to_boolean( value_OUT )
+            
+        #-- END check to see if default was None --#
+        
+        return value_OUT
+    
+    #-- END function get_dict_value_as_boolean --#
 
 
     @classmethod
@@ -682,6 +721,41 @@ class DictHelper( object ):
         return value_OUT
     
     #-- END function get_value --#
+
+
+    def get_value_as_boolean( self, name_IN, default_IN = False ):
+    
+        '''
+        Accepts name, and optional default value (if no default
+           provided, default is -1).  If dictionary or name missing, returns
+           default.  If name not present in dictionary, returns default.  If name
+           in dictionary, returns whatever is mapped to name, converted to a
+           decimal.Decimal instance through call to decimal.Decimal().
+           
+        Parameters:
+        - name_IN - name we are looking for in dictionary.
+        - default_IN (defaults to None) - default value to return if problem or not found in dict.
+        
+        Returns:
+        - value_OUT - value mapped to name_IN in dict_IN, converted to decimal.Decimal, else the default value if problems or if not found in dict.
+        '''
+    
+        # return reference
+        value_OUT = None
+        
+        # declare variables
+        me = "get_value_as_boolean"
+        my_dictionary = None
+        
+        # get dictionary
+        my_dictionary = self.get_dictionary()
+
+        # call corresponding class method.
+        value_OUT = DictHelper.get_dict_value_as_boolean( my_dictionary, name_IN, default_IN )
+
+        return value_OUT
+    
+    #-- END function get_value_as_boolean --#
 
 
     def get_value_as_decimal( self, name_IN, default_IN = decimal.Decimal( -1 ) ):
