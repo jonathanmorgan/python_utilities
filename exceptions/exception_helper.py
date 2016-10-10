@@ -98,8 +98,7 @@ class ExceptionHelper( LoggingHelper ):
         
         # logging
         
-        # set logger name (for LoggingHelper parent class: (LoggingHelper -->
-        #    BasicRateLimited --> ArticleCoder).
+        # set logger name (for LoggingHelper parent class).
         self.set_logger_name( "python_utilities.exceptions.exception_helper" )
         
         # log level
