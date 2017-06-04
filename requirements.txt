@@ -9,3 +9,4 @@ six
 requests
 regex
 w3lib
+ipykernel
