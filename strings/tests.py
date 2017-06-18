@@ -33,7 +33,7 @@ except ImportError as ie:
     # try local import
     from html_helper import HTMLHelper
 
-#-- END attempt to import StringHelper --#
+#-- END attempt to import HTMLHelper --#
 
 class TestStringHelper(unittest.TestCase):
 

@@ -68,6 +68,7 @@ import unicodedata
 # regular expressions
 #import re
 import regex as re
+import regex
 
 #=============
 # six imports
@@ -1245,7 +1246,7 @@ class StringHelper( object ):
 
 
     @classmethod
-    def replace_white_space( cls, string_IN = None, replace_with_IN = " ", *args, **kwargs ):
+    def replace_white_space( cls, string_IN = None, replace_with_IN = " ", use_regex_IN = False, *args, **kwargs ):
         
         """
         Accepts string, splits it on white-space, joins the fragments together
@@ -1266,14 +1267,37 @@ class StringHelper( object ):
         
         # declare variables
         fragment_list = None
-
-        # split string passed in on white space.
-        fragment_list = string_IN.split()
+        regex_pattern = None
         
-        # join the fragments back together with the replace_with_IN character
-        #    passed in.        
-        string_OUT = replace_with_IN.join( fragment_list )
+        # got a string?
+        if ( ( string_IN is not None ) and ( string_IN != "" ) ):
+        
+            # split, or regex?
+            if ( use_regex_IN == True ):
+            
+                # compile regex
+                #regex_pattern = regex.compile( r'\s+' )
+                #string_OUT = regex.sub( regex_pattern, replace_with_IN, string_IN, flags = re.UNICODE )
+                string_OUT = regex.sub( r'\s+', replace_with_IN, string_IN, flags = regex.UNICODE )
                 
+            else:
+    
+                # split string passed in on white space.
+                fragment_list = string_IN.split()
+                
+                # join the fragments back together with the replace_with_IN character
+                #    passed in.        
+                string_OUT = replace_with_IN.join( fragment_list )
+                
+            #-- END check to see if regex or split. --#
+            
+        else:
+        
+            # return what was passed in.
+            string_OUT = string_IN
+        
+        #-- END check to see if string is non-empty. --#
+                    
         return string_OUT
     
     #-- END replace_white_space() function --#
