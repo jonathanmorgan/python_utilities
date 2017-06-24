@@ -57,6 +57,10 @@ class JSONHelper( object ):
     
     # regular expression for quote escaping.
     REGEX_MATCH_UNESCAPED_QUOTES = regex.compile( r'(?<!\\)"' )
+    REGEX_MATCH_MULTIPLE_WHITE_SPACE = regex.compile( r'\s+' )
+    
+    # replace newline with...
+    REPLACE_NEWLINE_WITH = "\\n"
 
 
     #============================================================================
@@ -64,8 +68,11 @@ class JSONHelper( object ):
     #============================================================================
 
 
-    @staticmethod
-    def escape_json_value( json_value_IN, do_double_escape_quotes_IN = False ):
+    @classmethod
+    def escape_json_value( cls,
+                           json_value_IN,
+                           do_double_escape_quotes_IN = False,
+                           compact_white_space_IN = False ):
 
         '''
         Accepts a JSON value, adds a back slash in front of all quotation marks
@@ -86,7 +93,7 @@ class JSONHelper( object ):
             if ( do_double_escape_quotes_IN == True ):
 
                 # first, escape any naked quotes
-                value_OUT = REGEX_MATCH_UNESCAPED_QUOTES.sub( "\\\"", value_OUT )
+                value_OUT = cls.REGEX_MATCH_UNESCAPED_QUOTES.sub( "\\\"", value_OUT )
 
                 # take all '\\\"' and convert them to '\\\\\\\"'
                 value_OUT = value_OUT.replace( "\\\"", "\\\\\\\"" )
@@ -97,6 +104,24 @@ class JSONHelper( object ):
                 value_OUT = value_OUT.replace( "\"", "\\\"" )
                 
             #-- END check to see if we double-escape quotes. --#
+            
+            # add a slash before newline characters - JSON doesn't like newlines
+            #     inside values.
+            if ( "\n" in value_OUT ):
+            
+                # so, back to what to do about a newline...
+                #value_OUT += "NEWLINE!"
+                value_OUT = value_OUT.replace( "\n", cls.REPLACE_NEWLINE_WITH )
+            
+            #-- END check to see if newline --#
+            
+            # compact white space?
+            if ( compact_white_space_IN == True ):
+            
+                # replace multiple white space of all kinds with a single space.
+                value_OUT = cls.REGEX_MATCH_MULTIPLE_WHITE_SPACE.sub( " ", value_OUT )
+                
+            #-- END check to see if compact white space. --#
         
         else:
         
