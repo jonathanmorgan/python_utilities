@@ -40,6 +40,7 @@ pretty_json_string = JSONHelper.pretty_print_json( json_object )
 import json
 
 # basic packages
+import regex
 import six # help with supporting both python 2 and 3.
 
 # define JSONHelper class.
@@ -53,6 +54,13 @@ class JSONHelper( object ):
 
     # DEBUG
     DEBUG_FLAG = False
+    
+    # regular expression for quote escaping.
+    REGEX_MATCH_UNESCAPED_QUOTES = regex.compile( r'(?<!\\)"' )
+    REGEX_MATCH_MULTIPLE_WHITE_SPACE = regex.compile( r'\s+' )
+    
+    # replace newline with...
+    REPLACE_NEWLINE_WITH = "\\n"
 
 
     #============================================================================
@@ -60,8 +68,11 @@ class JSONHelper( object ):
     #============================================================================
 
 
-    @staticmethod
-    def escape_json_value( json_value_IN ):
+    @classmethod
+    def escape_json_value( cls,
+                           json_value_IN,
+                           do_double_escape_quotes_IN = False,
+                           compact_white_space_IN = False ):
 
         '''
         Accepts a JSON value, adds a back slash in front of all quotation marks
@@ -78,8 +89,39 @@ class JSONHelper( object ):
             # yes
             value_OUT = json_value_IN
 
-            # precede all quotation marks with a backslash ( "\" )
-            value_OUT = value_OUT.replace( "\"", "\\\"" )
+            # do we double-escape quotes?
+            if ( do_double_escape_quotes_IN == True ):
+
+                # first, escape any naked quotes
+                value_OUT = cls.REGEX_MATCH_UNESCAPED_QUOTES.sub( "\\\"", value_OUT )
+
+                # take all '\\\"' and convert them to '\\\\\\\"'
+                value_OUT = value_OUT.replace( "\\\"", "\\\\\\\"" )
+                
+            else:
+
+                # precede all quotation marks with a backslash ( "\" )
+                value_OUT = value_OUT.replace( "\"", "\\\"" )
+                
+            #-- END check to see if we double-escape quotes. --#
+            
+            # add a slash before newline characters - JSON doesn't like newlines
+            #     inside values.
+            if ( "\n" in value_OUT ):
+            
+                # so, back to what to do about a newline...
+                #value_OUT += "NEWLINE!"
+                value_OUT = value_OUT.replace( "\n", cls.REPLACE_NEWLINE_WITH )
+            
+            #-- END check to see if newline --#
+            
+            # compact white space?
+            if ( compact_white_space_IN == True ):
+            
+                # replace multiple white space of all kinds with a single space.
+                value_OUT = cls.REGEX_MATCH_MULTIPLE_WHITE_SPACE.sub( " ", value_OUT )
+                
+            #-- END check to see if compact white space. --#
         
         else:
         
@@ -140,4 +182,128 @@ class JSONHelper( object ):
     #-- END method pretty_print_json() --#
     
     
+    #============================================================================
+    # !class methods
+    #============================================================================
+
+
+    @classmethod
+    def escape_all_string_json_values( cls, json_IN, do_double_escape_quotes_IN = False ):
+        
+        '''
+        loops over all properties in JSON dictionary or list passed in.  If
+           value is of type str, escapes the value.  If value is of type list or
+           dict, recursively calls this function, passing it the value.  Returns
+           updated dictionary.
+           
+        postconditions: updates in place - if strings found, json object passed
+            in is altered once this method completes.
+        '''
+        
+        # return reference
+        json_OUT = None
+        
+        # declare variables
+        json_name = ""
+        json_value = ""
+        json_list_index = -1
+        json_result = None
+        json_list_value = None
+        
+        # got anything passed in?
+        if ( json_IN is not None ):
+        
+            # dictionary?
+            if ( isinstance( json_IN, dict ) == True ):
+            
+                # make new dictionary to hold results.
+                json_OUT = {}
+            
+                # loop over dictionary items.
+                for json_name, json_value in six.iteritems( json_IN ):
+                
+                    # string?
+                    if ( isinstance( json_value, str ) == True ):
+                    
+                        # yes.  Escape, store value back in dict.
+                        json_OUT[ json_name ] = cls.escape_json_value( json_value, do_double_escape_quotes_IN )
+                        
+                    # no.  Dictionary?
+                    elif ( isinstance( json_value, dict ) == True ):
+                    
+                        # yes - call this method on the dictionary.
+                        json_OUT[ json_name ] = cls.escape_all_string_json_values( json_value, do_double_escape_quotes_IN )
+
+                    # no.  List?
+                    elif ( isinstance( json_value, list ) == True ):
+                    
+                        # it is a list - call this method on it.
+                        json_OUT[ json_name ] = cls.escape_all_string_json_values( json_value, do_double_escape_quotes_IN )
+                        
+                    else:
+                    
+                        # not anything we know how to process.  Pass.
+                        json_OUT[ json_name ] = json_value
+                        
+                    #-- END check of type of value.
+                
+                #-- END loop over items in this dictionary --#
+                
+            elif ( isinstance( json_IN, list ) == True ):
+            
+                # list - make new list to hold result.
+                json_OUT = []
+                
+                # loop over and process values.
+                json_list_index = -1
+                for json_value in json_IN:
+                
+                    # increment index
+                    json_list_index += 1
+
+                    # string?
+                    if ( isinstance( json_value, str ) == True ):
+                    
+                        # yes.  Escape, store value back in list at same index.
+                        json_list_value = cls.escape_json_value( json_value, do_double_escape_quotes_IN )
+                        
+                        
+                    # no.  Dictionary?
+                    elif ( isinstance( json_value, dict ) == True ):
+                    
+                        # yes - call this method on the dictionary.
+                        json_list_value = cls.escape_all_string_json_values( json_value, do_double_escape_quotes_IN )
+
+                    # no.  List?
+                    elif ( isinstance( json_value, list ) == True ):
+                    
+                        # it is a list - call this method on it.
+                        json_list_value = cls.escape_all_string_json_values( json_value, do_double_escape_quotes_IN )
+                        
+                    else:
+                    
+                        # not anything we know how to process.  Pass.
+                        json_list_value = json_value
+                        
+                    #-- END check of type of value.
+                    
+                    # append!
+                    json_OUT.append( json_list_value )
+                    
+                #-- END loop over JSON list items. --#
+            
+            else:
+            
+                # not anything we can process.  Pass.
+                json_OUT = json_IN
+            
+            #-- END check of type of what was passed in. --#
+        
+        #-- END check to see if we have other than None. --#
+
+        return json_OUT
+    
+    #-- END static method escape_all_string_json_values
+    
+
 #-- END class JSONHelper --#

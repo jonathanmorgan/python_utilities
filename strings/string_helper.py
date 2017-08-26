@@ -61,18 +61,33 @@ if ( has_non_ascii == True ):
 
 # base python modules
 import codecs
-import htmlentitydefs
-from HTMLParser import HTMLParser
-import re
 import six # help with supporting both python 2 and 3.
 import sys
 import unicodedata
+
+# regular expressions
+#import re
+import regex as re
+import regex
+
+#=============
+# six imports
+#=============
+
+#import htmlentitydefs
+from six.moves import html_entities
+
+#from HTMLParser import HTMLParser
+from six.moves.html_parser import HTMLParser
+
+# xrange() function
+from six.moves import range
 
 # Beautiful Soup
 #from bs4 import UnicodeDammit
 
 # define MLStripper class (from: http://stackoverflow.com/questions/753052/strip-html-from-strings-in-python )
-class MLStripper(HTMLParser):
+class MLStripper( HTMLParser ):
     def __init__(self):
         self.reset()
         self.fed = []
@@ -102,11 +117,11 @@ class HTMLTextExtractor( HTMLParser ):
 
     def handle_charref(self, number):
         codepoint = int(number[1:], 16) if number[0] in (u'x', u'X') else int(number)
-        self.result.append(unichr(codepoint))
+        self.result.append( six.unichr( codepoint ) )
 
     def handle_entityref(self, name):
-        codepoint = htmlentitydefs.name2codepoint[name]
-        self.result.append(unichr(codepoint))
+        codepoint = html_entities.name2codepoint[ name ]
+        self.result.append( six.unichr( codepoint ) )
 
     def get_text(self):
         return u''.join(self.result)
@@ -171,12 +186,12 @@ class StringHelper( object ):
 
 
     #============================================================================
-    # static methods
+    # ! static methods
     #============================================================================
 
 
     @staticmethod
-    def find_substring_iter( look_in_string_IN, look_for_string_IN ):
+    def find_substring_iter( look_in_string_IN, look_for_string_IN, ignore_case_IN = False ):
 
         ''' Yields all starting positions of copies of substring
             'look_for_string_IN' in string 'look_in_string_IN'.'''
@@ -184,11 +199,31 @@ class StringHelper( object ):
         # based on KnuthMorrisPratt in Martelli, A., Ravenscroft, A., & Ascher, D. (2005). Python Cookbook (Second Edition edition). Beijing; Sebastopol, CA: O'Reilly Media., recipe 5.13 
 
         # declare variables
+        me = "find_substring_iter"
+        look_in_string = ""
+        look_for_string = ""
         current_index = -1
+
+        # if ignore case, convert strings to lower case.
+        
+        # ignore case?
+        if ( ignore_case_IN == True ):
+        
+            # yes.  Convert to lower case.
+            look_in_string = look_in_string_IN.lower()
+            look_for_string = look_for_string_IN.lower()
+        
+        else:
+        
+            # no - use as passed in.
+            look_in_string = look_in_string_IN
+            look_for_string = look_for_string_IN
+        
+        #-- END check to see if ignore case. --#
 
         while True:
 
-            current_index = look_in_string_IN.find( look_for_string_IN, current_index + 1 )
+            current_index = look_in_string.find( look_for_string, current_index + 1 )
 
             if current_index < 0:
             
@@ -251,10 +286,10 @@ class StringHelper( object ):
     
         for char in string_IN:
 
-            if ord( char ) in htmlentitydefs.codepoint2name:
+            if ord( char ) in html_entities.codepoint2name:
 
-                name = htmlentitydefs.codepoint2name.get( ord( char ) )
-                entity = htmlentitydefs.name2codepoint.get( name )
+                name = html_entities.codepoint2name.get( ord( char ) )
+                entity = html_entities.name2codepoint.get( name )
                 string_OUT += "&#" + str(entity) + ";"
     
             else:
@@ -271,17 +306,79 @@ class StringHelper( object ):
 
 
     #============================================================================
-    # class methods
+    # ! class methods
     #============================================================================
 
     
     @classmethod
+    def capitalize_each_word( cls, string_IN, word_delimiter_IN = None, join_string_IN = " ", *args, **kwargs ):
+
+        '''
+        Parses string passed into words (either using default .split() behavior,
+            white space, or word_delimiter_IN as delimiter).  Capitalizes each
+            item in split list.  Joins items back together using join_string_IN,
+            which defaults to joining on " ".
+        '''
+        
+        # return reference
+        string_OUT = ""
+        
+        # declare variables
+        word_list = []
+        capitalized_list = []
+        current_word = ""
+        capitalized_word = ""
+        
+        # got a string?
+        if ( ( string_IN is not None ) and ( string_IN != "" ) ):
+        
+            # yes.  Got a word delimiter?
+            if ( ( word_delimiter_IN is not None ) and ( word_delimiter_IN != "" ) ):
+            
+                # yes.  split on it.
+                word_list = string_IN.split( word_delimiter_IN )
+                
+            else:
+            
+                # no delimiter.  Just split on white space.
+                word_list = string_IN.split()
+                
+            #-- END check to see if delimiter passed in. --#
+            
+            # capitalize the words.
+            capitalized_list = []
+            for current_word in word_list:
+            
+                # capitalize.
+                capitalized_word = current_word.capitalize()
+                
+                # add to list.
+                capitalized_list.append( capitalized_word )
+                
+            #-- END loop over words. --#
+            
+            # finally, join words together using join_string_IN.
+            string_OUT = join_string_IN.join( capitalized_list )
+            
+        else:
+        
+            # no.  Return what was passed in.
+            string_OUT = string_IN
+            
+        #-- END check to see if string has a value. --#
+        
+        return string_OUT
+        
+    #-- END class method capitalize_each_word() --#
+
+            
+    @classmethod
     def clean_string( cls,
-                       string_IN,
-                       char_list_IN = DEFAULT_CHAR_SUB_LIST,
-                       re_list_IN = DEFAULT_RE_SUB_LIST,
-                       *args,
-                       **kwargs ):
+                      string_IN,
+                      char_list_IN = DEFAULT_CHAR_SUB_LIST,
+                      re_list_IN = DEFAULT_RE_SUB_LIST,
+                      *args,
+                      **kwargs ):
         
         '''
         Accepts a string.  First, loops over list of character substitutions,
@@ -710,7 +807,89 @@ class StringHelper( object ):
 
 
     @classmethod
-    def find_substring_match_list( cls, look_in_string_IN, look_for_string_IN ):
+    def find_regex_matches( cls, string_IN, regex_list_IN, default_value_IN = None, return_all_matches_IN = False, *args, **kwargs ):
+        
+        '''
+        Accepts a string in which we want to look for matches, and a list of
+            regular expressions we want to evaluate.  Loops through regular
+            expressions, evaluates each against the string passed in.
+            
+        Postconditions: returns the most recent match found within the string
+            passed in, or the default value in "default_value_IN" (defaults to
+            None) if no matches found. When optional param return_all_matches_IN
+            is True, returns list of matches with most recent first
+            ( value_OUT[ 0 ] ), least recent last.  If no matches found, returns
+            an empty list.
+        '''
+        
+        # return reference
+        value_OUT = ""
+        
+        # declare variables
+        me = "find_regex_matches"
+        match_list = []
+        current_regex = ""
+        regex_match = None
+        regex_match_value = ""
+        
+        # got a string?
+        if ( ( string_IN is not None ) and ( string_IN != "" ) ):
+        
+            # got at least one regex?
+            if ( ( regex_list_IN is not None ) and ( len( regex_list_IN ) > 0 ) ):
+        
+                # yes.  Loop over regular expressions, checking for match for each
+                #     in string_IN.
+                for current_regex in regex_list_IN:
+                
+                    # look for match
+                    regex_match = re.search( current_regex, string_IN )
+    
+                    # got match?
+                    if ( regex_match is not None ):
+    
+                        # yes.  store it.
+                        regex_match_value = regex_match.group()
+                        match_list.insert( 0, regex_match_value )
+                        
+                    #-- END check to see if regex matches string. --#
+                    
+                #-- END loop over regular expressions --#
+                
+            #-- END check to see if regular expression list populated. --#
+        
+        #-- END check to see if string --#
+        
+        # set value_OUT
+        if ( return_all_matches_IN == True ):
+        
+            # return list of matches.
+            value_OUT = match_list
+            
+        else:
+        
+            # return first item in list.
+            if ( ( match_list is not None ) and ( len( match_list ) > 0 ) ):
+            
+                # return first item
+                value_OUT = match_list[ 0 ]
+                
+            else:
+            
+                # no match.  Return default.
+                value_OUT = default_value_IN
+            
+            #-- END check to see if anything in match_list --#
+
+        #-- END check to see if we want the last match, or all matches. --#
+        
+        return value_OUT
+        
+    #-- END method find_regex_matches() --#
+    
+
+    @classmethod
+    def find_substring_match_list( cls, look_in_string_IN, look_for_string_IN, ignore_case_IN = False ):
 
         '''
         uses find_substring_iter to retrieve all matches of substring in a
@@ -726,7 +905,7 @@ class StringHelper( object ):
         current_index = -1
 
         # loop using find_substring_iter
-        for current_index in cls.find_substring_iter( look_in_string_IN, look_for_string_IN ):
+        for current_index in cls.find_substring_iter( look_in_string_IN, look_for_string_IN, ignore_case_IN = ignore_case_IN ):
         
             # add match to list.
             list_OUT.append( current_index )
@@ -759,14 +938,14 @@ class StringHelper( object ):
         if ( table_OUT is None ):
 
             # not populated yet.  Build table, store it in class variable.
-            #table_OUT = dict.fromkeys(i for i in xrange(sys.maxunicode) if unicodedata.category(unichr(i)).startswith('P'))
+            #table_OUT = dict.fromkeys(i for i in range(sys.maxunicode) if unicodedata.category( six.unichr( i ) ).startswith('P'))
             table_OUT = {}
 
             # loop over all unicode points to the system's max unicode value.
-            for unicode_point in xrange( sys.maxunicode ):
+            for unicode_point in range( sys.maxunicode ):
 
                 # convert to unicode character
-                unicode_character = unichr( unicode_point )
+                unicode_character = six.unichr( unicode_point )
                 
                 # get unicode category for current character.
                 unicode_category = unicodedata.category( unicode_character )
@@ -825,6 +1004,64 @@ class StringHelper( object ):
         return value_OUT
     
     #-- END has_non_ascii_characters() function --#
+
+
+    @classmethod
+    def is_in_string_list( cls, string_IN, string_list_IN, ignore_case_IN = False, *args, **kwargs ):
+        
+        """
+        Accepts a string and a list of strings.  Looks to see if the string
+            passed in is in the list of strings, optionally ignoring case.  If
+            yes, returns True.  If no, returns False.
+        """
+    
+        # return reference
+        value_OUT = False
+        
+        # declare variables
+        string_lower = ""
+        current_string = ""
+        
+        # got a string list?
+        if ( ( string_list_IN is not None )
+            and ( isinstance( string_list_IN, list ) )
+            and ( len( string_list_IN ) > 0 ) ):
+            
+            # yes.  Ignoring case?
+            if ( ignore_case_IN == True ):
+            
+                # lower-case string
+                string_lower = string_IN.lower()
+            
+                # loop.
+                for current_string in string_list_IN:
+                    
+                    if ( string_lower == current_string.lower() ):
+                
+                        # a match!
+                        value_OUT = True
+                        
+                    #-- END check to see if author_string is staff --#
+                    
+                #-- END loop over staff author strings. --#
+
+            else:
+            
+                # Case-sensitive.  Just use "in".
+                value_OUT = string_IN in string_list_IN
+                
+            #-- END check to see if ignoring case. --#
+            
+        else:
+        
+            # no list.  Return False.
+            value_OUT = False
+            
+        #-- END check to see if list. --#
+        
+        return value_OUT
+    
+    #-- END is_in_string_list() function --#
 
 
     @classmethod
@@ -911,6 +1148,53 @@ class StringHelper( object ):
         return map_OUT
     
     #-- END map_non_ascii_characters() function --#
+
+
+    @classmethod
+    def object_to_unicode_string( cls, object_IN, encoding_IN = None, *args, **kwargs ):
+
+        '''
+        Accepts object instance, converts to string based on which python
+            version we are using.
+        '''
+
+        # return reference
+        string_OUT = ""
+
+        # declare variables
+
+        # convert object to string - different in python 2 and 3.
+        if ( six.PY2 == True ):
+        
+            # Python 2 - use unicode in case of special characters.
+            # got an encoding?
+            if ( ( encoding_IN is not None ) and ( encoding_IN != "" ) ):
+            
+                # yes, use it.
+                string_OUT = unicode( object_IN, encoding_IN )
+                
+            else:
+            
+                # no, just call unicode()
+                string_OUT = unicode( object_IN )
+                
+            #-- END check to see if encoding passed in. --#
+            
+        elif ( six.PY3 == True ):
+        
+            # Python 3 - use str()
+            string_OUT = str( object_IN )
+            
+        else:
+        
+            # neither python 2 or 3...  call str()?
+            string_OUT = str( object_IN )
+            
+        #-- END check to see what version of Python we are running. --#
+
+        return string_OUT
+
+    #-- END class method object_to_unicode_string() --#
 
 
     @classmethod
@@ -1043,7 +1327,7 @@ class StringHelper( object ):
 
 
     @classmethod
-    def replace_white_space( cls, string_IN = None, replace_with_IN = " ", *args, **kwargs ):
+    def replace_white_space( cls, string_IN = None, replace_with_IN = " ", use_regex_IN = False, *args, **kwargs ):
         
         """
         Accepts string, splits it on white-space, joins the fragments together
@@ -1064,14 +1348,37 @@ class StringHelper( object ):
         
         # declare variables
         fragment_list = None
-
-        # split string passed in on white space.
-        fragment_list = string_IN.split()
+        regex_pattern = None
         
-        # join the fragments back together with the replace_with_IN character
-        #    passed in.        
-        string_OUT = replace_with_IN.join( fragment_list )
+        # got a string?
+        if ( ( string_IN is not None ) and ( string_IN != "" ) ):
+        
+            # split, or regex?
+            if ( use_regex_IN == True ):
+            
+                # compile regex
+                #regex_pattern = regex.compile( r'\s+' )
+                #string_OUT = regex.sub( regex_pattern, replace_with_IN, string_IN, flags = re.UNICODE )
+                string_OUT = regex.sub( r'\s+', replace_with_IN, string_IN, flags = regex.UNICODE )
                 
+            else:
+    
+                # split string passed in on white space.
+                fragment_list = string_IN.split()
+                
+                # join the fragments back together with the replace_with_IN character
+                #    passed in.        
+                string_OUT = replace_with_IN.join( fragment_list )
+                
+            #-- END check to see if regex or split. --#
+            
+        else:
+        
+            # return what was passed in.
+            string_OUT = string_IN
+        
+        #-- END check to see if string is non-empty. --#
+                    
         return string_OUT
     
     #-- END replace_white_space() function --#

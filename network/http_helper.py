@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
 '''
-Copyright 2012, 2013 Jonathan Morgan
+Copyright 2012-present (currently 2016) Jonathan Morgan
 
 This file is part of http://github.com/jonathanmorgan/python_utilities.
 
@@ -52,19 +52,24 @@ requests_response = my_http_helper.load_url_requests( calais_REST_API_URL, data_
 
 #!/usr/bin/python
 
-#================================================================================
+#===============================================================================
 # imports
-#================================================================================
+#===============================================================================
 
-# python libraries
-import urllib2
+# six
+import six
 
-# mechanize
-import mechanize
+#=============
+# six imports
+#=============
+
+# import urllib2
+from six.moves import urllib
+from six.moves.urllib.request import Request
+from six.moves.urllib.request import build_opener
 
 # python_utilites.network
-import mechanize_tools
-import openanything
+from python_utilities.network import openanything
 
 # import requests
 import requests
@@ -102,36 +107,41 @@ class Http_Helper( object ):
     REQUEST_TYPE_POST = "post"
     REQUEST_TYPE_DEFAULT = REQUEST_TYPE_GET
 
+    #----------------------------------------------------------------------------
+    # NOT instance variables
+    # Class variables - overriden by __init__() per instance if same names, but
+    #    if not set there, shared!
+    #----------------------------------------------------------------------------
+
+    # redirect statuses
+    #redirect_status_list = []
+    #redirect_url_list = []
+    
+    # HTTP header values
+    #header_user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:22.0) Gecko/20100101 Firefox/22.0"
+    #header_accept = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+    #header_accept_charset = 'ISO-8859-1,utf-8;q=0.7,*;q=0.3'
+    #header_accept_encoding = 'none'
+    #header_accept_language = 'en-US,en;q=0.8'
+    #header_connection = 'keep-alive'
+    
+    # header dict
+    #header_dict = None
+    
+    # request_type
+    #request_type = None
+    
+    # default encoding
+    #default_encoding = ""
+
+    # debug_flag
+    #debug_flag = False
+    
+    
     #============================================================================
     # instance variables
     #============================================================================
 
-
-    # redirect statuses
-    redirect_status_list = []
-    redirect_url_list = []
-    
-    # HTTP header values
-    header_user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:22.0) Gecko/20100101 Firefox/22.0"
-    header_accept = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-    header_accept_charset = 'ISO-8859-1,utf-8;q=0.7,*;q=0.3'
-    header_accept_encoding = 'none'
-    header_accept_language = 'en-US,en;q=0.8'
-    header_connection = 'keep-alive'
-    
-    # header dict
-    header_dict = None
-    
-    # request_type
-    request_type = None
-    
-    # default encoding
-    default_encoding = ""
-
-    # debug_flag
-    debug_flag = False
-    
-    
     #---------------------------------------------------------------------------
     # __init__() method
     #---------------------------------------------------------------------------
@@ -163,6 +173,9 @@ class Http_Helper( object ):
         
         # encoding
         self.default_encoding = StringHelper.ENCODING_UTF8
+        
+        # requests session
+        self.requests_session = None
     
         # debug
         self.debug_flag = False
@@ -173,6 +186,76 @@ class Http_Helper( object ):
     #============================================================================
     # instance methods
     #============================================================================
+    
+
+    def close_requests_session( self, *args, **kwargs ):
+        
+        '''
+        Retrieves requests Session instance stored internally.  If one is
+            present, closes it.  If not, does nothing.
+            
+        Returns reference to the closed session.
+        '''
+        
+        # return reference
+        value_OUT = ""
+        
+        # declare variables
+        my_session = None
+        
+        # create session
+        my_session = self.get_requests_session( do_create_IN = False, *args, **kwargs )
+        
+        # got anything?
+        if ( my_session is not None ):
+        
+            # yes.  call close()
+            my_session.close()
+            
+            # and None out the reference.
+            self.set_requests_session( None )
+            
+        #-- END check to see if Session instance present. --#
+        
+        value_OUT = my_session
+        
+        return value_OUT
+        
+    #-- END method create_requests_session() --#
+    
+
+    def create_requests_session( self, *args, **kwargs ):
+        
+        '''
+        Creates and stores internally a requests Session instance, which is
+            used for connection pooling and cookies, among other things.
+            If you call this method, you must remember to close the Session
+            once you are done.  Another option is to create a Session outside
+            using a "with" statement, then store it in this instance using the
+            "set_requests_session()" method.  This way you will make sure to
+            close the session once you are done.
+            
+        Returns reference to the session.
+        '''
+        
+        # return reference
+        value_OUT = ""
+        
+        # declare variables
+        my_session = None
+        
+        # create session
+        my_session = requests.Session()
+        
+        # set value
+        self.requests_session = my_session
+        
+        # return instance
+        value_OUT = self.get_requests_session( do_create_IN = False, *args, **kwargs )
+        
+        return value_OUT
+        
+    #-- END method create_requests_session() --#
     
 
     def encode_data( self, value_IN, encoding_IN = None ):
@@ -235,7 +318,7 @@ class Http_Helper( object ):
         
         return value_OUT
 
-    #-- END get_content_type() --#
+    #-- END method get_default_encoding() --#
 
 
     def get_http_header( self, name_IN, default_IN = None, *args, **kwargs ):
@@ -316,7 +399,7 @@ class Http_Helper( object ):
     def get_redirect_url( self, url_IN, *args, **kwargs ):
     
         '''
-        method defaults to calling mechanize methods, not urllib2.  If this
+        method defaults to calling urllib2 methods.  If this
            becomes a problem, could do fancy things here to choose which is
            called.
         '''
@@ -325,7 +408,7 @@ class Http_Helper( object ):
         url_OUT = ""
         
         # call method implementation.
-        url_OUT = self.get_redirect_url_mechanize( url_IN, args, kwargs )
+        url_OUT = self.get_redirect_url_urllib2( url_IN, args, kwargs )
         
         return url_OUT
         
@@ -394,57 +477,18 @@ class Http_Helper( object ):
     def get_redirect_url_mechanize( self, url_IN, *args, **kwargs ):
     
         '''
-        Accepts a URL.  Tries to load that page.  If page loads, checks to see if
-           redirect. If yes, returns URL to which we were redirected and stores
-           the list of redirect codes in self.redirect_status_list.  If no,
-           returns None.  If there is an error loading the page, will throw an
-           exception.  Return of None DOES NOT imply error in this case.
+        Removing mechanize, keeping this method around for backward
+            compatibility, but it just calls get_redirect_url_urllib2().
         '''
     
         # return reference
-        url_OUT = None
-    
-        # declare variables.
-        request = None
-        opener = None
-        open_result = None
+        url_OUT = ""
         
-        # got a url?
-        if ( ( url_IN ) and ( url_IN != None ) and ( url_IN != "" ) ):
-
-            # load URL
-            open_result = self.load_url_mechanize( url_IN, args, kwargs )
-            
-            # if redirected, there will be a status_list attribute
-            if ( hasattr( open_result, "status_list" ) == True ):
-            
-                # redirected - list of statuses from redirects will be in
-                #    open_result.status_list - store it.
-                self.redirect_status_list = open_result.status_list
-                
-                # redirected - list of urls of redirects will be in
-                #    open_result.url_list - store it.
-                self.redirect_url_list = open_result.url_list
-                
-                # return URL from result
-                url_OUT = open_result.geturl()
-                
-            else:
-            
-                # no redirect.  Return None.
-                url_OUT = None
-            
-            #-- END check to see if redirect --#
-            
-        else:
+        # call method implementation.
+        url_OUT = self.get_redirect_url_urllib2( url_IN, args, kwargs )
         
-            # No URL passed in, return None.
-            url_OUT = None
-        
-        #-- END check to see of URL string passed in. --#            
-                
         return url_OUT
-    
+        
     #-- END methot get_redirect_url_mechanize --#    
 
 
@@ -524,6 +568,36 @@ class Http_Helper( object ):
     #-- END methot get_redirect_url_requests --#    
 
 
+    def get_requests_session( self, do_create_IN = False, *args, **kwargs ):
+
+        '''
+        Retrieves default encoding type.
+        '''
+        
+        # return reference
+        value_OUT = None
+
+        # get requests session instance variable.
+        value_OUT = self.requests_session
+        
+        # anything there?
+        if ( value_OUT is None ):
+        
+            # no.  Do we create?
+            if ( do_create_IN == True ):
+            
+                # call create method.
+                value_OUT = self.create_requests_session( *args, **kwargs )
+                
+            #-- END check to see if we are to create if no session present. --#
+            
+        #-- END check to see if session present. --#
+
+        return value_OUT
+
+    #-- END get_requests_session() --#
+
+
     def initialize_header_dict( self, header_dict_IN = None, *args, **kwargs ):
         
         '''
@@ -565,7 +639,7 @@ class Http_Helper( object ):
     def load_url( self, url_IN, *args, **kwargs ):
     
         '''
-        method defaults to calling mechanize methods, not urllib2.  If this
+        method defaults to calling urllib2 methods.  If this
            becomes a problem, could do fancy things here to choose which is
            called.
         '''
@@ -574,7 +648,7 @@ class Http_Helper( object ):
         response_OUT = ""
         
         # call method implementation.
-        response_OUT = self.load_url_mechanize( url_IN, args, kwargs )
+        response_OUT = self.load_url_urllib2( url_IN, args, kwargs )
         
         return response_OUT
         
@@ -605,13 +679,13 @@ class Http_Helper( object ):
             headers = self.get_http_header_dict()
 
             # create request for a URL (must include a protocol - http://, etc.).
-            request = urllib2.Request( url_IN, post_data_IN, headers )
+            request = Request( url_IN, post_data_IN, headers )
         
             # make an opener, passing it an instance of our SmartRedirectHandler()
-            opener = urllib2.build_opener( openanything.SmartRedirectHandler() )
+            opener = build_opener( openanything.SmartRedirectHandler() )
             
             # open the URL
-            response_OUT = opener.open(request)
+            response_OUT = opener.open( request )
             
         else:
         
@@ -628,46 +702,22 @@ class Http_Helper( object ):
     def load_url_mechanize( self, url_IN, post_data_IN = None, *args, **kwargs ):
     
         '''
-        Accepts a URL.  Tries to load that page using the mechanize package.  If
-           page loads, returns response.  If not, returns None.
+        Removing mechanize, keeping this method around for backward
+            compatibility, but it just calls load_url_urllib2().
         '''
     
         # return reference
-        response_OUT = None
-    
-        # declare variables.
-        request = None
-        opener = None
-        open_result = None
+        response_OUT = ""
         
-        # got a url?
-        if ( ( url_IN ) and ( url_IN != None ) and ( url_IN != "" ) ):
-
-            # get header dict
-            headers = self.get_http_header_dict()
-
-            # create request for a URL (must include a protocol - http://, etc.).
-            request = mechanize.Request( url_IN, post_data_IN, headers )
+        # call method implementation.
+        response_OUT = self.load_url_urllib2( url_IN, args, kwargs )
         
-            # make an opener, passing it an instance of our SmartRedirectHandler()
-            opener = mechanize.build_opener( mechanize_tools.SmartRedirectHandler() )
-            
-            # open the URL
-            response_OUT = opener.open( request )
-            
-        else:
-        
-            # No URL passed in, return None.
-            response_OUT = None
-        
-        #-- END check to see of URL string passed in. --#            
-                
         return response_OUT
-    
+        
     #-- END methot load_url_mechanize --#
     
     
-    def load_url_requests( self, url_IN, request_type_IN = "", data_IN = None, encoding_IN = None, *args, **kwargs ):
+    def load_url_requests( self, url_IN, request_type_IN = "", data_IN = None, encoding_IN = None, do_stream_IN = False, *args, **kwargs ):
     
         '''
         Accepts a URL.  Tries to load that page using the "requests" HTTP
@@ -684,6 +734,8 @@ class Http_Helper( object ):
         is_data_unicode = False
         my_encoding = ""
         request_data = ""
+        my_session = None
+        my_requestor = None
         opener = None
         open_result = None
         
@@ -705,16 +757,30 @@ class Http_Helper( object ):
             # see if data is a unicode object.  If so, encode it.
             request_data = self.encode_data( data_IN, encoding_IN )
             
+            # Do we have a session?
+            my_session = self.get_requests_session( do_create_IN = False, *args, **kwargs )
+            if ( my_session is not None ):
+            
+                # yes, use it to request.
+                my_requestor = my_session
+            
+            else:
+            
+                # no, just use requests.
+                my_requestor = requests
+            
+            #-- END check to see if session. --#
+                        
             # what type of request?
             if ( my_request_type == self.REQUEST_TYPE_GET ):
             
                 # get.
-                response_OUT = requests.get( url_IN, headers = headers, params = request_data )
+                response_OUT = my_requestor.get( url_IN, headers = headers, params = request_data, stream = do_stream_IN )
             
             elif ( my_request_type == self.REQUEST_TYPE_POST ):
 
                 # post.
-                response_OUT = requests.post( url_IN, headers = headers, data = request_data )
+                response_OUT = my_requestor.post( url_IN, headers = headers, data = request_data, stream = do_stream_IN )
             
             else:
             
@@ -804,5 +870,21 @@ class Http_Helper( object ):
 
     #-- END method set_http_header_dict() --#
 
+
+    def set_requests_session( self, value_IN, *args, **kwargs ):
+        
+        # return reference
+        value_OUT = ""
+        
+        # set value
+        self.requests_session = value_IN
+        
+        # return instance
+        value_OUT = self.get_requests_session( *args, **kwargs )
+        
+        return value_OUT
+        
+    #-- END method set_requests_session() --#
+    
 
 #-- END class Http_Helper --#

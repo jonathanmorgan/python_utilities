@@ -26,8 +26,38 @@ import inspect
 
 class ObjectHelper( object ):
 
+
     @classmethod
-    def get_user_attributes( cls, class_IN, exclude_boring_IN = True ):
+    def get_type_name( cls, reference_IN, *args, **kwargs ):
+        
+        '''
+        Accepts a reference to something.  Calls type() on the reference, then
+            gets the __name__ of the type.  This is as much a reminder to me as
+            it is a genuinely useful method.
+        '''
+        
+        # return reference
+        value_OUT = ""
+        
+        # declare variables
+        reference_type = None
+        type_name = ""
+        
+        # get type of reference passed in.
+        reference_type = type( reference_IN )
+        
+        # get name of type.
+        type_name = reference_type.__name__
+        
+        value_OUT = type_name
+        
+        return value_OUT
+        
+    #-- END class method get_type_name() --#
+
+
+    @classmethod
+    def get_user_attributes( cls, class_IN, exclude_boring_IN = True, *args, **kwargs ):
 
         '''
         Based on: http://stackoverflow.com/questions/4241171/inspect-python-class-attributes

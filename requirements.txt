@@ -2,8 +2,11 @@ beautifulsoup4
 chardet
 cchardet
 bleach
-MySQL-python
+mysqlclient
+pymysql
 psycopg2
-mechanize
 six
 requests
+regex
+w3lib
+ipykernel

@@ -2,7 +2,7 @@
 
 <!-- TOC -->
 
-Python 2 Utility classes.  Includes the following files:
+Python utility classes (should work in either Python 2 or 3).  Includes the following files:
 
 - __/beautiful\_soup/__
     - __/beautiful\_soup/beautiful\_soup\_helper.py__ - `BeautifulSoupHelper` class that implements helper methods for common things you do with BeautifulSoup, like getting child text and encoding HTML entities.  Built against BeautifulSoup 3, updated to import BeautifulSoup 4, work just fine far as I can tell...

@@ -98,8 +98,7 @@ class ExceptionHelper( LoggingHelper ):
         
         # logging
         
-        # set logger name (for LoggingHelper parent class: (LoggingHelper -->
-        #    BasicRateLimited --> ArticleCoder).
+        # set logger name (for LoggingHelper parent class).
         self.set_logger_name( "python_utilities.exceptions.exception_helper" )
         
         # log level
@@ -257,7 +256,7 @@ class ExceptionHelper( LoggingHelper ):
     #-- END method get_logger_name --#
 
     
-    def log_exception_info( self, message_IN, log_level_IN = "" ):
+    def log_exception_info( self, message_IN, log_level_IN = logging.ERROR ):
     
         '''
         Accepts message string.  If debug is on, passes it to print().  If not,
@@ -298,7 +297,7 @@ class ExceptionHelper( LoggingHelper ):
     def process_exception( self, exception_IN = None, message_IN = "", send_email_IN = False, email_subject_IN = "", print_details_IN = True, *args, **kwargs ):
     
         # return reference
-        status_OUT = self.STATUS_SUCCESS
+        status_OUT = ExceptionHelper.STATUS_SUCCESS
         
         # declare variables
         my_logger = None
@@ -424,7 +423,7 @@ class ExceptionHelper( LoggingHelper ):
         
         else:
         
-            status_OUT = self.STATUS_ERROR_PREFIX + "no exception passed in, can't process exception."
+            status_OUT = ExceptionHelper.STATUS_PREFIX_ERROR + "no exception passed in, can't process exception."
         
         #-- END check to make sure exception passed in --#
         

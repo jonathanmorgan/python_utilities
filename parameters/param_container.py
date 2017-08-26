@@ -275,6 +275,8 @@ class ParamContainer( object ):
         my_request = self.request
         if ( my_request is not None ):
         
+            #print( "request!"  )
+        
             # get list using request.POST.getlist()/request.GET.getlist()
             list_OUT = my_params.getlist( param_name_IN, [] )
             
@@ -289,10 +291,14 @@ class ParamContainer( object ):
             
         else:
         
+            #print( "NO request!"  )
+
             # not a request object - call get_dict_value_as_list()
             list_OUT = DictHelper.get_dict_value_as_list( my_params, param_name_IN, default_IN, delimiter_IN )
             
         #-- END check to see if request or not. --#
+        
+        #print( "list_OUT = " + str( list_OUT ) )
         
         return list_OUT
 
