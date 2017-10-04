@@ -58,6 +58,72 @@ class DictHelper( object ):
 
 
     @classmethod
+    def render_dict_string( cls,
+                            dict_IN,
+                            sort_by_key_IN = True,
+                            prefix_IN = "----> ",
+                            line_separator_IN = "\n",
+                            print_items_IN = False ):
+    
+        '''
+        Accepts dictionary, optional "sort by key" flag.  Retrieves name/key
+            list.  If sorted, sorts name/key list.  Then, loops over the
+            name/key list, for each name retrieving associated value and
+            making a string line for the two.  At the end, appends list of lines
+            together with "\n".
+        '''
+        
+        # return reference
+        string_OUT = None
+        
+        # declare variables.
+        key_list = []
+        current_key = None
+        current_value = None
+        item_string = None
+        item_list = []
+        
+        # get name/key list.
+        key_list = list( six.viewkeys( dict_IN ) )
+        
+        # sorted?
+        if sort_by_key_IN == True:
+        
+            # sort the key list.
+            key_list.sort()
+            
+        #-- END check to see if sort requested --#
+        
+        # loop over keys
+        for current_key in key_list:
+        
+            # get value
+            current_value = dict_IN.get( current_key, None )
+            
+            # make string of key and value
+            item_string = prefix_IN + str( current_key ) + " : " + str( current_value )
+            
+            # print?
+            if ( print_items_IN == True ):
+            
+                print( item_string )
+                
+            #-- END check to see if print. --#
+            
+            # append to item list.
+            item_list.append( item_string )
+            
+        #-- END loop over keys --#
+        
+        # append the items in the list together.
+        string_OUT = "\n".join( item_list )
+        
+        return string_OUT
+        
+    #-- END method render_dict_string() --#
+        
+           
+    @classmethod
     def get_dict_value( cls, dict_IN, name_IN, default_IN = None ):
     
         '''
@@ -593,6 +659,25 @@ class DictHelper( object ):
     
     
     @classmethod
+    def print_dict( cls, dict_IN, sort_by_key_IN = True, prefix_IN = "----> " ):
+    
+        '''
+        Accepts dictionary, optional "sort by key" flag.  Retrieves name/key
+            list.  If sorted, sorts name/key list.  Then, loops over the
+            name/key list, for each name retrieving associated value and
+            printing the two.
+        '''
+
+        # call render_dict_string(), directing it to print each item.
+        cls.render_dict_string( dict_IN = dict_IN,
+                                sort_by_key_IN = sort_by_key_IN, 
+                                prefix_IN = prefix_IN,
+                                print_items_IN = True )        
+        
+    #-- END method print_dict() --#
+        
+           
+    @classmethod
     def set_dict_value( cls, dict_IN, name_IN, value_IN ):
     
         '''
@@ -654,6 +739,47 @@ class DictHelper( object ):
 
     #-- END method __init__() --#
 
+
+    def __str__( self, fancy_print_IN = True, *args, **kwargs ):
+
+        # return reference
+        string_OUT = ""
+        
+        # declare variables
+        my_dict = None
+        
+        # note the class
+        string_OUT = "DictHelper --> \n"
+        
+        # get nested dictionary.
+        my_dict = self.get_dictionary()
+        
+        # got a dictionary?
+        if ( my_dict is not None ):
+        
+            # render it as a string.
+            if ( fancy_print_IN == True ):
+            
+                # render as string
+                string_OUT += DictHelper.render_dict_string( my_dict )
+                
+            else:
+            
+                # call str()
+                string_OUT += str( my_dict )
+                
+            #-- END check to see if fancy print --#
+            
+        else:
+        
+            string_OUT += "No dictionary present."
+            
+        #-- END check to see if dictionary --#
+        
+        return string_OUT
+        
+    #-- END method __str__() --#
+    
 
     #============================================================================
     # ! ==> Instance methods
