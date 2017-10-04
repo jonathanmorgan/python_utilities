@@ -557,6 +557,87 @@ class StringHelper( object ):
 
 
     @classmethod
+    def encode_attrs( cls,
+                      instance_IN,
+                      attr_name_list_IN,
+                      output_encoding_IN = ENCODING_ASCII,
+                      input_encoding_IN = '',
+                      encode_error_IN = "xmlcharrefreplace",
+                      entitize_4_byte_unicode_IN = False,
+                      *args,
+                      **kwargs ):
+        
+        '''
+        Accepts an object instance and a list of attrs that we want to encode.
+           For each attr, retrieves value from instance.  If not None and not 
+           empty, encodes the value.  Then, stores the value back in the
+           attribute in the instance passed in.
+           
+        Parameters:
+        - instance_IN - string we want encoded in the output encoding specified.
+        - attr_list_IN - list of names of object attributes whose values we want encoded.
+        - output_encoding_IN - encoding we want this string to be in.  Defaults
+            to ascii.
+        - input_encoding_IN - optional encoding in which our string is encoded.
+        - encode_error_IN - what we want to do on encoding errors, when
+            converting to safe string (default is "xmlcharrefreplace", which
+            converts those characters to entities).
+        - entitize_4_byte_unicode_IN - Boolean, if True, after encoding,
+            converts all 4-byte unicode characters to entities (for mysql that
+            can't handle 4-byte unicode).  If false, doesn't.
+        '''
+        
+        # return reference
+        instance_OUT = None
+        
+        # declare variables
+        attr_value = None
+        attr_name = None
+        
+        # store instance for return.
+        instance_OUT = instance_IN
+        
+        # anything in instance?
+        if ( instance_OUT is not None ):
+        
+            # got a list?
+            if ( (  attr_name_list_IN is not None ) and ( len( attr_name_list_IN ) > 0 ) ):
+            
+                # we have a list.  Loop over the list.
+                for attr_name in attr_name_list_IN:
+                
+                    # get value from instance.
+                    attr_value = getattr( instance_OUT, attr_name, None )
+                    
+                    # got a value?
+                    if ( ( attr_value is not None ) and ( attr_value != "" ) ):
+                    
+                        # valid value.  Encode, then store back in instance.
+                        attr_value = cls.encode_string( attr_value,
+                                                        output_encoding_IN = output_encoding_IN,
+                                                        input_encoding_IN = input_encoding_IN,
+                                                        encode_error_IN = encode_error_IN,
+                                                        entitize_4_byte_unicode_IN = entitize_4_byte_unicode_IN,
+                                                        *args,
+                                                        **kwargs )
+                                                        
+                        # store it back.
+                        setattr( instance_OUT, attr_name, attr_value )
+                    
+                    #-- END check if we have a value that can be encoded. --#
+                
+                #-- END loop over attribute names --#
+            
+            #-- END check to see if we have a list of attribute names. --#
+        
+        #-- END check to make sure we have an instance. --#
+
+        return instance_OUT
+        
+    #-- END method encode_attrs --#
+
+
+    @classmethod
     def encode_string( cls,
                        string_IN,
                        output_encoding_IN = ENCODING_ASCII,
