@@ -31,8 +31,9 @@ from python_utilities.analysis.statistics.statistics_helper import StatsHelper
 # calculate Potter and Levine-Donnerstein's modified nominal pi.
 number_of_coders = 3
 number_of_choices = 2
-value_list_1 = [ retty_json_string = JSONHelper.pretty_print_json( json_object )
-
+value_list_1 = [ 1, 0, 1, 0, 1, 0, 0, 0, 1 ]
+value_list_2 = [ 1, 0, 1, 1, 0, 0, 1, 0, 1 ]
+StatsHelper.potter_pi( value_list_1, value_list_2, number_of_coders, number_of_choices )
 '''
 
 #==============================================================================#

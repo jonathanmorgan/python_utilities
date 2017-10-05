@@ -98,7 +98,7 @@ class TestHTMLHelper(unittest.TestCase):
         
     #-- END method test_filter_attributes() --#
     
-    def test_remove_html( self ):
+    def test_remove_html_bleach( self ):
         
         # declare variables
         start_string = ""
@@ -116,15 +116,37 @@ class TestHTMLHelper(unittest.TestCase):
            }
         expected_string = "<p id=\"1\">The dark sky was pierced by a blade of light.</p><p id=\"2\">one bird two shoes and a cat</p>"
         
-        # do work - test bleach library
+        # do work - test bleach library - should break - https://github.com/mozilla/bleach/issues/280
         error_message = "bleach library error"
         test_string = HTMLHelper.remove_html( start_string,
                                               allowed_tags,
                                               allowed_attributes,
+                                              bs_parser_IN = "html.parser",
                                               remove_method_IN = HTMLHelper.HTML_FILTER_LIBRARY_BLEACH )
         
         # and the assert
-        self.assertEqual( test_string, expected_string, msg = error_message )
+        self.assertNotEqual( test_string, expected_string, msg = error_message )
+                
+    #-- END method test_remove_html_bleach() --#
+
+
+    def test_remove_html_w3lib( self ):
+        
+        # declare variables
+        start_string = ""
+        allowed_tags = []
+        allowed_attributes = {}
+        test_string = ""
+        expected_string = ""
+        error_message = ""
+        
+        # initialize
+        start_string = TestHTMLHelper.TEST_HTML_FRAGMENT_PARAGRAPHS
+        allowed_tags = [ 'p', ]
+        allowed_attributes = {
+               'p' : [ 'id', ],
+           }
+        expected_string = "<p id=\"1\">The dark sky was pierced by a blade of light.</p><p id=\"2\">one bird two shoes and a cat</p>"
         
         # do work - test w3lib library
         error_message = "w3lib library error"
@@ -147,7 +169,7 @@ class TestHTMLHelper(unittest.TestCase):
         # and the assert
         self.assertNotEqual( test_string, expected_string, msg = error_message )
         
-    #-- END method test_remove_html() --#
+    #-- END method test_remove_html_w3lib() --#
 
 
 #-- END unittest class TestHTMLHelper --#

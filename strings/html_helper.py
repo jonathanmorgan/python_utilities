@@ -192,7 +192,7 @@ class HTMLHelper( object ):
                      allowed_attrs_IN = {},
                      bs_parser_IN = "",
                      string_bs_IN = None,
-                     remove_method_IN = HTML_FILTER_LIBRARY_BLEACH,
+                     remove_method_IN = HTML_FILTER_LIBRARY_W3LIB,
                      *args,
                      **kwargs ):
         

@@ -58,72 +58,6 @@ class DictHelper( object ):
 
 
     @classmethod
-    def render_dict_string( cls,
-                            dict_IN,
-                            sort_by_key_IN = True,
-                            prefix_IN = "----> ",
-                            line_separator_IN = "\n",
-                            print_items_IN = False ):
-    
-        '''
-        Accepts dictionary, optional "sort by key" flag.  Retrieves name/key
-            list.  If sorted, sorts name/key list.  Then, loops over the
-            name/key list, for each name retrieving associated value and
-            making a string line for the two.  At the end, appends list of lines
-            together with "\n".
-        '''
-        
-        # return reference
-        string_OUT = None
-        
-        # declare variables.
-        key_list = []
-        current_key = None
-        current_value = None
-        item_string = None
-        item_list = []
-        
-        # get name/key list.
-        key_list = list( six.viewkeys( dict_IN ) )
-        
-        # sorted?
-        if sort_by_key_IN == True:
-        
-            # sort the key list.
-            key_list.sort()
-            
-        #-- END check to see if sort requested --#
-        
-        # loop over keys
-        for current_key in key_list:
-        
-            # get value
-            current_value = dict_IN.get( current_key, None )
-            
-            # make string of key and value
-            item_string = prefix_IN + str( current_key ) + " : " + str( current_value )
-            
-            # print?
-            if ( print_items_IN == True ):
-            
-                print( item_string )
-                
-            #-- END check to see if print. --#
-            
-            # append to item list.
-            item_list.append( item_string )
-            
-        #-- END loop over keys --#
-        
-        # append the items in the list together.
-        string_OUT = "\n".join( item_list )
-        
-        return string_OUT
-        
-    #-- END method render_dict_string() --#
-        
-           
-    @classmethod
     def get_dict_value( cls, dict_IN, name_IN, default_IN = None ):
     
         '''
@@ -659,7 +593,13 @@ class DictHelper( object ):
     
     
     @classmethod
-    def print_dict( cls, dict_IN, sort_by_key_IN = True, prefix_IN = "----> " ):
+    def print_dict( cls,
+                    dict_IN,
+                    sort_by_key_IN = True,
+                    prefix_IN = "----> ",
+                    separator_IN = " : ",
+                    line_separator_IN = "\n",
+                    suffix_IN = None ):
     
         '''
         Accepts dictionary, optional "sort by key" flag.  Retrieves name/key
@@ -672,9 +612,122 @@ class DictHelper( object ):
         cls.render_dict_string( dict_IN = dict_IN,
                                 sort_by_key_IN = sort_by_key_IN, 
                                 prefix_IN = prefix_IN,
+                                separator_IN = separator_IN,
+                                suffix_IN = suffix_IN,
+                                line_separator_IN = line_separator_IN,
                                 print_items_IN = True )        
         
     #-- END method print_dict() --#
+        
+           
+    @classmethod
+    def render_dict_string( cls,
+                            dict_IN,
+                            sort_by_key_IN = True,
+                            prefix_IN = "----> ",
+                            separator_IN = " : ",
+                            suffix_IN = None,
+                            line_separator_IN = "\n",
+                            print_items_IN = False ):
+    
+        '''
+        Accepts dictionary, optional "sort by key" flag.  Retrieves name/key
+            list.  If sorted, sorts name/key list.  Then, loops over the
+            name/key list, for each name retrieving associated value and
+            making a string line for the two.  At the end, appends list of lines
+            together with "\n".
+        '''
+        
+        # return reference
+        string_OUT = None
+        
+        # declare variables.
+        key_list = []
+        prefix = None
+        separator = None
+        suffix = None
+        current_key = None
+        current_value = None
+        item_string = None
+        item_list = []
+        
+        # get name/key list.
+        key_list = list( six.viewkeys( dict_IN ) )
+        
+        # furniture - prefix
+        if ( prefix_IN is None ):
+        
+            # None - empty string.
+            prefix = ""
+            
+        else:
+        
+            # got something - use it.
+            prefix = prefix_IN
+        
+        #-- END check to see if prefix. --#
+        
+        # furniture - separator
+        if ( separator_IN is None ):
+        
+            # None - empty string.
+            separator = ""
+            
+        else:
+        
+            # got something - use it.
+            separator = separator_IN
+        
+        #-- END check to see if separator. --#
+        
+        # furniture - suffix
+        if ( suffix_IN is None ):
+        
+            # None - empty string.
+            suffix = ""
+            
+        else:
+        
+            # got something - use it.
+            suffix = suffix_IN
+        
+        #-- END check to see if suffix. --#
+        
+        # sorted?
+        if sort_by_key_IN == True:
+        
+            # sort the key list.
+            key_list.sort()
+            
+        #-- END check to see if sort requested --#
+        
+        # loop over keys
+        for current_key in key_list:
+        
+            # get value
+            current_value = dict_IN.get( current_key, None )
+            
+            # make string of key and value
+            item_string = prefix + str( current_key ) + separator + str( current_value ) + suffix
+            
+            # print?
+            if ( print_items_IN == True ):
+            
+                print( item_string )
+                
+            #-- END check to see if print. --#
+            
+            # append to item list.
+            item_list.append( item_string )
+            
+        #-- END loop over keys --#
+        
+        # append the items in the list together.
+        string_OUT = "\n".join( item_list )
+        
+        return string_OUT
+        
+    #-- END method render_dict_string() --#
         
            
     @classmethod

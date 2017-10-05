@@ -123,7 +123,7 @@ class ConfusionMatrixHelper( object ):
 
 
     #============================================================================
-    # class methods
+    # ! ==> class methods
     #============================================================================
 
 
@@ -296,8 +296,10 @@ class ConfusionMatrixHelper( object ):
         false_positive_count = None
         true_negative_count = None
         false_negative_count = None
+        status_message = None
         
         # declare variables - derived metrics
+        metric_value = None
         precision = None  # PPV
         recall = None  # TPR
         false_negative_rate = None  # FNR
@@ -338,105 +340,392 @@ class ConfusionMatrixHelper( object ):
         true_negative_count = confusion_metrics.get_value_as_int( self.METRIC_TRUE_NEGATIVE, None )
         false_negative_count = confusion_metrics.get_value_as_int( self.METRIC_FALSE_NEGATIVE, None )
 
+
+        #----------------------------------------------------------------------#
         # ! ==> precision - Positive predictive value (PPV), Precision
-        precision = ( true_positive_count / predicted_positive_count )
+        #----------------------------------------------------------------------#
+
+        #precision = ( true_positive_count / predicted_positive_count )
+ 
+        if ( ( predicted_positive_count is not None ) and ( predicted_positive_count != 0 ) ):
+ 
+            metric_value = ( true_positive_count / predicted_positive_count )
+ 
+        else:
+ 
+            metric_value = None
+            status_message = "ERROR calculating precision"
+            status_list_OUT.append( status_message )
+ 
+        #-- END check for division by zero --#        
+ 
+        precision = metric_value
         confusion_metrics.set_value( self.METRIC_PRECISION, precision )
         confusion_metrics.set_value( self.METRIC_PPV, precision )
         
+
+        #----------------------------------------------------------------------#
         # ! ==> recall - True positive rate (TPR), Recall, Sensitivity, probability of detection
-        recall = ( true_positive_count / ground_truth_positive_count )
+        #----------------------------------------------------------------------#
+
+        #recall = ( true_positive_count / ground_truth_positive_count )
+
+        if ( ( ground_truth_positive_count is not None ) and ( ground_truth_positive_count != 0 ) ):
+
+            metric_value = ( true_positive_count / ground_truth_positive_count )
+
+        else:
+
+            metric_value = None
+            status_message = "ERROR calculating recall"
+            status_list_OUT.append( status_message )
+
+        #-- END check for division by zero --#        
+
+        recall = metric_value
         confusion_metrics.set_value( self.METRIC_RECALL, recall )
         confusion_metrics.set_value( self.METRIC_TPR, recall )
         
+
+        #----------------------------------------------------------------------#
         # ! ==> False negative rate (FNR), Miss rate
-        false_negative_rate = ( false_negative_count / ground_truth_positive_count )
+        #----------------------------------------------------------------------#
+
+        #false_negative_rate = ( false_negative_count / ground_truth_positive_count )
+
+        if ( ( ground_truth_positive_count is not None ) and ( ground_truth_positive_count != 0 ) ):
+
+            metric_value = ( false_negative_count / ground_truth_positive_count )
+
+        else:
+
+            metric_value = None
+            status_message = "ERROR calculating false_negative_rate"
+            status_list_OUT.append( status_message )
+
+        #-- END check for division by zero --#        
+
+        false_negative_rate = metric_value
         confusion_metrics.set_value( self.METRIC_FALSE_NEGATIVE_RATE, false_negative_rate )
         confusion_metrics.set_value( self.METRIC_FNR, false_negative_rate )
 
+
+        #----------------------------------------------------------------------#
         # ! ==> False positive rate (FPR), Fall-out
-        false_positive_rate = ( false_positive_count / ground_truth_negative_count )
+        #----------------------------------------------------------------------#
+
+        #false_positive_rate = ( false_positive_count / ground_truth_negative_count )
+
+        if ( ( ground_truth_negative_count is not None ) and ( ground_truth_negative_count != 0 ) ):
+
+            metric_value = ( false_positive_count / ground_truth_negative_count )
+
+        else:
+
+            metric_value = None
+            status_message = "ERROR calculating false_positive_rate"
+            status_list_OUT.append( status_message )
+
+        #-- END check for division by zero --#        
+
+        false_positive_rate = metric_value
         confusion_metrics.set_value( self.METRIC_FALSE_POSITIVE_RATE, false_positive_rate )
         confusion_metrics.set_value( self.METRIC_FPR, false_positive_rate )
 
+
+        #----------------------------------------------------------------------#
         # ! ==> True negative rate (TNR), Specificity (SPC)
-        true_negative_rate = ( true_negative_count / ground_truth_negative_count )
+        #----------------------------------------------------------------------#
+
+        #true_negative_rate = ( true_negative_count / ground_truth_negative_count )
+
+        if ( ( ground_truth_negative_count is not None ) and ( ground_truth_negative_count != 0 ) ):
+
+            metric_value = ( true_negative_count / ground_truth_negative_count )
+
+        else:
+
+            metric_value = None
+            status_message = "ERROR calculating true_negative_rate"
+            status_list_OUT.append( status_message )
+
+        #-- END check for division by zero --#        
+
+        true_negative_rate = metric_value
         confusion_metrics.set_value( self.METRIC_TRUE_NEGATIVE_RATE, true_negative_rate )
         confusion_metrics.set_value( self.METRIC_TNR, true_negative_rate )
         confusion_metrics.set_value( self.METRIC_SPECIFICITY, true_negative_rate )
         confusion_metrics.set_value( self.METRIC_SPC, true_negative_rate )
         
+
+        #----------------------------------------------------------------------#
         # ! ==> False omission rate (FOR)
-        false_omission_rate = ( false_negative_count / predicted_negative_count )
+        #----------------------------------------------------------------------#
+
+        #false_omission_rate = ( false_negative_count / predicted_negative_count )
+
+        if ( ( predicted_negative_count is not None ) and ( predicted_negative_count != 0 ) ):
+
+            metric_value = ( false_negative_count / predicted_negative_count )
+
+        else:
+
+            metric_value = None
+            status_message = "ERROR calculating false_omission_rate"
+            status_list_OUT.append( status_message )
+
+        #-- END check for division by zero --#        
+
+        false_omission_rate = metric_value
         confusion_metrics.set_value( self.METRIC_FALSE_OMISSION_RATE, false_omission_rate )
         confusion_metrics.set_value( self.METRIC_FOR, false_omission_rate )
         
+
+        #----------------------------------------------------------------------#
         # ! ==> Positive likelihood ratio (LR+)
+        #----------------------------------------------------------------------#
+
         tpr = recall
         fpr = false_positive_rate
-        positive_likelihood_ratio = ( tpr / fpr )
+
+        #positive_likelihood_ratio = ( tpr / fpr )
+
+        if ( ( tpr is not None ) and ( ( fpr is not None ) and ( fpr != 0 ) ) ):
+
+            metric_value = ( tpr / fpr )
+
+        else:
+
+            metric_value = None
+            status_message = "ERROR calculating positive_likelihood_ratio"
+            status_list_OUT.append( status_message )
+
+        #-- END check for division by zero --#        
+
+        positive_likelihood_ratio = metric_value
         confusion_metrics.set_value( self.METRIC_POSITIVE_LIKELIHOOD_RATIO, positive_likelihood_ratio )
         confusion_metrics.set_value( self.METRIC_LR_PLUS, positive_likelihood_ratio )
         
+
+        #----------------------------------------------------------------------#
         # ! ==> Negative likelihood ratio (LR-)
+        #----------------------------------------------------------------------#
+
         fnr = false_negative_rate
         tnr = true_negative_rate
-        if ( ( tnr is not None ) and ( tnr != 0 ) ):
-            negative_likelihood_ratio = ( fnr / tnr )
+
+        #negative_likelihood_ratio = ( fnr / tnr )
+
+        if ( ( fnr is not None ) and ( ( tnr is not None ) and ( tnr != 0 ) ) ):
+
+            metric_value = ( fnr / tnr )
+
         else:
-            negative_likelihood_ratio = None
-        #-- END check for division by zero --#
+
+            metric_value = None
+            status_message = "ERROR calculating negative_likelihood_ratio"
+            status_list_OUT.append( status_message )
+
+        #-- END check for division by zero --#        
+
+        negative_likelihood_ratio = metric_value
         confusion_metrics.set_value( self.METRIC_NEGATIVE_LIKELIHOOD_RATIO, negative_likelihood_ratio )
         confusion_metrics.set_value( self.METRIC_LR_MINUS, negative_likelihood_ratio )
         
+
+        #----------------------------------------------------------------------#
         # ! ==> Accuracy (ACC)
+        #----------------------------------------------------------------------#
+
         total_population = true_positive_count + true_negative_count + false_positive_count + false_negative_count
-        accuracy = ( ( true_positive_count + true_negative_count ) / total_population )
+
+        #accuracy = ( ( true_positive_count + true_negative_count ) / total_population )
+
+        if ( ( total_population is not None ) and ( total_population != 0 ) ):
+
+            metric_value = ( ( true_positive_count + true_negative_count ) / total_population )
+
+        else:
+
+            metric_value = None
+            status_message = "ERROR calculating accuracy"
+            status_list_OUT.append( status_message )
+
+        #-- END check for division by zero --#
+
+        accuracy = metric_value
         confusion_metrics.set_value( self.METRIC_ACCURACY, accuracy )
         confusion_metrics.set_value( self.METRIC_ACC, accuracy )
         confusion_metrics.set_value( self.METRIC_TOTAL_POPULATION, total_population )
         
+
+        #----------------------------------------------------------------------#
         # ! ==> False discovery rate (FDR), probability of false alarm
-        false_discovery_rate = ( false_positive_count / predicted_positive_count )
+        #----------------------------------------------------------------------#
+
+        #false_discovery_rate = ( false_positive_count / predicted_positive_count )
+
+        if ( ( predicted_positive_count is not None ) and ( predicted_positive_count != 0 ) ):
+
+            metric_value = ( false_positive_count / predicted_positive_count )
+
+        else:
+
+            metric_value = None
+            status_message = "ERROR calculating false_discovery_rate"
+            status_list_OUT.append( status_message )
+
+        #-- END check for division by zero --#
+
+        false_discovery_rate = metric_value
         confusion_metrics.set_value( self.METRIC_FALSE_DISCOVERY_RATE, false_discovery_rate )
         confusion_metrics.set_value( self.METRIC_FDR, false_discovery_rate )
         
+
+        #----------------------------------------------------------------------#
         # ! ==> Negative predictive value (NPV)
-        negative_predictive_value = ( true_negative_count / predicted_negative_count )
+        #----------------------------------------------------------------------#
+
+        #negative_predictive_value = ( true_negative_count / predicted_negative_count )
+
+        if ( ( predicted_negative_count is not None ) and ( predicted_negative_count != 0 ) ):
+
+            metric_value = ( true_negative_count / predicted_negative_count )
+
+        else:
+
+            metric_value = None
+            status_message = "ERROR calculating negative_predictive_value"
+            status_list_OUT.append( status_message )
+
+        #-- END check for division by zero --#        
+
+        negative_predictive_value = metric_value
         confusion_metrics.set_value( self.METRIC_NEGATIVE_PREDICTIVE_VALUE, negative_predictive_value )
         confusion_metrics.set_value( self.METRIC_NPV, negative_predictive_value )
 
+
+        #----------------------------------------------------------------------#
         # ! ==> Diagnostic odds ratio (DOR)
+        #----------------------------------------------------------------------#
+
         lr_plus = positive_likelihood_ratio
         lr_minus = negative_likelihood_ratio
-        if ( ( lr_minus is not None ) and ( lr_minus != 0 ) ):
-            diagnostic_odds_ratio = ( lr_plus / lr_minus )
+
+        #diagnostic_odds_ratio = ( lr_plus / lr_minus )
+
+        if ( ( lr_plus is not None ) and ( ( lr_minus is not None ) and ( lr_minus != 0 ) ) ):
+
+            metric_value = ( lr_plus / lr_minus )
+
         else:
-            diagnostic_odds_ratio = None
+
+            metric_value = None
+            status_message = "ERROR calculating diagnostic_odds_ratio"
+            status_list_OUT.append( status_message )
+
         #-- END check for division by zero --#
+
+        diagnostic_odds_ratio = metric_value
         confusion_metrics.set_value( self.METRIC_DIAGNOSTIC_ODDS_RATIO, diagnostic_odds_ratio )
         confusion_metrics.set_value( self.METRIC_DOR, diagnostic_odds_ratio )
 
+
+        #----------------------------------------------------------------------#
         # ! ==> F1 score
-        f1_score = ( 2 / ( ( 1 / recall ) + ( 1 / precision ) ) )
+        #----------------------------------------------------------------------#
+
+        #f1_score = ( 2 / ( ( 1 / recall ) + ( 1 / precision ) ) )
+
+        if ( ( ( recall is not None ) and ( recall != 0 ) )
+             and ( ( precision is not None ) and ( precision != 0 ) ) ):
+
+            metric_value = ( 2 / ( ( 1 / recall ) + ( 1 / precision ) ) )
+
+        else:
+
+            metric_value = None
+            status_message = "ERROR calculating f1_score"
+            status_list_OUT.append( status_message )
+
+        #-- END check for division by zero --#        
+
+        f1_score = metric_value
         confusion_metrics.set_value( self.METRIC_F_ONE_SCORE, f1_score )
         
+
+        #----------------------------------------------------------------------#
         # ! ==> Matthews correlation coefficient (MCC)
+        #----------------------------------------------------------------------#
+
         numerator = ( ( true_positive_count * true_negative_count ) - ( false_positive_count * false_negative_count ) )
         temp_math = ( ( true_positive_count + false_positive_count ) * ( true_positive_count + false_negative_count ) * ( true_negative_count + false_positive_count ) * ( true_negative_count + false_negative_count ) )
         denominator = math.sqrt( temp_math )
-        matthews_correlation_coefficient = numerator / denominator
+
+        #matthews_correlation_coefficient = ( numerator / denominator )
+
+        if ( ( denominator is not None ) and ( denominator != 0 ) ):
+
+            metric_value = ( numerator / denominator )
+
+        else:
+
+            metric_value = None
+            status_message = "ERROR calculating matthews_correlation_coefficient"
+            status_list_OUT.append( status_message )
+
+        #-- END check for division by zero --#        
+
+        matthews_correlation_coefficient = metric_value
         confusion_metrics.set_value( self.METRIC_MATTHEWS_CORRELATION_COEFFICIENT, matthews_correlation_coefficient )
         confusion_metrics.set_value( self.METRIC_MCC, matthews_correlation_coefficient )
                 
+
+        #----------------------------------------------------------------------#
         # ! ==> Informedness or Bookmaker Informedness (BM)
-        informedness = tpr + tnr - 1
+        #----------------------------------------------------------------------#
+
+        #informedness = tpr + tnr - 1
+
+        if ( ( tpr is not None ) and ( tnr is not None ) ):
+
+            metric_value = tpr + tnr - 1
+
+        else:
+
+            metric_value = None
+            status_message = "ERROR calculating informedness"
+            status_list_OUT.append( status_message )
+
+        #-- END check for division by zero --#        
+
+        informedness = metric_value
         confusion_metrics.set_value( self.METRIC_INFORMEDNESS, informedness )
         confusion_metrics.set_value( self.METRIC_BM, informedness )
 
+
+        #----------------------------------------------------------------------#
         # ! ==> Markedness (MK) = PPV + NPV − 1 
+        #----------------------------------------------------------------------#
+
         ppv = precision
         npv = negative_predictive_value
-        markedness = ppv + npv - 1
+
+        #markedness = ppv + npv - 1
+
+        if ( ( ppv is not None ) and ( npv is not None ) ):
+
+            metric_value = ppv + npv - 1
+
+        else:
+
+            metric_value = None
+            status_message = "ERROR calculating markedness"
+            status_list_OUT.append( status_message )
+
+        #-- END check for division by zero --#        
+
+        markedness = metric_value
         confusion_metrics.set_value( self.METRIC_MARKEDNESS, markedness )
         confusion_metrics.set_value( self.METRIC_MK, markedness )
         
