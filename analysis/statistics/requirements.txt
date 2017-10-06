@@ -1,4 +1,5 @@
 numpy
 pandas
+pandas_ml
 scipy
 scikit-learn

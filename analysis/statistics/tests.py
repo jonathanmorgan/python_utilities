@@ -157,6 +157,37 @@ class TestCustomMatrixHelper(unittest.TestCase):
     #-- END method test_create_confusion_matrix_pandas() --#
 
 
+    def test_create_confusion_matrix_pandas_ml( self ):
+
+        # declare variables
+        confusion_helper = None
+        metrics_dict = None
+        calc_type = None
+        error_message = None
+        
+        # enable full output.
+        self.maxDiff = None
+        
+        # do work
+        calc_type = ConfusionMatrixHelper.CALC_TYPE_PANDAS_ML
+        confusion_helper = ConfusionMatrixHelper.populate_confusion_matrix( self.ACTUAL_VALUE_LIST,
+                                                                            self.PREDICTED_VALUE_LIST,
+                                                                            calc_type_IN = calc_type,
+                                                                            derive_metrics_IN = True )
+        
+        # get metrics dict
+        metrics_dict = confusion_helper.get_metrics_dict()
+        
+        # and the assert
+        error_message = calc_type + " confusion matrix not equal to reference confusion matrix."
+        self.assertDictNotEqual( metrics_dict, self.EXPECTED_OUTPUT_MAP, msg = error_message )
+        
+        # the differences are all over in the decimal dust at the right, but
+        #     they are different.
+        
+    #-- END method test_create_confusion_matrix_pandas() --#
+
+
 #-- END unittest class TestCustomMatrixHelper --#
 
 

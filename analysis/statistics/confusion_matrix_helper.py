@@ -48,6 +48,7 @@ value_list_1 = [ retty_json_string = JSONHelper.pretty_print_json( json_object )
 import math
 import numpy
 import pandas
+import pandas_ml
 import six # help with supporting both python 2 and 3.
 import sklearn
 import sklearn.metrics
@@ -76,6 +77,14 @@ class ConfusionMatrixHelper( object ):
     CALC_TYPE_MANUAL = "manual"
     CALC_TYPE_SKLEARN = "sklearn"
     CALC_TYPE_PANDAS = "pandas"
+    CALC_TYPE_PANDAS_ML = "pandas_ml"
+    
+    # calculation type to function map
+    #CALC_TYPE_TO_METHOD_MAP = {}
+    #CALC_TYPE_TO_METHOD_MAP[ CALC_TYPE_MANUAL ] = ConfusionMatrixHelper.populate_manual
+    #CALC_TYPE_TO_METHOD_MAP[ CALC_TYPE_SKLEARN ] = ConfusionMatrixHelper.populate_sklearn
+    #CALC_TYPE_TO_METHOD_MAP[ CALC_TYPE_PANDAS ] = ConfusionMatrixHelper.populate_pandas
+    #CALC_TYPE_TO_METHOD_MAP[ CALC_TYPE_PANDAS_ML ] = ConfusionMatrixHelper.populate_pandas_ml
     
     # metric names, for map of metric names to metric values.    
     METRIC_ACCURACY = "accuracy"  # --> ACC
@@ -186,6 +195,11 @@ class ConfusionMatrixHelper( object ):
                         # call the populate_pandas() method.
                         instance_OUT = instance_OUT.populate_pandas( ground_truth_values_IN, predicted_values_IN, derive_metrics_IN = derive_metrics_IN )
                         
+                    elif ( calc_type_IN == cls.CALC_TYPE_PANDAS_ML ):
+                    
+                        # call the populate_pandas_ml() method.
+                        instance_OUT = instance_OUT.populate_pandas_ml( ground_truth_values_IN, predicted_values_IN, derive_metrics_IN = derive_metrics_IN )
+                        
                     else:
                     
                         # no known CALC TYPE, so default - call the
@@ -252,6 +266,9 @@ class ConfusionMatrixHelper( object ):
         # lists
         self.m_ground_truth_values = []
         self.m_predicted_values = []
+        
+        # related object, if useful (for pandas_ml)
+        self.m_related_instance = None
 
     #-- END method __init__() --#
 
@@ -761,33 +778,6 @@ class ConfusionMatrixHelper( object ):
     #-- END method get_ground_truth_values --#
 
 
-    def get_predicted_values( self ):
-    
-        # return reference
-        value_OUT = None
-        
-        # declare variables
-        list_instance = None
-        
-        # get m_predicted_values
-        value_OUT = self.m_predicted_values
-        
-        # got anything?
-        if ( value_OUT is None ):
-        
-            # make dictionary instance.
-            list_instance = []
-            
-            # store the instance.
-            value_OUT = self.set_predicted_values( list_instance )
-            
-        #-- END check to see if dictionary initialized. --#
-        
-        return value_OUT
-    
-    #-- END method get_predicted_values --#
-
-
     def get_metrics_dict( self ):
     
         # return reference
@@ -846,6 +836,48 @@ class ConfusionMatrixHelper( object ):
         return value_OUT
     
     #-- END method get_metrics_helper --#
+
+
+    def get_predicted_values( self ):
+    
+        # return reference
+        value_OUT = None
+        
+        # declare variables
+        list_instance = None
+        
+        # get m_predicted_values
+        value_OUT = self.m_predicted_values
+        
+        # got anything?
+        if ( value_OUT is None ):
+        
+            # make dictionary instance.
+            list_instance = []
+            
+            # store the instance.
+            value_OUT = self.set_predicted_values( list_instance )
+            
+        #-- END check to see if dictionary initialized. --#
+        
+        return value_OUT
+    
+    #-- END method get_predicted_values --#
+
+
+    def get_related_instance( self ):
+    
+        # return reference
+        value_OUT = None
+        
+        # declare variables
+
+        # get m_predicted_values
+        value_OUT = self.m_related_instance
+        
+        return value_OUT
+    
+    #-- END method get_related_instance --#
 
 
     def populate_manual( self,
@@ -1187,6 +1219,249 @@ class ConfusionMatrixHelper( object ):
     #-- END method populate_pandas() --#
 
 
+    def populate_pandas_ml( self,
+                            ground_truth_values_IN,
+                            predicted_values_IN,
+                            derive_metrics_IN = True ):
+                              
+        # return reference
+        instance_OUT = self
+    
+        # declare variables
+        me = "populate_pandas_ml"
+        error_string = ""
+        ground_truth_length = -1
+        predicted_length = -1
+        ground_truth_list = None
+        predicted_list = None
+        y_actu = None
+        y_pred = None
+        confusion_matrix = None
+        ground_truth_positive_count = 0
+        predicted_positive_count = 0
+        true_positive_count = 0
+        false_positive_count = 0
+        ground_truth_negative_count = 0
+        predicted_negative_count = 0
+        true_negative_count = 0
+        false_negative_count = 0
+        stats_dict = None
+        
+        # got two lists?  ground truth?
+        if ( ground_truth_values_IN != None ):
+        
+            # predicted?
+            if ( predicted_values_IN != None ):
+            
+                # got two lists.  Same length?
+                ground_truth_length = len( ground_truth_values_IN )
+                predicted_length = len( predicted_values_IN )
+                if ( ground_truth_length == predicted_length ):
+                
+                    # load variables
+                    ground_truth_list = ground_truth_values_IN
+                    predicted_list = predicted_values_IN
+
+                    # pandas_ml
+                    # http://pandas-ml.readthedocs.io/en/stable/conf_mat.html
+                    confusion_matrix = pandas_ml.ConfusionMatrix( ground_truth_list, predicted_list )
+                    self.set_related_instance( confusion_matrix )
+
+                    if ( self.DEBUG_FLAG == True ):
+                        print( str( confusion_matrix ) )
+                    #-- END DEBUG --#
+
+                    # get counts in variables
+                    true_positive_count = confusion_matrix.TP
+                    false_positive_count = confusion_matrix.FP
+                    true_negative_count = confusion_matrix.TN
+                    false_negative_count = confusion_matrix.FN
+                    
+                    # and derive population and predicted counts
+                    ground_truth_positive_count = true_positive_count + false_negative_count
+                    predicted_positive_count = true_positive_count + false_positive_count
+                    ground_truth_negative_count = true_negative_count + false_positive_count
+                    predicted_negative_count = true_negative_count + false_negative_count
+
+                    if ( self.DEBUG_FLAG == True ):
+                        print( "==> Predicted positives: " + str( predicted_positive_count ) + " ( " + str( ( true_positive_count + false_positive_count ) ) + " )" )
+                        print( "==> Ground truth positives: " + str( ground_truth_positive_count )  + " ( " + str( ( true_positive_count + false_negative_count ) ) + " )" )
+                        print( "==> True positives: " + str( true_positive_count ) )
+                        print( "==> False positives: " + str( false_positive_count ) )
+                        print( "==> Predicted negatives: " + str( predicted_negative_count ) + " ( " + str( ( true_negative_count + false_negative_count ) ) + " )" )
+                        print( "==> Ground truth negatives: " + str( ground_truth_negative_count ) + " ( " + str( ( true_negative_count + false_positive_count ) ) + " )" )
+                        print( "==> True negatives: " + str( true_negative_count ) )
+                        print( "==> False negatives: " + str( false_negative_count ) )
+                        print( "==> Precision (true positive/predicted positive): " + str( ( true_positive_count / predicted_positive_count ) ) )
+                        print( "==> Recall (true positive/ground truth positive): " + str( ( true_positive_count / ground_truth_positive_count ) ) )
+                    #-- END DEBUG --#
+                    
+                    # add items to dictionary.
+                    # add base measures to confusion_outputs
+                    confusion_metrics = self.get_metrics_helper()
+                    confusion_metrics.set_value( self.METRIC_POPULATION_POSITIVE, ground_truth_positive_count )
+                    confusion_metrics.set_value( self.METRIC_PREDICTED_POSITIVE, predicted_positive_count )
+                    confusion_metrics.set_value( self.METRIC_POPULATION_NEGATIVE, ground_truth_negative_count )
+                    confusion_metrics.set_value( self.METRIC_PREDICTED_NEGATIVE, predicted_negative_count )
+                    confusion_metrics.set_value( self.METRIC_TRUE_POSITIVE, true_positive_count )
+                    confusion_metrics.set_value( self.METRIC_FALSE_POSITIVE, false_positive_count )
+                    confusion_metrics.set_value( self.METRIC_TRUE_NEGATIVE, true_negative_count )
+                    confusion_metrics.set_value( self.METRIC_FALSE_NEGATIVE, false_negative_count )
+
+                    # derive the rest of the things we know about?
+                    if ( derive_metrics_IN == True ):
+                    
+                        # yes - derive metrics.
+                        self.derive_metrics()
+                        
+                        # retrieve the stats dict generated by ConfusionMatrix
+                        stats_dict = confusion_matrix.stats()
+                        
+                        # example: OrderedDict([('population', 2446), ('P', 2378), ('N', 68), ('PositiveTest', 2383), ('NegativeTest', 63), ('TP', 2315), ('TN', 0), ('FP', 68), ('FN', 63), ('TPR', 0.97350714886459211), ('TNR', 0.0), ('PPV', 0.97146454049517417), ('NPV', 0.0), ('FPR', 1.0), ('FDR', 0.02853545950482585), ('FNR', 0.026492851135407905), ('ACC', 0.94644317252657395), ('F1_score', 0.97248477210670026), ('MCC', -0.027495193775309384), ('informedness', -0.026492851135407891), ('markedness', -0.028535459504825833), ('prevalence', 0.97219950940310706), ('LRP', 0.97350714886459211), ('LRN', inf), ('DOR', 0.0), ('FOR', 1.0)])
+                        
+                        #confusion_metrics.set_value( self.METRIC_POPULATION_POSITIVE, ground_truth_positive_count )  
+
+                        # population
+                        confusion_metrics.set_value( self.METRIC_TOTAL_POPULATION, stats_dict[ "population" ] )                        
+
+                        # P
+                        confusion_metrics.set_value( self.METRIC_POPULATION_POSITIVE, stats_dict[ "P" ] )
+
+                        # N
+                        confusion_metrics.set_value( self.METRIC_POPULATION_NEGATIVE, stats_dict[ "N" ] )
+
+                        # PositiveTest
+                        confusion_metrics.set_value( self.METRIC_PREDICTED_POSITIVE, stats_dict[ "PositiveTest" ] )
+
+                        # NegativeTest
+                        confusion_metrics.set_value( self.METRIC_PREDICTED_NEGATIVE, stats_dict[ "NegativeTest" ] )
+
+                        # TP
+                        confusion_metrics.set_value( self.METRIC_TRUE_POSITIVE, stats_dict[ "TP" ] )
+
+                        # TN
+                        confusion_metrics.set_value( self.METRIC_TRUE_NEGATIVE, stats_dict[ "TN" ] )
+
+                        # FP
+                        confusion_metrics.set_value( self.METRIC_FALSE_POSITIVE, stats_dict[ "FP" ] )
+
+                        # FN
+                        confusion_metrics.set_value( self.METRIC_FALSE_NEGATIVE, stats_dict[ "FN" ] )
+                        
+                        # TPR
+                        confusion_metrics.set_value( self.METRIC_RECALL, stats_dict[ "TPR" ] )
+                        confusion_metrics.set_value( self.METRIC_TPR, stats_dict[ "TPR" ] )
+                        
+                        # TNR
+                        confusion_metrics.set_value( self.METRIC_SPECIFICITY, stats_dict[ "TNR" ] )
+                        confusion_metrics.set_value( self.METRIC_SPC, stats_dict[ "TNR" ] )
+                        confusion_metrics.set_value( self.METRIC_TRUE_NEGATIVE_RATE, stats_dict[ "TNR" ] )
+                        confusion_metrics.set_value( self.METRIC_TNR, stats_dict[ "TNR" ] )
+                        
+                        # PPV
+                        confusion_metrics.set_value( self.METRIC_PRECISION, stats_dict[ "PPV" ] )
+                        confusion_metrics.set_value( self.METRIC_PPV, stats_dict[ "PPV" ] )
+                        
+                        # NPV
+                        confusion_metrics.set_value( self.METRIC_NEGATIVE_PREDICTIVE_VALUE, stats_dict[ "NPV" ] )
+                        confusion_metrics.set_value( self.METRIC_NPV, stats_dict[ "NPV" ] )
+                        
+                        # FPR
+                        confusion_metrics.set_value( self.METRIC_FALSE_POSITIVE_RATE, stats_dict[ "FPR" ] )
+                        confusion_metrics.set_value( self.METRIC_FPR, stats_dict[ "FPR" ] )
+                        
+                        # FDR
+                        confusion_metrics.set_value( self.METRIC_FALSE_DISCOVERY_RATE, stats_dict[ "FDR" ] )
+                        confusion_metrics.set_value( self.METRIC_FDR, stats_dict[ "FDR" ] )
+                        
+                        # FNR
+                        confusion_metrics.set_value( self.METRIC_FALSE_NEGATIVE_RATE, stats_dict[ "FNR" ] )                        
+                        confusion_metrics.set_value( self.METRIC_FNR, stats_dict[ "FNR" ] )                        
+                        
+                        # ACC
+                        confusion_metrics.set_value( self.METRIC_ACC, stats_dict[ "ACC" ] ) 
+                        confusion_metrics.set_value( self.METRIC_ACCURACY, stats_dict[ "ACC" ] ) 
+
+                        # F1_score
+                        confusion_metrics.set_value( self.METRIC_F_ONE_SCORE, stats_dict[ "F1_score" ] )
+                        
+                        # MCC
+                        confusion_metrics.set_value( self.METRIC_MATTHEWS_CORRELATION_COEFFICIENT, stats_dict[ "MCC" ] )
+                        confusion_metrics.set_value( self.METRIC_MCC, stats_dict[ "MCC" ] )
+                        
+                        # Informedness
+                        confusion_metrics.set_value( self.METRIC_INFORMEDNESS, stats_dict[ "informedness" ] )                        
+                        confusion_metrics.set_value( self.METRIC_BM, stats_dict[ "informedness" ] )
+                        
+                        # markedness
+                        confusion_metrics.set_value( self.METRIC_MARKEDNESS, stats_dict[ "markedness" ] )                        
+                        confusion_metrics.set_value( self.METRIC_MK, stats_dict[ "markedness" ] )
+                        
+                        # prevalence
+                        # LRP
+                        confusion_metrics.set_value( self.METRIC_POSITIVE_LIKELIHOOD_RATIO, stats_dict[ "LRP" ] )
+                        confusion_metrics.set_value( self.METRIC_LR_PLUS, stats_dict[ "LRP" ] )
+
+                        # LRN
+                        confusion_metrics.set_value( self.METRIC_NEGATIVE_LIKELIHOOD_RATIO, stats_dict[ "LRN" ] )
+                        confusion_metrics.set_value( self.METRIC_LR_MINUS, stats_dict[ "LRN" ] )
+                        
+                        # DOR
+                        confusion_metrics.set_value( self.METRIC_DIAGNOSTIC_ODDS_RATIO, stats_dict[ "DOR" ] ) 
+                        confusion_metrics.set_value( self.METRIC_DOR, stats_dict[ "DOR" ] )                         
+                        
+                        # FOR
+                        confusion_metrics.set_value( self.METRIC_FALSE_OMISSION_RATE, stats_dict[ "FOR" ] ) 
+                        confusion_metrics.set_value( self.METRIC_FOR, stats_dict[ "FOR" ] ) 
+                    
+                    #-- END check to see if we derive additional metrics --#
+
+                    if ( self.DEBUG_FLAG == True ):
+                        print( "==> Confusion outputs:" )
+                        print( str( confusion_metrics ) )
+                    #-- END DEBUG --#
+
+                else:
+                
+                    error_string = "In " + me + "(): ERROR - lengths of ground_truth ( " + str( ground_truth_length ) + " ) and predicted ( " + str( predicted_length ) + " ) don't match.  Falling out."
+
+                    if ( self.DEBUG_FLAG == True ):
+                        print( error_string )
+                    #-- END DEBUG --#
+
+                    instance_OUT = None
+
+                #-- END check to see if lengths are the same. --#
+            
+            else:
+            
+                error_string = "In " + me + "(): ERROR - No predicted values ( " + str( predicted_values_IN ) + " ). Falling out."
+
+                if ( self.DEBUG_FLAG == True ):
+                    print( error_string )
+                #-- END DEBUG --#
+
+                instance_OUT = None
+
+            #-- END check to see if predicted values. --#
+            
+        else:
+        
+            error_string = "In " + me + "(): ERROR - No ground truth values ( " + str( ground_truth_values_IN ) + " ). Falling out."
+
+            if ( self.DEBUG_FLAG == True ):
+                print( error_string )
+            #-- END DEBUG --#
+
+            instance_OUT = None
+
+        #-- END check to see if ground truth. --#
+
+        return instance_OUT
+        
+    #-- END method populate_pandas_ml() --#
+
+
     def populate_sklearn( self,
                           ground_truth_values_IN,
                           predicted_values_IN,
@@ -1346,26 +1621,6 @@ class ConfusionMatrixHelper( object ):
     #-- END method set_ground_truth_values() --#
 
 
-    def set_predicted_values( self, instance_IN ):
-        
-        '''
-        Accepts list.  Stores it and returns it.
-        '''
-        
-        # return reference
-        value_OUT = None
-        
-        # use store dictionary.
-        self.m_predicted_values = instance_IN
-        
-        # return it.
-        value_OUT = self.get_predicted_values()
-        
-        return value_OUT
-        
-    #-- END method set_ground_truth_values() --#
-
-
     def set_metrics_dict( self, instance_IN ):
         
         '''
@@ -1404,6 +1659,46 @@ class ConfusionMatrixHelper( object ):
         return value_OUT
         
     #-- END method set_metrics_helper() --#
+
+
+    def set_predicted_values( self, instance_IN ):
+        
+        '''
+        Accepts list.  Stores it and returns it.
+        '''
+        
+        # return reference
+        value_OUT = None
+        
+        # use store dictionary.
+        self.m_predicted_values = instance_IN
+        
+        # return it.
+        value_OUT = self.get_predicted_values()
+        
+        return value_OUT
+        
+    #-- END method set_predicted_values() --#
+
+
+    def set_related_instance( self, instance_IN ):
+        
+        '''
+        Accepts related_instance.  Stores it and returns it.
+        '''
+        
+        # return reference
+        value_OUT = None
+        
+        # use store dictionary.
+        self.m_related_instance = instance_IN
+        
+        # return it.
+        value_OUT = self.get_related_instance()
+        
+        return value_OUT
+        
+    #-- END method set_related_instance() --#
 
 
 #-- END class ConfusionMatrixHelper --#
