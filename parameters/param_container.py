@@ -319,6 +319,28 @@ class ParamContainer( object ):
     #-- END method get_param_as_str() --#
     
 
+    def get_string_param_as_list( self, param_name_IN, default_IN = [], delimiter_IN = ',' ):
+        
+        # return reference
+        list_OUT = []
+        
+        # declare variables
+        my_params = None
+        my_request = None
+
+        # get params
+        my_params = self.get_parameters()
+        
+        # call get_dict_value_as_list()
+        list_OUT = DictHelper.get_dict_value_as_list( my_params, param_name_IN, default_IN, delimiter_IN )
+        
+        #print( "list_OUT = " + str( list_OUT ) )
+        
+        return list_OUT
+
+    #-- END method get_string_param_as_list() --#
+    
+
     def set_parameters( self, dict_IN ):
 
         """
