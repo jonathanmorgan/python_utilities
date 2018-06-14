@@ -49,11 +49,11 @@ Python utility classes (should work in either Python 2 or 3).  Includes the foll
 
 Clone this repository and place it somewhere in your PYTHON\_PATH, including the base "python\_utilities" directory.  The easiest way to use these libraries with a Django site is to clone this repository into the site's folder alongside other applications, so these utilities are a part of the same python path as other django apps.  These utilities are used by other of my django applications, as well.  They can also be used outside of django.
 
-Dependencies are listed below.  You can install them individually, or you can just use the `requirements.txt` file, which lists them all out, to install them all at once using pip.  The command:
+Dependencies are listed below.  You can install them individually, or you can just use the `requirements*.txt` files, which lists them all out, to install them all at once using pip.  The command to install base packages, without database-specific support:
 
     (sudo) pip install -r python_utilities/requirements.txt
     
-For database packages, you'll likely want to go into the requirements.txt and remove packages for databases you don't have installed on your system, either `MySQL-python` or `psycopg2` (or both).
+For database packages, you'll need to load the requirements file for each database you want to interact with (right now `requirements_pgsql.txt` for postgresql and `rewuirements_mysql.txt` for MySQL).  Whichever you install, you'll also need to make sure you installed the client and client-dev libraries for whichever database you are using..
 
 ### /beautiful\_soup/*
 
