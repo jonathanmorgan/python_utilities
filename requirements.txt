@@ -2,9 +2,6 @@ beautifulsoup4
 chardet
 cchardet
 bleach
-mysqlclient
-pymysql
-psycopg2
 six
 requests
 regex
