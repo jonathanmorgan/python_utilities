@@ -53,7 +53,7 @@ Dependencies are listed below.  You can install them individually, or you can ju
 
     (sudo) pip install -r python_utilities/requirements.txt
     
-For database packages, you'll need to load the requirements file for each database you want to interact with (right now `requirements_pgsql.txt` for postgresql and `rewuirements_mysql.txt` for MySQL).  Whichever you install, you'll also need to make sure you installed the client and client-dev libraries for whichever database you are using..
+For database packages, you'll need to load the requirements file for each database you want to interact with (right now `requirements_pgsql.txt` for postgresql and `rewuirements_mysql.txt` for MySQL).  Whichever you install, you'll also need to make sure you installed the client and client-dev libraries for each database you use.
 
 ### /beautiful\_soup/*
 
