@@ -319,6 +319,23 @@ class ParamContainer( object ):
     #-- END method get_param_as_str() --#
     
 
+    def get_param_type( self, param_name_IN, default_IN = None ):
+        
+        # return reference
+        value_OUT = ""
+        
+        # declare variables
+        name_to_type_map = None
+        
+        # try to retrieve type - for now, reference nested parameters.
+        name_to_type_map = self.param_name_to_type_dict
+        value_OUT = DictHelper.get_dict_value( name_to_type_map, param_name_IN, default_IN )
+        
+        return value_OUT
+        
+    #-- END method get_param_type() --#
+    
+
     def get_string_param_as_list( self, param_name_IN, default_IN = [], delimiter_IN = ',' ):
         
         # return reference
@@ -340,6 +357,49 @@ class ParamContainer( object ):
 
     #-- END method get_string_param_as_list() --#
     
+
+    def set_parameter_value( self, name_IN, value_IN ):
+
+        """
+            Method: set_parameter_value()
+
+            Purpose: accepts parameter name and value, stores value in nested
+                parameter dictionary for that parameter name.
+                
+            Postconditions: Returns value set for name.
+            
+            Params:
+            - name_IN - name of parameter we are setting.
+            - value_IN - value to store for that param name.
+        """
+
+        # return reference
+        value_OUT = None
+
+        # declare variables
+        param_type = None
+        param_dictionary = None
+
+        # got a param name?
+        if ( ( name_IN is not None ) and ( name_IN != "" ) ):
+
+            # yes.  Got a type?
+            param_type = self.get_param_type( name_IN )
+            
+            # get parameter dictionary
+            param_dictionary = self.get_parameters()
+            
+            # store the value in the name.
+            param_dictionary[ name_IN ] = value_IN
+
+        #-- END check to see if we have a name --#
+        
+        value_OUT = self.get_param( name_IN )
+        
+        return value_OUT
+        
+    #-- END method set_parameter_value() --#
+
 
     def set_parameters( self, dict_IN ):
 
