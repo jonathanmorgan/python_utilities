@@ -46,6 +46,8 @@ value_list_1 = [ retty_json_string = JSONHelper.pretty_print_json( json_object )
 
 # basic packages
 import math
+import matplotlib
+import matplotlib.pyplot
 import numpy
 import pandas
 import pandas_ml
@@ -129,11 +131,206 @@ class ConfusionMatrixHelper( object ):
     METRIC_TRUE_NEGATIVE = "true_negative"
     METRIC_TRUE_NEGATIVE_RATE = "true_negative_rate" # --> TNR, specificity, SPC
     METRIC_TRUE_POSITIVE = "true_positive"
+    
+    # ==> class method precision_recall_f1():
+    
+    # calculation methods
+    CALCULATION_METHOD_DEFAULT = "default"
+    CALCULATION_METHOD_BINARY = "binary"
+    CACLULATION_METHOD_MACRO = "macro"
+    CALCULATION_METHOD_MICRO = "micro"
+    CALCULATION_METHOD_WEIGHTED = "weighted"
+    
+    # return items
+    RETURN_CONFUSION_MATRIX = "confusion_matrix"
+    RETURN_METHOD_TO_RESULT_MAP = "method_to_result_map"
+    RETURN_LINE_LIST = "line_list"
 
 
     #============================================================================
     # ! ==> class methods
     #============================================================================
+
+
+    @classmethod
+    def accuracy_at_k( cls, y_true, y_scores, k ):
+        
+        # return reference
+        value_OUT = None
+        
+        # declare variables
+        threshold = None
+        
+        # get threshold index
+        threshold = cls.threshold_at_k( y_scores, k )
+        
+        # use threshold to generate predicted scores
+        y_pred = numpy.asarray( [ 1 if i >= threshold else 0 for i in y_scores ] )
+        
+        # calculate accuracy
+        value_OUT = sklearn.metrics.accuracy_score( y_true, y_pred )
+        
+        return value_OUT
+    
+    #-- END class method accuracy_at_k() --#
+
+
+    @classmethod
+    def plot_precision_recall_n( cls,
+                                 y_true,
+                                 y_prob, model_name, output_path_IN = None ):
+
+        """
+        Accepts a list of baseline labels (0 or 1), a list of predicted scores
+            (assumed to be decimal, between 0 and 1), and then a model name and
+            optional path to which graphs should be output as PDF:
+        
+        - y_true: list of ground truth labels
+        - y_prob: list of predicted scores (assume 0 to 1, decimal) from model.
+        - model_name: string of model name (e.g, LR_123)
+        - output_path_IN: optional file system path where you want output stored.
+        
+        For each distinct value in y_prob, uses that value as a cut-off for
+            binary classification (all below are 0, all equal-to or above are
+            1).  Then, using that cutoff, calculates percent of items above,
+            precision, and recall for data that results from using that value as
+            a cutoff.  Outputs a graph where x-axis is the range of distinct
+            values used as cutoffs, and then on the Y-axis, at each point, is
+            graphed the % above 0, the precision, and the recall for using that
+            value as the 0-to-1 threshold.  If output path is specified, will
+            output the resulting graph to a PDF file a that path.
+        """
+        
+        # imports
+        from sklearn.metrics import precision_recall_curve
+        
+        # return reference
+        details_OUT = {}
+        
+        # declare variables
+        me = "plot_precision_recall_n"
+        y_score = None
+        precision_curve = None
+        recall_curve = None
+        pr_thresholds = None
+        num_above_thresh = None
+        pct_above_thresh = None
+        pct_above_per_thresh = None
+        current_score = None
+        above_threshold_list = None
+        above_threshold_count = -1
+        fig = None
+        ax1 = None
+        ax2 = None
+        
+        # store the raw scores in y_score
+        y_score = y_prob
+        
+        # calculate precision-recall curve
+        # http://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_recall_curve.html
+        # Returns:
+        # - precision_curve - Precison values such that element i is the precision of predictions where cutoff is score >= thresholds[ i ] and the last element is 1.
+        # - recall_curve - Recall values such that element i is the recall of predictions where cutoff is score >= thresholds[ i ] and the last element is 0.
+        # - pr_thresholds - Increasing thresholds on the decision function used to decide 1 or 0, used to calculate precision and recall (looks like it is the set of unique values in the predicted value set).
+        precision_curve, recall_curve, pr_thresholds = precision_recall_curve( y_true, y_score )
+        
+        # get all but the last precision score (1).
+        precision_curve = precision_curve[ : -1 ]
+        # print( "precision_curve: {}".format( precision_curve ) )
+        
+        # get all but the last recall score (0).
+        recall_curve = recall_curve[ : -1 ]
+        # print( "recall_curve: {}".format( recall_curve ) )
+        
+        # store details
+        details_OUT[ "precision" ] = precision_curve
+        details_OUT[ "recall" ] = recall_curve
+        details_OUT[ "threshold" ] = pr_thresholds
+        
+        # init loop over thresholds
+        pct_above_per_thresh = []
+        number_scored = len(y_score)
+        
+        # loop over thresholds
+        for value in pr_thresholds:
+            
+            # at each threshold, calculate the percent of rows above the threshold.
+            above_threshold_list = []
+            above_threshold_count = -1
+            for current_score in y_score:
+                
+                # is it at or above threshold?
+                if ( current_score >= value ):
+                    
+                    # it is either at or above threshold - add to list.
+                    above_threshold_list.append( current_score )
+                    
+                #-- END check to see if at or above threshold? --#
+                    
+            #-- END loop over scores. --#
+    
+            # how many above threshold?
+            #num_above_thresh = len(y_score[y_score>=value])
+            above_threshold_count = len( above_threshold_list )
+            num_above_thresh = above_threshold_count
+            
+            # percent above threshold
+            pct_above_thresh = num_above_thresh / float( number_scored )
+            
+            # add to list.
+            pct_above_per_thresh.append( pct_above_thresh )
+            
+        #-- END loop over thresholds --#
+    
+        details_OUT[ "percent_above" ] = pct_above_per_thresh
+        
+        # convert to numpy array
+        pct_above_per_thresh = numpy.array(pct_above_per_thresh)
+    
+        # init matplotlib
+        matplotlib.pyplot.clf()
+        fig, ax1 = matplotlib.pyplot.subplots()
+        
+        # plot % above threshold line
+        ax1.plot( pr_thresholds, pct_above_per_thresh, 'y')
+        ax1.set_xlabel('threshold values')
+        matplotlib.pyplot.xticks( [ 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 ] )
+        ax1.set_ylabel('% above threshold', color='y')
+        ax1.set_ylim(0,1.05)
+        
+        # plot precision line
+        ax2 = ax1.twinx()
+        ax2.plot( pr_thresholds, precision_curve, 'b')
+        ax2.set_ylabel('precision', color='b')
+        ax2.set_ylim(0,1.05)
+    
+        # plot recall line
+        ax3 = ax2.twinx()
+        ax3.plot( pr_thresholds, recall_curve, 'r')
+        ax3.set_ylabel('recall', color='r')
+        ax3.set_ylim(0,1.05)
+        
+        # finish off graph
+        name = model_name
+        matplotlib.pyplot.title(name)
+        
+        # is there an output path?
+        if ( ( output_path_IN is not None ) and ( output_path_IN != "" ) ):
+        
+            # save the figure to file.
+            matplotlib.pyplot.savefig( output_path_IN )
+            print( "In {}: figure output to {}".format( me, output_path_IN ) )
+        
+        #-- END check to see if we output to disk. --#
+        
+        matplotlib.pyplot.show()
+    
+        # clear plot.
+        matplotlib.pyplot.clf()
+        
+        return details_OUT
+        
+    #-- END function plot_precision_recall_n() --#
 
 
     @classmethod
@@ -247,6 +444,329 @@ class ConfusionMatrixHelper( object ):
         return instance_OUT
         
     #-- END class method populate_confusion_matrix() --#
+
+
+    @classmethod
+    def precision_at_k( cls, y_true, y_scores, k ):
+        
+        # return reference
+        value_OUT = None
+        
+        # declare variables
+        threshold = None
+        
+        # get threshold index
+        threshold = cls.threshold_at_k( y_scores, k )
+        
+        # use threshold to generate predicted scores
+        y_pred = numpy.asarray( [ 1 if i >= threshold else 0 for i in y_scores ] )
+        
+        # calculate precision
+        value_OUT = sklearn.metrics.precision_score( y_true, y_pred )
+        
+        return value_OUT
+    
+    #-- END class method precision_at_k() --#
+
+
+    @classmethod
+    def precision_recall_f1( cls,
+                             baseline_list_IN,
+                             predicted_list_IN,
+                             calculation_methods_list_IN,
+                             do_print_IN = True,
+                             output_to_file_IN = True ):
+    
+        '''
+        Accepts baseline list and predicted list of values, a list of
+            calculation methods to include, and then some configuration values
+            around how to output information created during processing.
+            
+        For each of the selected calculation methods, calculates precision,
+            recall, and F1 for the values passed in, then returns a dictionary
+            that contains the results.  In the dictionary:
+            
+            - key "confusion_matrix" maps to the derived raw confusion matrix, created using sklearn.metrics.confusion_matrix().
+            - key "method_to_result_map" maps each of the methods passed in to the results for that method, direct from scikit-learn.
+            - key "line_list" contains a list of output lines IF output_to_file_IN, is True, for output to a file.
+        '''
+    
+        # return reference
+        output_dict_OUT = {}
+        
+        # declare variables
+        output_string = None
+        my_line_list = None
+        calculation_methods = None
+        cm = None
+        method_to_result_map = None
+        calculation_method = None
+        precision = None
+        recall = None
+        accuracy = None
+        F1 = None
+        support = None
+        
+        # declare variables - default algorithm
+        default_evaluation = None
+        default_precision_list = None
+        default_recall_list = None
+        default_F1_list = None
+        default_support_list = None
+        precision_list_length = None
+        recall_list_length = None
+        F1_list_length = None
+    
+        # init
+        my_line_list = []
+        
+        # init - calculation methods to include and lists
+        calculation_methods = calculation_methods_list_IN
+        baseline_list = baseline_list_IN
+        derived_binary_list = predicted_list_IN
+    
+        # confusion matrix
+        cm = sklearn.metrics.confusion_matrix( baseline_list, derived_binary_list )
+        
+        # RETURN - store confusion matrix
+        output_dict_OUT[ cls.RETURN_CONFUSION_MATRIX ] = cm
+    
+        # output
+        output_string = "\nConfusion matrix:\n{}\n\nBinary Key:\n[[ TN, FP ]\n [ FN, TP ]]".format( cm )
+        if ( do_print_IN == True ):
+            print( output_string )
+        #-- END if do_print_IN --#
+    
+        # if output to file...
+        if ( output_to_file_IN == True ):
+    
+            # store line for output
+            my_line_list.append( output_string )
+    
+        #-- END if output... --#
+    
+        # loop over calculation methods
+        method_to_result_map = {}
+        for calculation_method in calculation_methods:
+            
+            # RETURN - create map for method
+            
+    
+            # output
+            output_string = "\n==> {}".format( calculation_method )
+            if ( do_print_IN == True ):
+                print( output_string )
+            #-- END if do_print_IN --#
+    
+            # if output to file...
+            if ( output_to_file_IN == True ):
+    
+                # store line for output
+                my_line_list.append( output_string )
+    
+            #-- END if output... --#
+    
+            # binary?  If so, do basic calculations as sanity check.
+            if ( calculation_method == cls.CALCULATION_METHOD_BINARY ):
+    
+                # calculate precision, recall, accuracy...
+    
+                # ==> precision
+                precision = sklearn.metrics.precision_score( baseline_list, derived_binary_list )
+    
+                # output
+                output_string = "\n- {} metrics.precision_score = {}".format( calculation_method, precision )
+                if ( do_print_IN == True ):
+                    print( output_string )
+                #-- END if do_print_IN --#
+    
+                # if output...
+                if ( output_to_file_IN == True ):
+    
+                    # store line for output
+                    my_line_list.append( output_string )
+    
+                #-- END if output... --#
+    
+                # ==> recall
+                recall = sklearn.metrics.recall_score( baseline_list, derived_binary_list )
+    
+                # output
+                output_string = "- {} metrics.recall_score = {}".format( calculation_method, recall )
+                if ( do_print_IN == True ):
+                    print( output_string )
+                #-- END if do_print_IN --#
+    
+                # if output...
+                if ( output_to_file_IN == True ):
+    
+                    # store line for output
+                    my_line_list.append( output_string )
+    
+                #-- END if output... --#
+    
+                # ==> accuracy
+                accuracy = sklearn.metrics.accuracy_score( baseline_list, derived_binary_list )
+    
+                # output
+                output_string = "- {} metrics.accuracy_score = {}".format( calculation_method, accuracy )
+                if ( do_print_IN == True ):
+                    print( output_string )
+                #-- END if do_print_IN --#
+    
+                # if output...
+                if ( output_to_file_IN == True ):
+    
+                    # store line for output
+                    my_line_list.append( output_string )
+    
+                #-- END if output... --#
+    
+            #-- END check to see if CALCULATION_METHOD_BINARY --#
+    
+            # calculate based on calculation method.
+    
+            # default?
+            if ( calculation_method == cls.CALCULATION_METHOD_DEFAULT ):
+    
+                # default metrics and F-Score - default returns a list for each of
+                #     the scores per label, so get list and output, don't pick one or
+                #     another value.
+                default_evaluation = sklearn.metrics.precision_recall_fscore_support( baseline_list, derived_binary_list )
+                default_precision_list = default_evaluation[ 0 ]
+                default_recall_list = default_evaluation[ 1 ]
+                default_F1_list = default_evaluation[ 2 ]
+                default_support_list = default_evaluation[ 3 ]
+    
+                # output lists
+                output_string = "\ndefault lists:"
+                output_string += "\n- precision list = {}".format( default_precision_list )
+                output_string += "\n- recall list = {}".format( default_recall_list )
+                output_string += "\n- F1 list = {}".format( default_F1_list )
+                output_string += "\n- support list = {}".format( default_support_list )
+    
+                # add to results map
+                method_to_result_map[ calculation_method ] = default_evaluation
+    
+                # look at length of lists (should all be the same).
+                precision_list_length = len( default_precision_list )
+                recall_list_length = len( default_recall_list )
+                F1_list_length = len( default_F1_list )
+    
+                output_string += "\n\nlist lengths: {}".format( precision_list_length )
+    
+                if ( precision_list_length > 2 ):
+    
+                    # binary, but list is greater than 2, not binary - output message.
+                    output_string += "\n- NOTE: default output lists have more than two entries - your data is not binary."
+    
+                #-- END check to see if list length greater than 2 --#
+    
+                if ( do_print_IN == True ):
+                    print( output_string )
+                #-- END if do_print_IN --#
+    
+                # if output...
+                if ( output_to_file_IN == True ):
+    
+                    # store line for output
+                    my_line_list.append( output_string )
+    
+                #-- END if output... --#
+    
+            # all others are just argument to "average" parameter, result in one number per
+            #     derived score.  For now, implement them the same.
+            else:
+    
+                # F-Score
+                evaluation_tuple = sklearn.metrics.precision_recall_fscore_support( baseline_list, derived_binary_list, average = calculation_method )
+                precision = evaluation_tuple[ 0 ]
+                recall = evaluation_tuple[ 1 ]
+                F1 = evaluation_tuple[ 2 ]
+                support = evaluation_tuple[ 3 ]
+    
+                # add to results map
+                method_to_result_map[ calculation_method ] = evaluation_tuple
+    
+                # output
+                output_string = "\n{}: precision = {}, recall = {}, F1 = {}, support = {}".format( calculation_method, precision, recall, F1, support )
+                if ( do_print_IN == True ):
+                    print( output_string )
+                #-- END if do_print_IN --#
+    
+                # if output to file...
+                if ( output_to_file_IN == True ):
+    
+                    # store line for output
+                    my_line_list.append( output_string )
+    
+                #-- END if output... --#
+    
+            #-- END default F-Score --#
+    
+        #-- END loop over calculation_methods --#
+    
+        # RETURN - method-to-result map
+        output_dict_OUT[ cls.RETURN_METHOD_TO_RESULT_MAP ] = method_to_result_map
+        
+        # RETURN - store line_list
+        output_dict_OUT[ cls.RETURN_LINE_LIST ] = my_line_list
+    
+        return output_dict_OUT
+        
+    #-- END class method precision_recall_f1() --#
+    
+    
+    @classmethod
+    def recall_at_k( cls, y_true, y_scores, k ):
+        
+        # return reference
+        value_OUT = None
+        
+        # declare variables
+        threshold = None
+        
+        # get threshold index
+        threshold = cls.threshold_at_k( y_scores, k )
+        
+        # use threshold to generate predicted scores
+        y_pred = numpy.asarray( [ 1 if i >= threshold else 0 for i in y_scores ] )
+        
+        # calculate recall
+        value_OUT = sklearn.metrics.recall_score( y_true, y_pred )
+        
+        return value_OUT
+    
+    #-- END function recall_at_k() --#
+
+
+    @classmethod
+    def threshold_at_k( cls, y_scores, k ):
+        
+        # return reference
+        value_OUT = None
+        
+        # declare variables
+        value_list = None
+        threshold_index = -1
+        
+        # sort values
+        value_list = numpy.sort( y_scores )
+        
+        # reverse order of list
+        value_list = value_list[ : : -1 ]
+        
+        # calculate index of value that is k% of the way through the sorted distribution of scores
+        threshold_index = int( k * len( y_scores ) )
+        
+        # get value that is k% of the way through the sorted distribution of scores
+        value_OUT = value_list[ threshold_index ]
+        
+        print( "Threshold: {}".format( value_OUT ) )
+        
+        return value_OUT
+    
+    #-- END class method threshold_at_k() --#
 
 
     #============================================================================
