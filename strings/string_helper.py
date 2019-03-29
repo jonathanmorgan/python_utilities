@@ -564,6 +564,7 @@ class StringHelper( object ):
                       input_encoding_IN = '',
                       encode_error_IN = "xmlcharrefreplace",
                       entitize_4_byte_unicode_IN = False,
+                      store_unicode_in_attrs_IN = False,
                       *args,
                       **kwargs ):
         
@@ -620,7 +621,14 @@ class StringHelper( object ):
                                                         entitize_4_byte_unicode_IN = entitize_4_byte_unicode_IN,
                                                         *args,
                                                         **kwargs )
-                                                        
+                        
+                        # store unicode?
+                        if ( store_unicode_in_attrs_IN == True ):
+                        
+                            attr_value = codecs.decode( attr_value, encoding = output_encoding_IN )
+                            
+                        #-- END check to see if store unicode --#
+                        
                         # store it back.
                         setattr( instance_OUT, attr_name, attr_value )
                     
@@ -804,6 +812,128 @@ class StringHelper( object ):
         return string_OUT
     
     #-- END entitize_4_byte_unicode() function --#
+
+
+    @classmethod
+    def escape_non_ascii_in_string( cls,
+                                    string_IN,
+                                    input_encoding_IN = '',
+                                    *args,
+                                    **kwargs ):
+        
+        '''
+        Accepts a string.  First, decodes it to unicode since you have to have
+           unicode string to encode (if already a unicode object, doesn't change
+           anything).  Then, tries to convert to encoding passed in.  If
+           exception, re-encodes it into the requested output_encoding, escaping
+           illegal characters to XML entities by default.
+           
+        Parameters:
+        - string_IN - string we want encoded in the output encoding specified.
+        - output_encoding_IN - encoding we want this string to be in.  Defaults
+            to ascii.
+        - input_encoding_IN - optional encoding in which our string is encoded.
+        - encode_error_IN - what we want to do on encoding errors, when
+            converting to safe string (default is "xmlcharrefreplace", which
+            converts those characters to entities).
+        - entitize_4_byte_unicode_IN - Boolean, if True, after encoding,
+            converts all 4-byte unicode characters to entities (for mysql that
+            can't handle 4-byte unicode).  If false, doesn't.
+        '''
+        
+        # return reference
+        string_OUT = ""
+        
+        # declare variables
+        unicode_string = ""
+        
+        # make sure it is not None or empty string    
+        if ( ( string_IN ) and ( string_IN != None ) and ( string_IN != "" ) ):
+        
+            # use encode_string to convert to ASCII with all non-ASCII converted
+            #     to entities.
+            string_OUT = cls.encode_string( string_IN,
+                                            output_encoding_IN = cls.ENCODING_ASCII,
+                                            input_encoding_IN = input_encoding_IN,
+                                            encode_error_IN = "xmlcharrefreplace",
+                                            entitize_4_byte_unicode_IN = False,
+                                            *args,
+                                            **kwargs )
+
+            # convert back to unicode
+            unicode_string = codecs.decode( string_OUT, encoding = cls.ENCODING_ASCII )
+            string_OUT = unicode_string
+            
+        #-- END check to see if something passed in - don't want "None". --#
+        
+        return string_OUT
+        
+    #-- END method escape_non_ascii_in_string --#
+
+
+    @classmethod
+    def escape_non_ascii_in_attrs( cls,
+                                   instance_IN,
+                                   attr_name_list_IN,
+                                   input_encoding_IN = '',
+                                   *args,
+                                   **kwargs ):
+        
+        '''
+        Accepts an object instance and a list of attrs that we want to encode.
+           For each attr, retrieves value from instance.  If not None and not 
+           empty, encodes the value.  Then, stores the value back in the
+           attribute in the instance passed in.
+           
+        Parameters:
+        - instance_IN - string we want encoded in the output encoding specified.
+        - attr_list_IN - list of names of object attributes whose values we want encoded.
+        - output_encoding_IN - encoding we want this string to be in.  Defaults
+            to ascii.
+        - input_encoding_IN - optional encoding in which our string is encoded.
+        - encode_error_IN - what we want to do on encoding errors, when
+            converting to safe string (default is "xmlcharrefreplace", which
+            converts those characters to entities).
+        - entitize_4_byte_unicode_IN - Boolean, if True, after encoding,
+            converts all 4-byte unicode characters to entities (for mysql that
+            can't handle 4-byte unicode).  If false, doesn't.
+        '''
+        
+        # return reference
+        instance_OUT = None
+        
+        # declare variables
+        attr_value = None
+        attr_name = None
+        
+        # store instance for return.
+        instance_OUT = instance_IN
+        
+        # anything in instance?
+        if ( instance_OUT is not None ):
+        
+            # got a list?
+            if ( (  attr_name_list_IN is not None ) and ( len( attr_name_list_IN ) > 0 ) ):
+            
+                # call encode_attrs, to ASCII, then store the result back as
+                #     unicode.
+                instance_OUT = cls.encode_attrs( instance_IN,
+                                                 attr_name_list_IN,
+                                                 output_encoding_IN = cls.ENCODING_ASCII,
+                                                 input_encoding_IN = input_encoding_IN,
+                                                 encode_error_IN = "xmlcharrefreplace",
+                                                 entitize_4_byte_unicode_IN = False,
+                                                 store_unicode_in_attrs_IN = True,
+                                                 *args,
+                                                 **kwargs )
+
+            #-- END check to see if we have a list of attribute names. --#
+        
+        #-- END check to make sure we have an instance. --#
+
+        return instance_OUT
+        
+    #-- END method escape_non_ascii_in_attrs --#
 
 
     @classmethod
