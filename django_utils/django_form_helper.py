@@ -598,7 +598,7 @@ class FormParent( forms.Form ):
         
         # declare variables
         me = "am_i_empty"
-        my_logger_name = "sourcenet.forms.FormParent"
+        my_logger_name = "python_utilities.django_utils.django_form_helper.FormParent"
         debug_message = ""
         
         # use DjangoFormHelper method
@@ -625,7 +625,7 @@ class FormParent( forms.Form ):
         
         # declare variables
         me = "to_html_as_hidden_inputs"
-        my_logger_name = "sourcenet.forms.FormParent"
+        my_logger_name = "python_utilities.django_utils.django_form_helper.FormParent"
         debug_message = ""
         
         # use DjangoFormHelper method
@@ -663,7 +663,7 @@ class ModelFormParent( forms.ModelForm ):
         
         # declare variables
         me = "am_i_empty"
-        my_logger_name = "sourcenet.forms.ModelFormParent"
+        my_logger_name = "python_utilities.django_utils.django_form_helper.ModelFormParent"
         debug_message = ""
         
         # use DjangoFormHelper method
@@ -690,7 +690,7 @@ class ModelFormParent( forms.ModelForm ):
         
         # declare variables
         me = "to_html_as_hidden_inputs"
-        my_logger_name = "sourcenet.forms.ModelFormParent"
+        my_logger_name = "python_utilities.django_utils.django_form_helper.ModelFormParent"
         debug_message = ""
         
         # use DjangoFormHelper method

@@ -18,7 +18,7 @@ To add a new ajax select:
 - In this file, make a new class that extends LookupParent for the model you want to lookup using AJAX-selects (It is OK to just copy one of the other ones here).  Place it in alphabetical order in the file.
 - Modify the get_query() and get_objects() methods to reference the correct model, fields in that model.
 - If django 1.6 or earlier, in settings.py, add a line for your new channel to the AJAX_LOOKUP_CHANNELS property, like this, for person:
-    'person' : ('sourcenet.lookups', 'PersonLookup'),
+    'person' : ('events.lookups', 'PersonLookup'),
 - In admin.py, either add or edit a form attribute to include your channel, and to tell the admin which field to map to which AJAX lookup.  So, for example, in Article, there is the following line:
 
         form = make_ajax_form( Article_Subject, dict( person = 'person', ) )
