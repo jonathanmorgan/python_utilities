@@ -530,6 +530,37 @@ class QuerySetHelper():
     #-- END configure_query_set() method --#
 
 
+    def is_evaluated( self, *args, **kwargs ):
+    
+        """
+        Checks if queryset_IN._result_cache is None.  If None, not evaluated,
+            returns False.  If not None, has been evaluated, returns true.
+        """
+
+        # return reference
+        is_evaluated_OUT = None
+        
+        # declare variables
+        my_queryset = None
+        
+        # make sure QuerySet is not None
+        my_queryset = self.get_queryset()
+        if ( my_queryset is not None ):
+        
+            # check if _result_cache is None
+            is_evaluated_OUT = self.is_queryset_evaluated( my_queryset )
+
+        else:
+        
+            print( "ERROR - no QuerySet ( {} )".format( my_queryset ) )
+            
+        #-- END check to see if QuerySet passed in. --#
+        
+        return is_evaluated_OUT
+                
+    #-- END function is_queryset_evaluated() --#
+    
+    
     def set_order_by( self, order_by_list_IN ):
     
         '''
