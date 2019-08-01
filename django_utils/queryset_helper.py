@@ -46,7 +46,7 @@ class QuerySetHelper():
     '''
 
     #---------------------------------------------------------------------------
-    # CONSTANTS-ish
+    # ! ==> CONSTANTS-ish
     #---------------------------------------------------------------------------
 
 
@@ -66,7 +66,7 @@ class QuerySetHelper():
 
 
     #---------------------------------------------------------------------------
-    # __init__() method
+    # ! ==> __init__() method
     #---------------------------------------------------------------------------
 
     
@@ -82,7 +82,7 @@ class QuerySetHelper():
 
 
     #---------------------------------------------------------------------------
-    # properties, in alphabetical order
+    # ! ==> properties, in alphabetical order
     #---------------------------------------------------------------------------
 
 
@@ -118,10 +118,50 @@ class QuerySetHelper():
 
 
     #---------------------------------------------------------------------------
-    # class methods, in alphabetical order
+    # ! ==> class methods, in alphabetical order
     #---------------------------------------------------------------------------
 
 
+    @classmethod
+    def is_queryset_evaluated( cls, queryset_IN, *args, **kwargs ):
+    
+        """
+        Checks if queryset_IN._result_cache is None.  If None, not evaluated,
+            returns False.  If not None, has been evaluated, returns true.
+        """
+
+        # return reference
+        is_evaluated_OUT = None
+        
+        # declare variables
+        
+        # make sure QuerySet is not None
+        if ( queryset_IN is not None ):
+        
+            # check if _result_cache is None
+            if ( queryset_IN._result_cache is None ):
+            
+                # it is None - not yet evaluated
+                is_evaluated_OUT = False
+        
+            else:
+        
+                # not None, so has been evaluated.
+                is_evaluated_OUT = True
+    
+            #-- END check to see if _result_cache --#
+            
+        else:
+        
+            print( "ERROR - no QuerySet passed in ( {} )".format( queryset_IN ) )
+            
+        #-- END check to see if QuerySet passed in. --#
+        
+        return is_evaluated_OUT
+                
+    #-- END function is_queryset_evaluated() --#
+    
+    
     @classmethod
     def queryset_generator( cls, queryset_IN, chunksize_IN = 1000 ):
     
@@ -235,7 +275,7 @@ class QuerySetHelper():
     
         
     #---------------------------------------------------------------------------
-    # instance methods, in alphabetical order
+    # ! ==> instance methods, in alphabetical order
     #---------------------------------------------------------------------------
 
 
