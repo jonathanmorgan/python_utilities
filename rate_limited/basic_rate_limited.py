@@ -80,15 +80,15 @@ class BasicRateLimited( LoggingHelper ):
 
 
     #============================================================================
-    # instance variables
+    # class variables
     #============================================================================
 
 
-    # rate limiting
-    do_manage_time = True
-    rate_limit_in_seconds = 2
-    rate_limit_daily_limit = -1
-    request_start_time = None
+    # rate limiting - moved to __init__()
+    #do_manage_time = True
+    #rate_limit_in_seconds = 2
+    #rate_limit_daily_limit = -1
+    #request_start_time = None
     
     
     #---------------------------------------------------------------------------

@@ -41,9 +41,9 @@ from python_utilities.logging.logging_helper import LoggingHelper
 class ExceptionHelper( LoggingHelper ):
 
 
-    #============================================================================
+    #===========================================================================
     # CONSTANTS-ish
-    #============================================================================
+    #===========================================================================
 
 
     STATUS_SUCCESS = "Success!"
@@ -51,30 +51,212 @@ class ExceptionHelper( LoggingHelper ):
     
     # DEBUG - changed to instance variable.
     #DEBUG_FLAG = False
+    
+    # logger name
+    MY_LOGGER_NAME = "python_utilities.exceptions.exception_helper"
+    
+    # Exception details
+    DETAILS_IS_INPUT_SAME_AS_SYS = "is_input_same_as_sys"
+    DETAILS_MESSAGE = "message"
+    DETAILS_ARGS = "args"
+    DETAILS_TYPE = "type"
+    DETAILS_INSTANCE = "instance"
+    DETAILS_TRACEBACK = "traceback"
+    DETAILS_TRACEBACK_LIST = "traceback_list"
+    DETAILS_AS_STRING = "as_string"
 
 
-    #============================================================================
-    # instance variables
-    #============================================================================
+    #===========================================================================
+    # ! ==> class variables
+    #===========================================================================
 
 
     # email helpers.
-    email_helper = None
-    email_status_address = ""
+    #email_helper = None
+    #email_status_address = ""
     
     # last exception details
-    last_exception_details = ""
+    #last_exception_details = ""
     
     # debug_flag
-    debug_flag = False
+    #debug_flag = False
     
     # logging
-    logging_level = logging.ERROR
+    #logging_level = logging.ERROR
     
     
-    #---------------------------------------------------------------------------
-    # __init__() method
-    #---------------------------------------------------------------------------
+    #===========================================================================
+    # ! ==> class methods
+    #===========================================================================
+
+
+    @classmethod
+    def build_exception_details( cls, exception_IN = None, message_IN = "", logger_IN = None, *args, **kwargs ):
+    
+        # return reference
+        details_OUT = None
+        
+        # declare variables
+        my_logger = None
+        exception_type = ""
+        exception_instance = ""
+        exception_traceback = ""
+        exception_details = ""
+        temp_value = None
+        temp_list = None
+        temp_exception_string = ""
+        
+        # get a logger
+        if ( logger_IN is None ):
+
+            my_logger = cls.get_a_logger( cls.MY_LOGGER_NAME )
+            
+        else:
+        
+            my_logger = logger_IN
+        
+        #-- END check to see if logger passed in. --#
+        
+        # got an exception?
+        if ( ( exception_IN ) and ( exception_IN != None ) ):
+        
+            # init details map.
+            details_OUT = {}
+        
+            # get current exception details:
+            exception_type, exception_instance, exception_traceback = sys.exc_info()
+            
+            exception_details = ""
+            
+            # curiosity - are exception_IN and exception_instance the same
+            #     instance?
+            if ( exception_IN is exception_instance ):
+            
+                # it is.  Should I force this to be true, or just log a message?
+                temp_exception_string = "Exception passed in ( {} ) is the same as the current exception from sys.exc_info() ( {} )".format( exception_IN, exception_instance )
+                my_logger.debug( temp_exception_string )
+                temp_value = True
+                
+            else:
+            
+                # it is not.  Interesting.
+                temp_exception_string = "Exception passed in ( {} ) is NOT the same as the current exception from sys.exc_info() ( {} )".format( exception_IN, exception_instance )
+                my_logger.debug( temp_exception_string )
+                temp_value = False
+                
+            #-- END check to see if exception passed in is the current exception --#
+
+            # add to details.
+            exception_details += temp_exception_string
+
+            # add to details dictionary
+            details_OUT[ cls.DETAILS_IS_INPUT_SAME_AS_SYS ] = temp_value
+
+            #-------------------------------------------------------------------#
+            # intro
+            #-------------------------------------------------------------------#
+            
+            # got a message?
+            if ( ( message_IN ) and ( message_IN != "" ) ):
+    
+                # create current line of text.
+                temp_value = message_IN
+
+            else:
+            
+                # create current line of text.
+                temp_value = "Exception caught"
+
+            #-- END check to see if we have a message --#
+            
+            temp_exception_string = "====> {}".format( temp_value )
+
+            # add to details.
+            exception_details += temp_exception_string
+ 
+            # add to details dictionary
+            details_OUT[ cls.DETAILS_MESSAGE ] = temp_value
+            
+            #-------------------------------------------------------------------#
+            # arguments
+            #-------------------------------------------------------------------#
+
+            # create current line of text.
+            temp_value = exception_instance.args
+            temp_exception_string = "- args = {}".format( temp_value )
+            
+            # add to details.
+            exception_details += "\n" + temp_exception_string
+    
+            # add to details dictionary
+            details_OUT[ cls.DETAILS_ARGS ] = temp_value
+
+            #-------------------------------------------------------------------#
+            # exception type
+            #-------------------------------------------------------------------#
+
+            # create current line of text.
+            temp_value = exception_type
+            temp_exception_string = "- type = {}".format( exception_type )
+
+            # add to details.
+            exception_details += "\n" + temp_exception_string
+            
+            # add to details dictionary
+            details_OUT[ cls.DETAILS_TYPE ] = temp_value
+
+            #-------------------------------------------------------------------#
+            # exception value
+            #-------------------------------------------------------------------#
+
+            # create current line of text.
+            temp_value = exception_instance
+            temp_exception_string = "- value (instance) = {}".format( temp_value )
+
+            # add to details.
+            exception_details += "\n" + temp_exception_string
+            
+            # add to details dictionary
+            details_OUT[ cls.DETAILS_INSTANCE ] = temp_value
+
+            #-------------------------------------------------------------------#
+            # exception stack trace
+            #-------------------------------------------------------------------#
+
+            # create current line of text.
+            temp_list = traceback.format_exception( exception_type, exception_instance, exception_traceback )
+            temp_value = "".join( temp_list )
+            temp_exception_string = "- traceback:\n{}".format( temp_value )
+
+            # add to details.
+            exception_details += "\n" + temp_exception_string
+        
+            # add to details dictionary
+            details_OUT[ cls.DETAILS_TRACEBACK_LIST ] = temp_list
+            details_OUT[ cls.DETAILS_TRACEBACK ] = temp_value
+            
+            #-------------------------------------------------------------------#
+            # details as string
+            #-------------------------------------------------------------------#
+
+            # add to details dictionary
+            details_OUT[ cls.DETAILS_AS_STRING ] = exception_details
+            
+        else:
+        
+            my_logger.debug( "{} no exception passed in, can't process exception.".format( ExceptionHelper.STATUS_PREFIX_ERROR ) )
+            details_OUT = None
+        
+        #-- END check to make sure exception passed in --#
+        
+        return details_OUT
+    
+    #-- END method build_exception_details() --#
+
+
+    #===========================================================================
+    # ! ==> __init__() method - instance variables
+    #===========================================================================
 
     
     def __init__( self ):
@@ -92,6 +274,7 @@ class ExceptionHelper( LoggingHelper ):
         
         # last exception description
         self.last_exception_details = ""
+        self.last_exception_details_dict = None
         
         # debug
         self.debug_flag = False
@@ -107,9 +290,9 @@ class ExceptionHelper( LoggingHelper ):
     #-- END constructor --#
 
 
-    #============================================================================
-    # instance methods
-    #============================================================================
+    #===========================================================================
+    # ! ==> instance methods
+    #===========================================================================
     
 
     def email_initialize( self, smtp_host_IN = "localhost", smtp_port_IN = -1, smtp_use_ssl_IN = False, smtp_username_IN = "", smtp_password_IN = "", *args, **kwargs ):
@@ -301,10 +484,12 @@ class ExceptionHelper( LoggingHelper ):
         
         # declare variables
         my_logger = None
+        details_dict = None
         exception_type = ""
         exception_value = ""
         exception_traceback = ""
         exception_details = ""
+        temp_value = None
         temp_exception_string = ""
         error_email_subject = ""
         error_email_message = ""
@@ -316,13 +501,11 @@ class ExceptionHelper( LoggingHelper ):
             my_logger = self.get_logger()
             
             # get exception details:
-            exception_type, exception_value, exception_traceback = sys.exc_info()
-            
-            exception_details = ""
+            details_dict = self.build_exception_details( exception_IN, message_IN, my_logger )
 
-            #-------------------------------------------------------------------#
+            #------------------------------------------------------------------#
             # intro
-            #-------------------------------------------------------------------#
+            #------------------------------------------------------------------#
             
             # got a message?
             if ( ( message_IN ) and ( message_IN != "" ) ):
@@ -330,43 +513,13 @@ class ExceptionHelper( LoggingHelper ):
                 # create current line of text.
                 temp_exception_string = "====> " + message_IN
 
-                # add to details.
-                exception_details += temp_exception_string
-
-                # print?
-                if ( print_details_IN == True ):
-
-                    self.log_exception_info( temp_exception_string )
-
-                #-- END check to see if we should print details --#
-
             else:
             
                 # create current line of text.
                 temp_exception_string = "====> Exception caught"
 
-                # add to details.
-                exception_details += temp_exception_string
-            
-                # print?
-                if ( print_details_IN == True ):
-
-                    self.log_exception_info( temp_exception_string )
-
-                #-- END check to see if we should print details --#
-
             #-- END check to see if we have a message --#
             
-            #-------------------------------------------------------------------#
-            # arguments
-            #-------------------------------------------------------------------#
-
-            # create current line of text.
-            temp_exception_string = "      - args = " + str( exception_IN.args )
-
-            # add to details.
-            exception_details += "\n" + temp_exception_string
-    
             # print?
             if ( print_details_IN == True ):
 
@@ -374,41 +527,62 @@ class ExceptionHelper( LoggingHelper ):
 
             #-- END check to see if we should print details --#
 
-            #-------------------------------------------------------------------#
+            #------------------------------------------------------------------#
+            # arguments
+            #------------------------------------------------------------------#
+
+            # create current line of text.
+            temp_value = details_dict.get( self.DETAILS_ARGS, None )
+            temp_exception_string = " - args = {}".format( temp_value )
+
+            # print?
+            if ( print_details_IN == True ):
+
+                self.log_exception_info( temp_exception_string )
+
+            #-- END check to see if we should print details --#
+
+            #------------------------------------------------------------------#
             # exception type
-            #-------------------------------------------------------------------#
+            #------------------------------------------------------------------#
 
             # create current line of text.
-            temp_exception_string = "      - type = " + str( exception_type )
+            temp_value = details_dict.get( self.DETAILS_TYPE, None )
+            temp_exception_string = " - type = {}".format( temp_value )
 
-            # add to details.
-            exception_details += "\n" + temp_exception_string
-            
-            #-------------------------------------------------------------------#
+            # print?
+            if ( print_details_IN == True ):
+
+                self.log_exception_info( temp_exception_string )
+                
+            #-- END check to see if we should print details --#            
+
+            #------------------------------------------------------------------#
             # exception value
-            #-------------------------------------------------------------------#
+            #------------------------------------------------------------------#
 
             # create current line of text.
-            temp_exception_string = "      - value = " + str( exception_value )
+            temp_value = details_dict.get( self.DETAILS_INSTANCE )
+            temp_exception_string = " - value (instance) = " + str( temp_value )
             self.log_exception_info( temp_exception_string )
 
-            # add to details.
-            exception_details += "\n" + temp_exception_string
-            
-            #-------------------------------------------------------------------#
+            #------------------------------------------------------------------#
             # exception stack trace
-            #-------------------------------------------------------------------#
+            #------------------------------------------------------------------#
 
             # create current line of text.
-            temp_exception_string = "      - traceback = " + str( traceback.format_exc() )
+            temp_exception_string = " - traceback = " + str( traceback.format_exc() )
             self.log_exception_info( temp_exception_string )
 
-            # add to details.
-            exception_details += "\n" + temp_exception_string
+            #------------------------------------------------------------------#
+            # exception details
+            #------------------------------------------------------------------#
 
-            #-------------------------------------------------------------------#
+            exception_details = details_dict.get( self.DETAILS_AS_STRING, None )
+
+            #------------------------------------------------------------------#
             # email?
-            #-------------------------------------------------------------------#
+            #------------------------------------------------------------------#
 
             # do we send email?
             if ( send_email_IN == True ):
@@ -429,6 +603,7 @@ class ExceptionHelper( LoggingHelper ):
         
         # store details, in case someone wants programmatic access to them.
         self.last_exception_details = exception_details
+        self.last_exception_details_dict = details_dict
         
         return status_OUT
     
