@@ -292,7 +292,7 @@ class LoggingHelper( object ):
         # initialize variables
         self.m_logger = None
         self.m_logger_name = self.LOGGER_NAME
-        self.logger_debug_flag = False
+        self.logger_debug_flag = True
         self.logger_also_print_flag = False
         self.logger_resource_string = ""
 
