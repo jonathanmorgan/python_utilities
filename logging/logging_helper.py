@@ -48,6 +48,14 @@ class LoggingHelper( object ):
 
     LOGGER_NAME = "python_utilities.logging.logging_helper"
     CLASS_RESOURCE_STRING = ""
+    
+    # log level codes:
+    LOG_LEVEL_CODE_CRITICAL = logging.CRITICAL # 50
+    LOG_LEVEL_CODE_ERROR = logging.ERROR       # 40
+    LOG_LEVEL_CODE_WARNING = logging.WARNING   # 30
+    LOG_LEVEL_CODE_INFO = logging.INFO         # 20
+    LOG_LEVEL_CODE_DEBUG = logging.DEBUG       # 10
+    LOG_LEVEL_CODE_NOTSET = logging.NOTSET     # 00
 
 
     #============================================================================
@@ -161,7 +169,14 @@ class LoggingHelper( object ):
     
         
     @classmethod
-    def output_debug( cls, message_IN, method_IN = "", indent_with_IN = "", logger_name_IN = "", do_print_IN = False, resource_string_IN = None ):
+    def log_message( cls,
+                     message_IN,
+                     method_IN = "",
+                     indent_with_IN = "",
+                     logger_name_IN = "",
+                     do_print_IN = False,
+                     resource_string_IN = None,
+                     log_level_code_IN = None ):
         
         '''
         Accepts message string.  If debug is on, logs it.  If not,
@@ -226,7 +241,17 @@ class LoggingHelper( object ):
                 my_logger = cls.get_a_logger( my_logger_name )
                 
                 # log debug.
-                my_logger.debug( my_message )
+                if ( log_level_code_IN is not None ):
+                
+                    # log level passed in.  Use it.
+                    my_logger.log( log_level_code_IN, my_message )
+                
+                else:
+                
+                    # just call debug.
+                    my_logger.debug( my_message )
+                    
+                #-- END check to see if desired log level passed in. --#
                 
                 # print also?
                 if ( do_print_IN == True ):
@@ -240,6 +265,32 @@ class LoggingHelper( object ):
             
         #-- END check to see if we do_output? --#
     
+    #-- END method log_message() --#
+    
+    
+    @classmethod
+    def output_debug( cls,
+                      message_IN,
+                      method_IN = "",
+                      indent_with_IN = "",
+                      logger_name_IN = "",
+                      do_print_IN = False,
+                      resource_string_IN = None ):
+        
+        '''
+        Accepts message string.  If debug is on, logs it.  If not,
+           does nothing for now.
+        '''
+        
+        # call log_message()
+        cls.log_message( message_IN,
+                         method_IN = method_IN,
+                         indent_with_IN = indent_with_IN,
+                         logger_name_IN = logger_name_IN,
+                         do_print_IN = do_print_IN,
+                         resource_string_IN = resource_string_IN,
+                         log_level_code_IN = LoggingHelper.LOG_LEVEL_CODE_DEBUG )
+           
     #-- END method output_debug() --#
     
     
@@ -447,7 +498,39 @@ class LoggingHelper( object ):
     #-- END method is_my_logging_active() --#
     
         
-    def output_debug_message( self, message_IN, method_IN = "", indent_with_IN = "", logger_name_IN = "", do_print_IN = False, resource_string_IN = None ):
+    def output_debug_message( self,
+                              message_IN,
+                              method_IN = "",
+                              indent_with_IN = "",
+                              logger_name_IN = "",
+                              do_print_IN = False,
+                              resource_string_IN = None ):
+        
+        '''
+        Accepts message string.  If debug is on, logs it.  If not,
+           does nothing for now.
+        '''
+        
+        # call output_message()
+        self.output_message( message_IN,
+                            method_IN = method_IN,
+                            indent_with_IN = indent_with_IN,
+                            logger_name_IN = logger_name_IN,
+                            do_print_IN = do_print_IN,
+                            resource_string_IN = resource_string_IN,
+                            log_level_code_IN = LoggingHelper.LOG_LEVEL_CODE_DEBUG )
+        
+    #-- END method output_debug_message() --#
+
+
+    def output_message( self,
+                        message_IN,
+                        method_IN = "",
+                        indent_with_IN = "",
+                        logger_name_IN = "",
+                        do_print_IN = False,
+                        resource_string_IN = None,
+                        log_level_code_IN = None ):
         
         '''
         Accepts message string.  If debug is on, logs it.  If not,
@@ -507,7 +590,18 @@ class LoggingHelper( object ):
                 #-- END check to see if logger name --#
                     
                 # log debug.
-                my_logger.debug( my_message )
+                if ( log_level_code_IN is not None ):
+                
+                    # log level passed in.  Use it.
+                    my_logger.log( log_level_code_IN, my_message )
+                
+                else:
+                
+                    # just call debug.
+                    my_logger.debug( my_message )
+                    
+                #-- END check to see if desired log level passed in. --#
+                
                 
                 # also print?
                 if ( ( do_print_IN == True ) or ( self.logger_also_print_flag == True ) ):
@@ -521,7 +615,7 @@ class LoggingHelper( object ):
         
         #-- END check to see if message. --#
     
-    #-- END method output_debug_message() --#
+    #-- END method output_message() --#
 
 
     def remove_from_my_resource_string( self, resource_string_IN = "" ):
