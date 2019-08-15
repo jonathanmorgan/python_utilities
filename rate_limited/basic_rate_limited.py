@@ -65,9 +65,10 @@ import sys
 import time
 
 # python utilities
-from python_utilities.logging.logging_helper import LoggingHelper
+from python_utilities.exceptions.exception_helper import ExceptionHelper
+# which extends: from python_utilities.logging.logging_helper import LoggingHelper
 
-class BasicRateLimited( LoggingHelper ):
+class BasicRateLimited( ExceptionHelper ):
 
 
     #============================================================================

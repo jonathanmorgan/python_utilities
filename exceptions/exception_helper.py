@@ -254,6 +254,44 @@ class ExceptionHelper( LoggingHelper ):
     #-- END method build_exception_details() --#
 
 
+    @classmethod
+    def log_exception( cls,
+                       exception_IN,
+                       message_IN = "",
+                       method_IN = "",
+                       indent_with_IN = "",
+                       logger_name_IN = "",
+                       do_print_IN = False,
+                       resource_string_IN = None,
+                       log_level_code_IN = None, 
+                       logger_IN = None,
+                       *args,
+                       **kwargs ):
+        
+        # declare variables
+        me = "log_exception"
+        exception_details = None
+        exception_details_string = None
+        
+        # get exception details
+        exception_details = cls.build_exception_details( exception_IN, message_IN = message_IN, logger_IN = logger_IN )
+        
+        # get details string
+        exception_details_string = exception_details.get( cls.DETAILS_AS_STRING, "No details returned in {} - something is amiss - Exception: {}".format( me, exception_IN ) )
+        
+        # log it.
+        cls.log_message( exception_details_string,
+                         method_IN = method_IN,
+                         indent_with_IN = indent_with_IN,
+                         logger_name_IN = logger_name_IN,
+                         do_print_IN = do_print_IN,
+                         resource_string_IN = resource_string_IN,
+                         log_level_code_IN = log_level_code_IN,
+                         logger_IN = logger_IN )
+        
+    #-- END class method log_exception() --#
+
+
     #===========================================================================
     # ! ==> __init__() method - instance variables
     #===========================================================================

@@ -176,7 +176,8 @@ class LoggingHelper( object ):
                      logger_name_IN = "",
                      do_print_IN = False,
                      resource_string_IN = None,
-                     log_level_code_IN = None ):
+                     log_level_code_IN = None,
+                     logger_IN = None ):
         
         '''
         Accepts message string.  If debug is on, logs it.  If not,
@@ -214,7 +215,7 @@ class LoggingHelper( object ):
                 if ( method_IN ):
                 
                     # We do - append to front of message.
-                    my_message = "In " + method_IN + ": " + my_message
+                    my_message = "In {}: {}".format( method_IN, my_message )
                     
                 #-- END check to see if method passed in --#
                 
@@ -228,17 +229,26 @@ class LoggingHelper( object ):
                 # debug is on.  Start logging rather than using print().
                 #print( my_message )
                 
-                # got a logger name?
-                my_logger_name = cls.LOGGER_NAME
-                if ( ( logger_name_IN is not None ) and ( logger_name_IN != "" ) ):
+                # get a logger
+                if ( logger_IN is not None ):
+        
+                    my_logger = logger_IN
+                    
+                else:
+                    
+                    # got a logger name?
+                    my_logger_name = cls.LOGGER_NAME
+                    if ( ( logger_name_IN is not None ) and ( logger_name_IN != "" ) ):
+                    
+                        # use logger name passed in.
+                        my_logger_name = logger_name_IN
+                        
+                    #-- END check to see if logger name --#
+                        
+                    # get logger
+                    my_logger = cls.get_a_logger( my_logger_name )
                 
-                    # use logger name passed in.
-                    my_logger_name = logger_name_IN
-                    
-                #-- END check to see if logger name --#
-                    
-                # get logger
-                my_logger = cls.get_a_logger( my_logger_name )
+                #-- END check to see if logger passed in. --#
                 
                 # log debug.
                 if ( log_level_code_IN is not None ):
