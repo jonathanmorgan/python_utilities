@@ -56,6 +56,12 @@ class LoggingHelper( object ):
     LOG_LEVEL_CODE_INFO = logging.INFO         # 20
     LOG_LEVEL_CODE_DEBUG = logging.DEBUG       # 10
     LOG_LEVEL_CODE_NOTSET = logging.NOTSET     # 00
+    
+    # logging output defaults
+    LOGGING_DEFAULT_LEVEL = logging.DEBUG
+    LOGGING_DEFAULT_FORMAT = '%(asctime)s - %(levelname)s - %(name)s - %(message)s'
+    LOGGING_DEFAULT_FILENAME = "./django-log.txt"
+    LOGGING_DEFAULT_FILEMODE = "a"
 
 
     #============================================================================
@@ -131,6 +137,29 @@ class LoggingHelper( object ):
         return value_OUT
     
     #-- END class method get_a_logger() --#    
+
+
+    @classmethod
+    def initialize_logging_to_file( cls,
+                                    level_IN = LOGGING_DEFAULT_LEVEL,
+                                    format_IN = LOGGING_DEFAULT_FORMAT,
+                                    filename_IN = LOGGING_DEFAULT_FILENAME,
+                                    filemode_IN = LOGGING_DEFAULT_FILEMODE ):
+                            
+        '''
+        method for initializing logging, just so it is here for when I forget
+            the basic logging init.
+        '''
+    
+        logging.basicConfig(
+            level = level_IN,
+            format = format_IN,
+            filename = filename_IN,
+            filemode = filemode_IN # set to 'a' if you want to append, rather than overwrite each time.
+        )
+        print( "Logging initialized, to {}".format( filename_IN ) )
+
+    #-- END method initialize_logging_to_file() --#
 
 
     @classmethod
@@ -356,6 +385,12 @@ class LoggingHelper( object ):
         self.logger_debug_flag = True
         self.logger_also_print_flag = False
         self.logger_resource_string = ""
+        
+        # initialize variables - log output
+        self.logging_level = self.LOGGING_DEFAULT_LEVEL
+        self.logging_format = self.LOGGING_DEFAULT_FORMAT
+        self.logging_filename = self.LOGGING_DEFAULT_FILENAME
+        self.logging_filemode = self.LOGGING_DEFAULT_FILEMODE
 
     #-- END method __init__() --#
 
@@ -452,8 +487,40 @@ class LoggingHelper( object ):
         return value_OUT
     
     #-- END method get_logger --#
-
     
+
+    def init_logging_to_file( self ):
+                            
+        '''
+        method for initializing logging, just so it is here for when I forget
+            the basic logging init.
+        '''
+        
+        # declare variables
+        me = "init_logging_to_file"
+        my_level = None
+        my_format = None
+        my_filename = None
+        my_filemode = None
+        
+        # retrieve from instance values from instance.
+        my_level = self.logging_level
+        my_format = self.logging_format
+        my_filename = self.logging_filename
+        my_filemode = self.logging_filemode
+    
+        # init
+        self.initialize_logging_to_file(
+            level_IN = my_level,
+            format_IN = my_format,
+            filename_IN = my_filename,
+            filemode_IN = my_filemode # set to 'a' if you want to append, rather than overwrite each time.
+        )
+        print( "Logging initialized, to {}".format( filename_IN ) )
+
+    #-- END method init_logging_to_file() --#
+
+
     def is_my_logging_active( self, resource_string_IN = None ):
     
         # return reference

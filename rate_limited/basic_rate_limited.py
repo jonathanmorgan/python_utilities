@@ -68,6 +68,7 @@ import time
 from python_utilities.exceptions.exception_helper import ExceptionHelper
 # which extends: from python_utilities.logging.logging_helper import LoggingHelper
 
+# object --> LoggingHelper --> ExceptionHelper --> BasicRateLimited
 class BasicRateLimited( ExceptionHelper ):
 
 

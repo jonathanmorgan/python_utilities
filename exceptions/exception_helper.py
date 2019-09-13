@@ -38,6 +38,7 @@ from python_utilities.logging.logging_helper import LoggingHelper
 # class ExceptionHelper
 #================================================================================
 
+# object --> LoggingHelper --> ExceptionHelper
 class ExceptionHelper( LoggingHelper ):
 
 
