@@ -1,10 +1,11 @@
+bagit
 beautifulsoup4
-chardet
-cchardet
 bleach
-six
-requests
-regex
-w3lib
+cchardet
+chardet
 ipykernel
 openpyxl
+regex
+requests
+six
+w3lib
