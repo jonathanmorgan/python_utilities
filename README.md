@@ -4,46 +4,110 @@
 
 Python utility classes (should work in either Python 2 or 3).  Includes the following files:
 
+- __/analysis/__
+
+    - __/analysis/statistics/confusion_matrix_helper.py__ - helper class `ConfusionMatrixHelper`for working with confusion matrices, usually because you have run a classification model and are trying to assess its quality.
+    - __/analysis/statistics/stats_helper.py__ - helper class `StatsHelper` for help with statistics not implemented in a statistical package.  Includes Krippendorff's Alpha, percent agreement, and Potter's Pi, for assessing interrater reliability/agreement.
+    - __/analysis/statistics/tests.py__ - unit tests.
+
+- __/bagit/__
+
+    - __/bagit/bagit_python.ipynb__ and __/bagit/bagit_python.py__ - bagit python client example code, same code in both files, one is a jupyter notebook, one is a plain Python file.
+
 - __/beautiful\_soup/__
+
     - __/beautiful\_soup/beautiful\_soup\_helper.py__ - `BeautifulSoupHelper` class that implements helper methods for common things you do with BeautifulSoup, like getting child text and encoding HTML entities.  Built against BeautifulSoup 3, updated to import BeautifulSoup 4, work just fine far as I can tell...
+
 - __/booleans/__
+
     - __/booleans/boolean\_helper.py__ - `BooleanHelper` class with method to convert non-boolean values to boolean type based on valid known true values (1, 't', 'true', 'y', 'yes').
+
 - __/database__
+    
     - __/database/database\_helper\_factory.py__ - `Database_Helper_Factory` class provides a class method you can use to pull in either a postgresql or mysql database helper, so you can write code that functions the same way for either, allowing easier switching between the two.
     - __/database/database\_helper.py__ - `Database_Helper` abstract class encapsulates basic logic for dealing with creating connections and cursors using a Python DB API library.  Not fancy.  Opens, creates cursors and keeps track of all cursors it creates, and closes all related cursors and connection when you call close().  Nothing more.
     - __/database/psycopg2\_helper.py__ - `psycopg2_Helper` class encapsulates basic logic for dealing with creating connections and cursors using the psycopg2 library.  Not fancy.  Opens and closes, nothing more.
     - __/database/MySQLdb\_helper.py__ - `MySQLdb_Helper` class encapsulates basic logic for dealing with creating connections and cursors using the MySQLdb library.  Not fancy.  Opens and closes, nothing more.
     - __/database/PyMySQL\_helper.py__ - `PyMySQL_Helper` class encapsulates basic logic for dealing with creating connections and cursors using the PyMySQL library.  Not fancy.  Opens and closes, nothing more.
+
 - __/dictionaries/__
+
     - __/dictionaries/dict\_helper.py__ - `DictHelper` class contains a function to retrieve a dict values as strings, integers, and lists that also accept a default, so you can convert to types and define default yourself when you look things up in a dict.
+
 - __/django\_utils/__
-    - __/django\_utils/django\_memory\_helper.py__ - for now, has a class `DjangoMemoryHelper` with a single class method, `free_memory()`, that does everything I know how to do to free up memory in django while a long-running process is running.
+
+    - __/django\_utils/django\_ajax\_selects\_lookup\_helper.py__ - includes `LookupParent` class, to allow for easy implementation of robust lookup classes for `django_ajax_selects`.
+    - __/django\_utils/django\form\_helper.py__ - has a class `DjangoFormHelper` that includes helper class methods for working with forms: `is_form_empty()`; `is_value_empty()`; `data_to_html_as_hidden_inputs()`, and then classes `FormParent` and `ModelFormParent` that correctly apply these methods to forms and model forms, respectively.
+    - __/django\_utils/django\_memory\_helper.py__ - has a class `DjangoMemoryHelper` with a single class method, `free_memory()`, that does everything I know how to do to free up memory in django while a long-running process is running.
+    - __/django\_utils/django\_model\_helper.py__ - has a class `DjangoModelHelper` with a single class method, `copy_m2m_values()`, that copies ManyToMany values from one model to another for a field whose name is passed in.
     - __/django\_utils/django\_string\_helper.py__ - extends `StringHelper` class from `strings/string_helper.py`, updating the `convert_to_unicode()` method to use Django's built-in method.
+    - __/django\_utils/django\view\_helper.py__ - has a class `DjangoViewHelper` with a single class method, `get_request_data()`, that retrieves data from a request passed in, whether the request is GET or POST.
     - __/django\_utils/query\_filter.py__ - `QueryFilterHelper` class, just extends `QuerySetHelper` for backward compatibility.
     - __/django\_utils/queryset\_helper.py__ - `QuerySetHelper` class that contains memory-efficient ways of iterating over large QuerySets, and also a few convenience methods for adding date and primary key filters to a QuerySet.
+    - __/django\_utils/requirements.txt__ - list of packages required by the code in this folder.
+
 - __/email/__
+
     - __/email/email\_helper.py__ - `EmailHelper` class that contains logic for setting up SMTP server using smtplib, then sending text or HTML email messages.
+    - __/email/email\_test.py__ - basic email code on which EmailHelper is based, as an example.
+
 - __/exceptions/__
+
     - __/exceptions/exception\_helper.py__ - `ExceptionHelper` class that contains logic for printing exception messages, and also for emailing a summary if email is set up in the isntance.
+
+- __/integers/__
+
+    - __/integers/integer_helper.py__ - helper class `IntegerHelper` with a single class method, `is_valid_integer()`, that accepts a value and returns True if it contains a valid integer, False if not.
+    - __/integers/tests.py__ - unit tests.
+
+- __/json/__
+
+    - __/json/json\_helper.py__ - `JSONHelper` class that contains logic for pretty printing JSON and escaping all string values within a JSON object.
+
+- __/lists/__
+
+    - __/lists/list\_helper.py__ - `ListHelper` class that contains class method `get_value_as_list()` that accepts a value, tries to convert it to a list.
+
 - __/logging/__
+
     - __/logging/logging\_helper.py__ - `LoggingHelper` class contains instance variables to hold python `logging` logger instance and application name used when getting logger, and methods to get and set them.  The get_logger() method makes a new one using the application name if none is already present in the instance.  Can be used on its own, or as a parent class to add this stuff to an existing class.
     - __/logging/summary\_helper.py__ - `SummaryHelper` class that contains logic for capturing and outputting timing and auditing information.
+
 - __/network__
+
     - __/network/http\_helper.py__ - `Http_Helper` class that contains logic for checking if a URL has been redirected, and if so, storing redirect information including status code and redirect URLs.
-    - __/network/mechanize\_tools.py__ - Contains `SmartRedirectHandler` class that enables mechanize to keep track of all redirect hops taken from URL to resolved URL, with logic to support `Http_Helper`, based on the Dive Into Python site (http://www.diveintopython.net/download/diveintopython-examples-5.4.zip), but using Mechanize's version of urllib2.
     - __/network/network\_helper.py__ - `Network_Helper` class contains instance methods for parsing URL strings and plucking out different known, standard pieces (domain, trimmed domain, just path - no query string, and everything after the domain).
     - __/network/openanything.py__ - Contains `SmartRedirectHandler` class that keeps track of redirect hops for urllib2, logic to support Http_Helper, from the Dive Into Python site (http://www.diveintopython.net/download/diveintopython-examples-5.4.zip)
+
 - __/objects/__
+
     - __/objects/object\_helper.py__ - `ObjectHelper` class contains logic for detecting attributes in a given class (like the vars() method, only a little fancier).
+
 - __/parameters/__
+
     - __/parameters/param\_container.py__ - `ParamContainer` class contains logic for defining, loading, accessing, and outputting parameters stored in a dictionary.
+
+- __/R/__
+
+    - __/R/rserve_helper.py__ - `RserveHelper` class contains logic for working with the Rserve Python-R integration package.
+
 - __/rate\_limited/__
+
     - __/rate\_limited/basic\_rate\_limited.py__ - `BasicRateLimited` is a non-parallel parent class that contains variables and code for rate-limiting.  Details on extending TK below, in Usage Section.
+
+- __/status/__
+
+    - __/status/status\_container.py__ - `StatusContainer` class that can be used as a single return-type that contains detailed status information including status code, status message, nested name value pairs (which can include exceptions as values), and a nested status container from a child call.
+
 - __/sequences/__
+
     - __/sequences/sequence\_helper.py__ - `SequenceHelper` class for methods to help with working with Sequences (Lists, etc.).  Only method there now is KnuthMorrisPratt(), used to find index in list of places where another list is reproduced in its entirety (looking for subsequences within sequences).
+
 - __/strings/__
+
     - __/strings/html\_helper.py__ - `HTMLHelper` class to help with parsing and dealing with HTML strings.  Right now, has one static method, `remove_html()`, that removes HTML from a string, allowing for a list of HTML elements you want left in, and within those elements, a list of attributes you want left in.  If something is not in one of those lists, it will be removed.
     - __/strings/string\_helper.py__ - `StringHelper` class with methods to help with unicode encoding, stripping HTML from strings.
+    - __/strings/tests.py__ - unit tests.
 
 ## Installation
 
@@ -166,6 +230,8 @@ For a class you want to use ExceptionHelper for outputting and potentially email
     #-- END try-catch --#
 
 If you are going to be in a long-running or looping process, consider initializing at the beginning and storing instance in a variable, so you can reuse it.
+
+Also, this class extends LoggingHelper, so it can take advantage of that set of functionality as well, outlined below.
 
 ### /logging/logging_helper.py
 
@@ -330,39 +396,6 @@ Troubleshooting:
     
             encoded_data = 
 
-### /network/mechanize_tools.py
-
-Usage of SmartRedirectHandler to keep track of redirect steps:
-
-    # import mechanize
-    import mechanize
-    
-    # import python utilities mechanize.
-    import python_utilities.network.mechanize_tools
-    
-    # store URL to access
-    URL = 'http://www.winonapost.com/'
-    
-    # create request
-    request = mechanize.Request( URL )
-    
-    # set the redirect handler.
-    opener = mechanize.build_opener( python_utilities.network.mechanize_tools.SmartRedirectHandler() )
-    
-    # open the URL
-    open_result = opener.open(request)
-    
-    # if redirected, there will be a status attribute
-    if ( hasattr( open_result, "status_list" ) == True ):
-    
-        # redirected - list of statuses from redirects will be in open_result.status_list.
-        print( str( open_result.status_list ) )
-        
-    #-- END check to see if redirect --#
-    
-    # final URL will be in open_result.geturl()
-    print( "- Final URL = " + open_result.geturl() )
-
 ### /parameters/param\_container.py
 
 Usage:
@@ -430,7 +463,7 @@ For a class you want to be rate-limited:
 
 ## License:
 
-Copyright 2015 Jonathan Morgan
+Copyright 2015-present (2019) Jonathan Morgan
 
 This file is part of [http://github.com/jonathanmorgan/python\_utilities](http://github.com/jonathanmorgan/python_utilities).
 
