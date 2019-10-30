@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="python-utilities-jsm", # Replace with your own username
-    version="1.0.0",
+    version="1.0.1",
     author="Jonathan Morgan",
     author_email="jonathan.morgan.007@gmail.com",
     description="Myriad python utilities.",
@@ -27,7 +27,7 @@ setuptools.setup(
         "Topic :: Text Processing :: Markup :: HTML",
         "Topic :: Utilities"
     ],
-    install_requirements=[
+    install_requires=[
         "bagit",
         "beautifulsoup4",
         "bleach",
