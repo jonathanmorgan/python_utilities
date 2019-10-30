@@ -1,5 +1,7 @@
 # python\_utilities
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3523240.svg)](https://doi.org/10.5281/zenodo.3523240)
+
 <!-- TOC -->
 
 Python utility classes (should work in either Python 2 or 3).  Includes the following files:
