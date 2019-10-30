@@ -1,4 +1,4 @@
-to build:
+# to build
 
 - make a folder named `python_utilities_build`.
 - get source code.  Either:
@@ -20,3 +20,11 @@ to build:
     - to install from test: `pip install --index-url https://test.pypi.org/simple/ python-utilities-jsm`
     - if all works OK, upload to pypi.org: `python3 -m twine upload dist/*`
     - install using pip and test: `pip install python-utilities-jsm`
+
+# More details
+
+- [https://packaging.python.org/tutorials/packaging-projects/](https://packaging.python.org/tutorials/packaging-projects/)
+- semantic versioning: [https://semver.org/](https://semver.org/)
+- creating releases on github.com: [https://help.github.com/en/github/administering-a-repository/creating-releases](https://help.github.com/en/github/administering-a-repository/creating-releases)
+- making your code citable: [https://guides.github.com/activities/citable-code/](https://guides.github.com/activities/citable-code/)
+- packaging django apps: [https://docs.djangoproject.com/en/dev/intro/reusable-apps/](https://docs.djangoproject.com/en/dev/intro/reusable-apps/)
