@@ -166,7 +166,7 @@ class JSONHelper( object ):
 
 
     @staticmethod
-    def pretty_print_json( json_IN ):
+    def pretty_print_json( json_IN, sort_keys_IN = True, indent_IN = 4, separators_IN = ( ',', ': ' ) ):
     
         '''
         Accepts JSON object.  Formats it nicely, returns the formatted string.
@@ -175,7 +175,7 @@ class JSONHelper( object ):
         # return reference
         string_OUT = ""
         
-        string_OUT = json.dumps( json_IN, sort_keys = True, indent = 4, separators = ( ',', ': ' ) )
+        string_OUT = json.dumps( json_IN, sort_keys = sort_keys_IN, indent = indent_IN, separators = separators_IN )
         
         return string_OUT
         
