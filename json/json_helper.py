@@ -307,6 +307,45 @@ class JSONHelper( object ):
 
 
     @classmethod
+    def load_json_from_file( cls, json_file_path_IN ):
+
+        '''
+        Accepts path to file that contains JSON.  Opens file, reads contents,
+            and converts them to JSON. Returns result.
+        '''
+
+        # return reference
+        json_OUT = ""
+
+        # declare variables.
+        me = "load_json_from_file"
+        json_file = None
+
+        # something passed in?
+        if ( ( json_file_path_IN is not None ) and ( json_file_path_IN != "" ) ):
+
+            # read from file and convert
+            with open( json_file_path_IN ) as json_file:
+
+                # load json from file.
+                json_OUT = json.load( json_file )
+
+            #-- END with open() as json_file --#
+
+        else:
+
+            # error - nothing passed in, None returned.
+            json_OUT = None
+            print( "ERROR - In {}(): nothing passed in ( \"{}\" ), returning None.".format( me, json_file_path_IN ) )
+
+        #-- END check to see if something passed in. --#
+
+        return json_OUT
+
+    #-- END method load_json_from_file() --#
+
+
+    @classmethod
     def standardize_json_to_string( cls, json_IN ):
 
         '''
