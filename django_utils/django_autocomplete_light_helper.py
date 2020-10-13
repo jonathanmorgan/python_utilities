@@ -50,7 +50,64 @@ To add a new autocomplete:
 
         https://research.local/research/context/text/autocomplete_person/?q=f
 
-- use the view in a form widget (more TK).
+- use the view in a form widget. In your form, for the field you want to autocomplete:
+
+    - make it a "`forms.ModelChoiceField`".
+    - in the call to "`forms.ModelChoiceField`", set:
+
+        - "queryset" to the model's "<model>.objects.all()".
+        - "widget" to "`autocomplete.ModelSelect2( url = '<name_from_urls.py>' )`"
+
+    - example:
+
+            # django-autocomplete-light imports
+            from dal import autocomplete
+
+            class ArticleCodingForm( forms.ModelForm ):
+
+                '''
+                Create a form to let a user look up the source.
+                '''
+
+                class Meta:
+                    model = Article_Subject
+                    fields = [ "person", ]
+
+                    #exclude = [ 'article_data', 'original_person', 'match_confidence_level', 'match_status', 'capture_method', 'create_date', 'last_modified', 'source_type', 'subject_type', 'name', 'verbatim_name', 'lookup_name', 'title', 'more_title', 'organization', 'document', 'topics', 'source_contact_type', 'source_capacity', 'localness', 'notes', 'organization_string', 'more_organization' ]
+
+                # AJAX lookup for person.
+                #person  = make_ajax_field( Article_Subject, 'person', 'coding_person', help_text = "" )
+                person = forms.ModelChoiceField(
+                    queryset = Person.objects.all(),
+                    widget = autocomplete.ModelSelect2( url = 'autocomplete-person' )
+                )
+
+            #-- END ModelForm class ArticleCodingForm --#
+
+- in template
+
+    - make sure to include your form's "`.media`", after including jquery.  Example for the above form being named "person_lookup_form" in a view passed to template:
+
+            <!-- pull in same jquery as used by django admin -->
+            <script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+            
+            <!-- pull in dal scripts -->
+            {{ person_lookup_form.media }}
+
+    - then, just output the form's html somewhere in the template. Example:
+
+            <p class="inputContainer" id="lookup-person-id" name="lookup-person-id">
+                <h4>Person lookup</h4>
+                <div class="lookupPersonExistingId" id="lookup-person-existing-id" name="lookup-person-existing-id"></div>
+                <input type="button" id="lookup-person-name" name="lookup-person-name" value="Fetch Name ==>" /> | <input type="button" id="clear-person-lookup" name="clear-person-lookup" value="Clear Person Lookup" />
+                <br />
+                <br />
+                {{ person_lookup_form }}
+            </p>
+            
+- interacting with the DAL lookup via events:
+
+    - TK.
 
 """
 
