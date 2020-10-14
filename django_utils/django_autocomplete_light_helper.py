@@ -1,5 +1,8 @@
 """
-Installation of "django-autocomplete-light":
+# Installation of "django-autocomplete-light":
+
+## Installation
+
 - https://django-autocomplete-light.readthedocs.io/en/master/install.html
 - Use pip to install "django-autocomplete-light" and dependencies.
 - In settings.py:
@@ -14,9 +17,16 @@ Installation of "django-autocomplete-light":
 - Touch your project's wsgi.py file to reload applications.
 - Run "python manage.py collectstatic".
 
-To add a new autocomplete:
+## To add a new autocomplete
+
 - https://django-autocomplete-light.readthedocs.io/en/master/tutorial.html
+
+### in views.py
+
 - create a class-based autocomplete view for your model. Example is at the end of this file.
+
+### in urls.py
+
 - create a URL route for your autocomplete view. Example:
 
         from context_text.views import PersonAutocomplete
@@ -49,6 +59,8 @@ To add a new autocomplete:
 - You should be able to access the autocomplete view now once you are logged in:
 
         https://research.local/research/context/text/autocomplete_person/?q=f
+
+### in forms.py
 
 - use the view in a form widget. In your form, for the field you want to autocomplete:
 
@@ -84,6 +96,8 @@ To add a new autocomplete:
 
             #-- END ModelForm class ArticleCodingForm --#
 
+### in template
+
 - in template
 
     - make sure to include your form's "`.media`", after including jquery.  Example for the above form being named "person_lookup_form" in a view passed to template:
@@ -105,45 +119,32 @@ To add a new autocomplete:
                 {{ person_lookup_form }}
             </p>
             
-- interacting with the DAL lookup via events:
+## interacting with the DAL lookup via events:
 
-    - Clear contents of autocomplete:
+### Clear selected entity in autocomplete
 
-            // Clear the autocomplete
-            dal_select_element = $( ':input[name=person]' );
-            dal_select_element.val( null ).trigger( 'click' );
+- Clear contents of autocomplete:
 
-            // wipe any stored display information.
-            dal_display_span_element = $( '#select2-id_person-container' )
-            dal_display_span_element.text( "" )
-            dal_display_span_element.attr( 'title', "" );
+        // Clear the autocomplete
+        dal_select_element = $( ':input[name=person]' );
+        dal_select_element.val( null ).trigger( 'click' );
+
+        // wipe any stored display information.
+        dal_display_span_element = $( '#select2-id_person-container' )
+        dal_display_span_element.text( "" )
+        dal_display_span_element.attr( 'title', "" );
+    
+    - Notes:
+
+        - based on: https://django-autocomplete-light.readthedocs.io/en/master/tutorial.html#clearing-autocomplete-on-forward-field-change
+        - There are two separate things happening here:
         
-        - Notes:
+            - **Clear selected ID:** for clearing the actual select value passed back to django in the form field (the model instance's ID), the name used to create the select element name is the same as the name of the field in the form, but could have a prefix (see link above).
+            - **Clear displayed info:** for wiping the displayedID and name of the selected entity, which are stored independently from the actual select value, the name of the span that stores the visible evidence of something being selected is “select2-id_<field_name>-container”. So in the example above, the selected person’s ID and name is in “select2-id_person-container”. Clearing this doesn’t clear the ID that is the actual data, though, so you have to do both these things together.
 
-            - based on: https://django-autocomplete-light.readthedocs.io/en/master/tutorial.html#clearing-autocomplete-on-forward-field-change
-            - for clearing the actual data, the name is the same as the name
-                in the form, but could have a prefix (see link above).
-            - for wiping stored information, the name of the select that stores
-                the visible evidence of somethign being selected is
-                "select2-id_<field_name>-container". So in the example above,
-                the selected person's ID and name is in
-                "select2-id_person-container". Clearing this doesn't clear the
-                ID that is the actual data, though, so you have to do both these
-                things together.
+### Interacting with widgets
 
-    - so far, I wasn't able to figure out interacting with the widget - it seems
-        to place a new span at the end of the body each time you open the
-        selecter, no ID or name, with class = "select2-container
-        select2-container--default select2-container--open", and then remove it
-        when you are done. The text entry field is inside this span, at the top,
-        and so to pull in text and put it in this field, you need to simulate a
-        "click" to open the selector (which I couldn't get to work), then
-        navigate the DOM of the selector, all without IDs or names, to place the
-        search text into the box. If I ever need to do this over again, I'll
-        build one myself that is based on a simple text input for its search
-        text, like the django-ajax-selects code. The underlying javascript and
-        django code in django-ajax-selects is just too old to keep it in. It 
-        is starting to cause problems/break.
+- so far, I wasn't able to figure out interacting with the widget - it seems to place a new span at the end of the body each time you open the selector, no ID or name, with class = "select2-container select2-container--default select2-container--open", and then remove it when you are done. The text entry field is inside this span, at the top, and so to pull in text and put it in this field, you need to simulate a "click" to open the selector (which I couldn't get to work), then navigate the DOM of the selector, all without IDs or names, to place the search text into the box. If I ever need to do this over again, I'll build one myself that is based on a simple text input for its search text, like the django-ajax-selects code. The underlying javascript and django code in django-ajax-selects is just too old to keep it in. It is starting to cause problems/break.
 """
 
 
