@@ -107,8 +107,43 @@ To add a new autocomplete:
             
 - interacting with the DAL lookup via events:
 
-    - TK.
+    - Clear contents of autocomplete:
 
+            // Clear the autocomplete
+            dal_select_element = $( ':input[name=person]' );
+            dal_select_element.val( null ).trigger( 'click' );
+
+            // wipe any stored display information.
+            dal_display_span_element = $( '#select2-id_person-container' )
+            dal_display_span_element.text( "" )
+            dal_display_span_element.attr( 'title', "" );
+        
+        - Notes:
+
+            - based on: https://django-autocomplete-light.readthedocs.io/en/master/tutorial.html#clearing-autocomplete-on-forward-field-change
+            - for clearing the actual data, the name is the same as the name
+                in the form, but could have a prefix (see link above).
+            - for wiping stored information, the name of the select that stores
+                the visible evidence of somethign being selected is
+                "select2-id_<field_name>-container". So in the example above,
+                the selected person's ID and name is in
+                "select2-id_person-container". Clearing this doesn't clear the
+                ID that is the actual data, though, so you have to do both these
+                things together.
+
+    - so far, I wasn't able to figure out interacting with the widget - it seems
+        to place a new span at the end of the body each time you open the
+        selecter, no ID or name, with class = "select2-container
+        select2-container--default select2-container--open", and then remove it
+        when you are done. The text entry field is inside this span, at the top,
+        and so to pull in text and put it in this field, you need to simulate a
+        "click" to open the selector (which I couldn't get to work), then
+        navigate the DOM of the selector, all without IDs or names, to place the
+        search text into the box. If I ever need to do this over again, I'll
+        build one myself that is based on a simple text input for its search
+        text, like the django-ajax-selects code. The underlying javascript and
+        django code in django-ajax-selects is just too old to keep it in. It 
+        is starting to cause problems/break.
 """
 
 
