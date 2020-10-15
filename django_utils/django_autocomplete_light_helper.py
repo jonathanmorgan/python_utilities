@@ -147,7 +147,6 @@
 - so far, I wasn't able to figure out interacting with the widget - it seems to place a new span at the end of the body each time you open the selector, no ID or name, with class = "select2-container select2-container--default select2-container--open", and then remove it when you are done. The text entry field is inside this span, at the top, and so to pull in text and put it in this field, you need to simulate a "click" to open the selector (which I couldn't get to work), then navigate the DOM of the selector, all without IDs or names, to place the search text into the box. If I ever need to do this over again, I'll build one myself that is based on a simple text input for its search text, like the django-ajax-selects code. The underlying javascript and django code in django-ajax-selects is just too old to keep it in. It is starting to cause problems/break.
 """
 
-
 # python imports
 import logging
 
