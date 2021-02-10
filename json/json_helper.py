@@ -44,7 +44,7 @@ import regex
 import six # help with supporting both python 2 and 3.
 
 # define JSONHelper class.
-class JSONHelper( object ):
+class JSONHelper(object):
 
 
     #============================================================================
@@ -62,45 +62,46 @@ class JSONHelper( object ):
     # replace newline with...
     REPLACE_NEWLINE_WITH = "\\n"
 
+    def __init__(self): 
+        self.a = 'Test'
 
     #============================================================================
     # ! ==> static methods
     #============================================================================
 
 
-    @staticmethod
-    def get_json_object_property( json_object_IN, name_IN, default_IN = None ):
+#     @staticmethod
+#     def get_json_object_property( json_object_IN, name_IN, default_IN = None ):
 
-        '''
-        Accepts name of a JSON property that you expect to be contained in the
-           JSON object passed in.  Returns property that corresponds to name. If
-           not found, returns default value (which defaults to None).
-        '''
+#         '''
+#         Accepts name of a JSON property that you expect to be contained in the
+#            JSON object passed in.  Returns property that corresponds to name. If
+#            not found, returns default value (which defaults to None).
+#         '''
 
-        # return reference
-        value_OUT = None
+#         # return reference
+#         value_OUT = None
 
-        # check if name is present.
-        if name_IN in json_object_IN:
+#         # check if name is present.
+#         if name_IN in json_object_IN:
 
-            # yes - return the JSON that is mapped to that name.
-            value_OUT = json_object_IN[ name_IN ]
+#             # yes - return the JSON that is mapped to that name.
+#             value_OUT = json_object_IN[ name_IN ]
 
-        else:
+#         else:
 
-            # return default.
-            value_OUT = default_IN
+#             # return default.
+#             value_OUT = default_IN
 
-        #-- END check to see if name in root --#
+#         #-- END check to see if name in root --#
 
-        return value_OUT
+#         return value_OUT
 
-    #-- END get_json_object_property() --#
+#     #-- END get_json_object_property() --#
 
 
     @staticmethod
     def pretty_print_json( json_IN, sort_keys_IN = True, indent_IN = 4, separators_IN = ( ',', ': ' ) ):
-
         '''
         Accepts JSON object.  Formats it nicely, returns the formatted string.
         '''
@@ -344,7 +345,8 @@ class JSONHelper( object ):
 
     #-- END method load_json_from_file() --#
 
-
+        
+        
     @classmethod
     def standardize_json_to_string( cls, json_IN ):
 
@@ -362,15 +364,12 @@ class JSONHelper( object ):
 
         # something passed in?
         if ( json_IN is not None ):
-
             # convert
             string_OUT = cls.pretty_print_json( json_IN, sort_keys_IN = True, indent_IN = 2 )
 
             # strip off any leading or trailing white space, just in case.
             string_OUT = string_OUT.strip()
-
         else:
-
             # error - nothing passed in, None returned.
             string_OUT = None
             print( "ERROR - In {}(): nothing passed in ( \"{}\" ), returning None.".format( me, json_IN ) )
@@ -383,3 +382,4 @@ class JSONHelper( object ):
 
 
 #-- END class JSONHelper --#
+
