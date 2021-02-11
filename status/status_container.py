@@ -276,7 +276,7 @@ class StatusContainer( object ):
         my_dict = None
 
         # try to retrieve value - for now, reference nested parameters.
-        my_dict = self.get_details()
+        my_dict = self.get_details_dict()
         value_OUT = DictHelper.get_dict_value( my_dict, name_IN, default_IN )
 
         return value_OUT
@@ -293,7 +293,7 @@ class StatusContainer( object ):
         my_dict = None
 
         # call get_param()
-        my_dict = self.get_details()
+        my_dict = self.get_details_dict()
         value_OUT = DictHelper.get_dict_value_as_int( my_dict, name_IN, default_IN )
 
         return value_OUT
@@ -310,7 +310,7 @@ class StatusContainer( object ):
         my_dict = None
 
         # get params
-        my_dict = self.get_details()
+        my_dict = self.get_details_dict()
 
         # call get_dict_value_as_list()
         list_OUT = DictHelper.get_dict_value_as_list( my_dict, name_IN, default_IN, delimiter_IN )
