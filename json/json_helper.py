@@ -44,7 +44,7 @@ import regex
 import six # help with supporting both python 2 and 3.
 
 # define JSONHelper class.
-class JSONHelper(object):
+class JSONHelper( object ):
 
 
     #============================================================================
@@ -99,6 +99,7 @@ class JSONHelper(object):
 
     @staticmethod
     def pretty_print_json( json_IN, sort_keys_IN = True, indent_IN = 4, separators_IN = ( ',', ': ' ) ):
+
         '''
         Accepts JSON object.  Formats it nicely, returns the formatted string.
         '''
@@ -343,7 +344,6 @@ class JSONHelper(object):
     #-- END method load_json_from_file() --#
 
 
-
     @classmethod
     def standardize_json_to_string( cls, json_IN ):
 
@@ -361,12 +361,15 @@ class JSONHelper(object):
 
         # something passed in?
         if ( json_IN is not None ):
+
             # convert
             string_OUT = cls.pretty_print_json( json_IN, sort_keys_IN = True, indent_IN = 2 )
 
             # strip off any leading or trailing white space, just in case.
             string_OUT = string_OUT.strip()
+
         else:
+
             # error - nothing passed in, None returned.
             string_OUT = None
             print( "ERROR - In {}(): nothing passed in ( \"{}\" ), returning None.".format( me, json_IN ) )
