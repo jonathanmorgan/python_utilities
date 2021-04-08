@@ -244,7 +244,7 @@ class LoggingHelper( object ):
                 if ( method_IN ):
                 
                     # We do - append to front of message.
-                    my_message = "In {}: {}".format( method_IN, my_message )
+                    my_message = "In {}(): {}".format( method_IN, my_message )
                     
                 #-- END check to see if method passed in --#
                 
@@ -636,7 +636,7 @@ class LoggingHelper( object ):
                 if ( method_IN ):
                 
                     # We do - append to front of message.
-                    my_message = "In " + method_IN + ": " + my_message
+                    my_message = "In " + method_IN + "(): " + my_message
                     
                 #-- END check to see if method passed in --#
                 
