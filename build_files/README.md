@@ -17,7 +17,7 @@
 
     - build: `python setup.py sdist bdist_wheel`
     - test upload to test.pypi.org: `python3 -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*`
-    - to install from test: `pip install --index-url https://test.pypi.org/simple/ python-utilities-jsm`
+    - to install from test: `pip install --index-url https://test.pypi.org/simple/python-utilities-jsm`
     - if all works OK, upload to pypi.org: `python3 -m twine upload dist/*`
     - install using pip and test: `pip install python-utilities-jsm`
 
