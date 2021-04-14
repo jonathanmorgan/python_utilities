@@ -1,6 +1,7 @@
 # python\_utilities
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3523239.svg)](https://doi.org/10.5281/zenodo.3523239)
+v.1.0.2: [![DOI](https://zenodo.org/badge/6323399.svg)](https://zenodo.org/badge/latestdoi/6323399)
+v.1.0.1: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3523239.svg)](https://doi.org/10.5281/zenodo.3523239)
 
 <!-- TOC -->
 
