@@ -26,8 +26,12 @@ Python utility classes (should work in either Python 2 or 3).  Includes the foll
 
     - __/booleans/boolean\_helper.py__ - `BooleanHelper` class with method to convert non-boolean values to boolean type based on valid known true values (1, 't', 'true', 'y', 'yes').
 
+- __/data__
+
+    - __/data/data\_functions.py__ - a set of reusable functions for various data tasks that includes pandas, RDBMS, CSV, and SAS processing.
+
 - __/database__
-    
+
     - __/database/database\_helper\_factory.py__ - `Database_Helper_Factory` class provides a class method you can use to pull in either a postgresql or mysql database helper, so you can write code that functions the same way for either, allowing easier switching between the two.
     - __/database/database\_helper.py__ - `Database_Helper` abstract class encapsulates basic logic for dealing with creating connections and cursors using a Python DB API library.  Not fancy.  Opens, creates cursors and keeps track of all cursors it creates, and closes all related cursors and connection when you call close().  Nothing more.
     - __/database/psycopg2\_helper.py__ - `psycopg2_Helper` class encapsulates basic logic for dealing with creating connections and cursors using the psycopg2 library.  Not fancy.  Opens and closes, nothing more.
@@ -55,6 +59,17 @@ Python utility classes (should work in either Python 2 or 3).  Includes the foll
 
     - __/email/email\_helper.py__ - `EmailHelper` class that contains logic for setting up SMTP server using smtplib, then sending text or HTML email messages.
     - __/email/email\_test.py__ - basic email code on which EmailHelper is based, as an example.
+
+- __/etl/__ - Basic ETL framework that includes:
+
+    - objects to capture a simple ETL specification:
+
+        - __/etl/etl\_attribute.py__ - Class `ETLAttribute` holds details on a particular property/field within a source file that is being loaded.
+        - __/etl/etl\_entity.py__ - Class `ETLEntity` holds details on a set of attributes being loaded, practically speaking the set of columns/properties/fields in each record from a file that is being loaded.
+        - __/etl/etl\_error.py__ - Class `ETLError` is an Error child class used to signal unrecoverable problems in ETL.
+
+    - __/etl/etl\_from\_excel\_with\_headers.py__ - Class `ETLFromExcelWithHeaders` contains the code to load data from an Excel document into any attr-based python object (including django model class) based on an ETL specification contained in an `ETLEntity` specifiation instance.
+    - __/etl/loadable\_django\_model.py__ - Class `LoadableDjangoModel` is a django abstract class that extends Django's `models.Model` class and contains all the methods each of the "`ETLFrom...`" classes in this package expect so they can load to a Django model class.  This class is intended to show the fields and methods that have to be present in a django model for the ETL loaders here to run without needing any modification.  It can either be imported into simple Django applications and then extended, or copied and altered to fit a more complex object model.
 
 - __/exceptions/__
 
@@ -121,7 +136,7 @@ Python utility classes (should work in either Python 2 or 3).  Includes the foll
 Use pip:
 
     (sudo) pip install python-utilities-jsm
-    
+
 ### Option 2: latest from github
 
 Clone this repository and place it somewhere in your PYTHON\_PATH, including the base "python\_utilities" directory.  The easiest way to use these libraries with a Django site is to clone this repository into the site's folder alongside other applications, so these utilities are a part of the same python path as other django apps.  These utilities are used by other of my django applications, as well.  They can also be used outside of django.
@@ -129,7 +144,7 @@ Clone this repository and place it somewhere in your PYTHON\_PATH, including the
 Dependencies are listed below.  You can install them individually, or you can just use the `requirements*.txt` files, which lists them all out, to install them all at once using pip.  The command to install base packages, without database-specific support:
 
     (sudo) pip install -r python_utilities/requirements.txt
-    
+
 
 ### For either option, database packages
 
@@ -140,12 +155,12 @@ For database packages, you'll need to load the requirements file for each databa
 Requires the Beautiful Soup 4 package, installed via pip:
 
     (sudo) pip install BeautifulSoup4
-    
+
 If you are planning on using Beautiful Soup's "UnicodeDammit" class, you also should install chardet and/or cchardet:
 
     (sudo) pip install chardet
     (sudo) pip install cchardet
-    
+
 ### /strings/html_helper.py
 
 requires bleach, a library for selectively parsing HTML and XML:
@@ -155,7 +170,7 @@ requires bleach, a library for selectively parsing HTML and XML:
 and requires the Beautiful Soup 4 package, installed via pip:
 
     (sudo) pip install BeautifulSoup4
-    
+
 ### /database/MySQLdb\_helper.py
 
 Before you can connect to MySQL with this code, you need to do the following:
@@ -184,7 +199,7 @@ Requires you install mechanize, a library that implements a browser client in py
 
     (sudo) pip install mechanize
     (sudo) pip install requests
-    
+
 ### /strings/*
 
 Requires you to install the "six" package, which helps make python code that can run in either python 2 or 3:
@@ -199,24 +214,24 @@ For a class you want to use ExceptionHelper for outputting and potentially email
 
     # import ExceptionHandler
     from python_utilities.exceptions.exception_helper import ExceptionHelper
-    
+
     # import logging
     import logging
-    
+
     # make instance
     my_exception_helper = ExceptionHelper()
-    
+
     # by default, logs to logger with name "python_utilities.exceptions.exception_helper".
     # if you want it to log to a different logger name, initialize that logger,
     #    then pass it to the set_logger() method.  Example:
     #
     # my_logger = logging.getLogger( "logger_name_example" )
     # my_exception_helper.set_logger( my_logger )
-    
+
     # By default, ExceptionHelper logs exception information to logging.ERROR.
     #    You can set the level at which your exception helper will log messages:
     # my_exception_helper.set_logging_level( logging.DEBUG )
-    
+
     # configure mail settings?
     '''
     smtp_host = 'localhost'
@@ -226,22 +241,22 @@ For a class you want to use ExceptionHelper for outputting and potentially email
     smtp_password = "smtp_pass"
     my_exception_helper.email_initialize( smtp_host, smtp_port, smtp_use_ssl, smtp_username, smtp_password ):
     '''
-    
+
     # log an exception
     try:
-    
+
         pass
-    
+
     catch Exception as e:
-    
+
         # log exception.
         exception_message = "Exception caught for article " + str( current_article.id )
-        
+
         # no email
         my_exception_helper.process_exception( e, exception_message )
-        
+
         # with email
-        # my_exception_helper.process_exception( e, exception_message, True, "email_subject" )        
+        # my_exception_helper.process_exception( e, exception_message, True, "email_subject" )
 
     #-- END try-catch --#
 
@@ -258,42 +273,42 @@ The `LoggingHelper` class can be used two ways:
         # import logging and LoggingHelper
         import logging
         from python_utilities.logging.logging_helper import LoggingHelper
-        
+
         # make a Logger instance.
         my_logger_factory = LoggingHelper()
-        
+
         # set the logger name
         my_logger_factory.set_logger_name( "test_logger" )
-        
+
         # get a python logging.logger
         my_logger = my_logger_factory.get_logger()
-        
+
 
 2. You can use it as a parent class for an existing class to add a variable for a logger and a logging application name and methods to get and set each to a class.
 
         # import logging and Logger
         import logging
         from python_utilities.logging.logging_helper import LoggingHelper
-        
+
         # make Logger the parent class
         class MyClass( LoggingHelper ):
-        
+
             # in your __init__() method, call parent __init__(), then set
             #    self.logger_name to either __name__ or a name you prefer.
             def __init__( self ):
-            
+
                 # call parent's __init__()
                 super( MyClass, self ).__init__()
-                
+
                 # set self.logger_name
                 self.set_logger_name( "MyClass" )
-                
+
             #-- END __init__() method --#
-            
+
             # then, to get logger instance, call self.get_logger().
-            
-        #-- END class MyClass --#        
-        
+
+        #-- END class MyClass --#
+
 
 ### /logging/summary\_helper.py
 
@@ -301,18 +316,18 @@ How to use the summary helper:
 
     # import SummaryHelper
     from python_utilities.logging.summary_helper import SummaryHelper
-    
+
     # initialize summary helper - this sets start time, as well.
     my_summary_helper = SummaryHelper()
-    
+
     # auditing variables
     article_counter = -1
     exception_counter = -1
-    
+
     # update the variables
-    
+
     # once you are done:
-    
+
     # set stop time
     my_summary_helper.set_stop_time()
 
@@ -326,7 +341,7 @@ How to use the summary helper:
     # output - set prefix if you want.
     summary_string += my_summary_helper.create_summary_string( item_prefix_IN = "==> " )
     print( summary_string )
-    
+
 Example output:
 
     ==> Articles processed: 46
@@ -343,31 +358,31 @@ Example: using requests package to submit a post request.
 
     # create Http_Helper
     my_http_helper = Http_Helper()
-    
+
     # set http headers
     my_http_helper.set_http_header( "Content-Type", "text/plain" )
-    
+
     # request type
     my_http_helper.request_type = Http_Helper.REQUEST_TYPE_POST
-    
+
     # place body of request in a variable.
     request_data = "My dog has fleas, figaro, figaro, figaro!"
-    
+
     # make the request using requests package:
     requests_response = my_http_helper.load_url_requests( "http://yahoo.com", request_type_IN = Http_Helper.REQUEST_TYPE_POST, data_IN = request_data )
-    
+
     # get raw text response:
     requests_raw_text = requests_response.text
-    
+
     # convert to a json object:
     requests_response_json = requests_response.json()
-    
+
     # to make request using mechanize (a full-featured web browser):
     mechanize_response = my_http_helper.load_url_mechanize( "http://yahoo.com", request_type_IN = Http_Helper.REQUEST_TYPE_POST, data_IN = request_data )
-    
+
     # to make request using urllib2:
     urllib2_response = my_http_helper.load_url_urllib2( "http://yahoo.com", request_type_IN = Http_Helper.REQUEST_TYPE_POST, data_IN = request_data )
-        
+
 Troubleshooting:
 
 - If you are using the requests package and have data that you want to pass to the `load_url_requests()` method in variable `data_IN` that is a unicode string, if that unicode string has any non-ascii characters, you must encode the data before passing it in, else somewhere down in a library, something detects that the data is a unicode string and tries to encode it to "ASCII", which fails if there any non-ascii characters.  If you encode to UTF-8 before passing the data in, this converts to a byte string, and all works fine.
@@ -405,12 +420,12 @@ Troubleshooting:
             UnicodeEncodeError: 'ascii' codec can't encode character u'\u2014' in position 98: ordinal not in range(128)
 
     - An example of encoding using StringHelper:
-    
+
             encoded_data = StringHelper.encode_string( unicode_string, StringHelper.ENCODING_UTF8 )
-            
+
     - An example of encoding using codecs:
-    
-            encoded_data = 
+
+            encoded_data =
 
 ### /parameters/param\_container.py
 
@@ -421,23 +436,23 @@ Usage:
 
     # make an instance
     my_param_container = ParamContainer()
-    
+
     # define parameters (for outputting debug, nothing more at this point)
     my_param_container.define_parameter( "test_int", ParamContainer.PARAM_TYPE_INT )
     my_param_container.define_parameter( "test_string", ParamContainer.PARAM_TYPE_STRING )
     my_param_container.define_parameter( "test_list", ParamContainer.PARAM_TYPE_LIST )
-    
+
     # load parameters in a dict
     my_param_container.set_parameters( params )
-    
+
     # load parameters from a django HTTP request
     my_param_container.set_request( request )
-    
+
     # get parameter value - pass name and optional default if not present.
     test_int = my_param_container.get_param( "test_int", -1 )
     test_string = my_param_container.get_param( "test_string", "" )
     test_list = my_param_container.get_param( "test_list", [] )
-    
+
     # get param as int
     test_int = my_param_container.get_param_as_int( "test_int", -1 )
 
@@ -455,22 +470,22 @@ For a class you want to be rate-limited:
 
         # import
         from python_utilities.rate_limited.basic_rate_limited import BasicRateLimited
-        
+
         # class definition
         def class SampleClass( BasicRateLimited ):
 
 - in that class's `__init__()` method, call the parent `__init__()` method, then set instance variable `rate_limit_in_seconds` to the minimum number of seconds you want between requests (can be a decimal).
 
         def __init__( self ):
-    
+
             # call parent's __init__()
             super( SampleClass, self ).__init__()
-    
+
             # declare variables
-            
+
             # limit to no more than 4 per second
             self.rate_limit_in_seconds = 0.25
-            
+
         #-- END method __init__() --#
 
 - At the start of each transaction, call the `self.start_request()` method to let the code know you're starting a request.

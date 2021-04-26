@@ -1,0 +1,3 @@
+django
+openpyxl
+python-dateutil
