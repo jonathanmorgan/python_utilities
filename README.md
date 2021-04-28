@@ -68,7 +68,14 @@ Python utility classes (should work in either Python 2 or 3).  Includes the foll
         - __/etl/etl\_entity.py__ - Class `ETLEntity` holds details on a set of attributes being loaded, practically speaking the set of columns/properties/fields in each record from a file that is being loaded.
         - __/etl/etl\_error.py__ - Class `ETLError` is an Error child class used to signal unrecoverable problems in ETL.
 
-    - __/etl/etl\_from\_excel\_with\_headers.py__ - Class `ETLFromExcelWithHeaders` contains the code to load data from an Excel document into any attr-based python object (including django model class) based on an ETL specification contained in an `ETLEntity` specifiation instance.
+    - ETL processor family
+
+        - __/etl/etl\_processor.py__ - Class `ETLProcessor` contains parts of ETL loader that are shared regardless of source or destination.
+        - ---> __/etl/etl\_object\_loader.py__ - Class `ETLObjectLoader` contains parts of ETL loader that pertain to loading into instance of Python objects (and if you are loading into something more common, there are better tools). Extends `ETLProcessor`.
+        - --------> __/etl/etl\_django\_model\_loader.py__ - Class `ETLDjangoModelLoader` contains parts of ETL loader that pertain to loading data into the specific type of object that is an instance of a django model (primarily looking to see if record matching ID column values already exists, so we update, rather than duplicate). Extends `ETLObjectLoader`.
+        - ------------> __/etl/etl\_from\_excel\_with\_headers.py__ - Class `ETLFromExcelWithHeaders` contains the code to load data from an Excel document into any django model class instance based on an ETL specification contained in an `ETLEntity` specifiation instance. Extends `ETLDjangoModelLoader`.
+        - ------------> __/etl/etl\_from\_dictionary\_iterable.py__ - Class `ETLFromDictionaryIterable` contains the code to load data from a list of data dictionary objects (from JSON, CSVDictReader, or other source) into any django model class instance based on an ETL specification contained in an `ETLEntity` specifiation instance. Extends `ETLDjangoModelLoader`.
+
     - __/etl/loadable\_django\_model.py__ - Class `LoadableDjangoModel` is a django abstract class that extends Django's `models.Model` class and contains all the methods each of the "`ETLFrom...`" classes in this package expect so they can load to a Django model class.  This class is intended to show the fields and methods that have to be present in a django model for the ETL loaders here to run without needing any modification.  It can either be imported into simple Django applications and then extended, or copied and altered to fit a more complex object model.
 
 - __/exceptions/__
