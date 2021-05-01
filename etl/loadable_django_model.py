@@ -1,3 +1,25 @@
+'''
+This class is an example "LoadableDjangoModel" interface-esque from
+python_utilities/etl/loadable_django_model.py. This means it includes:
+- extra_data = models.JSONField( blank = True, null = True )
+- etl_spec class variable
+- class methods:
+
+    - get_etl_spec
+    - initialize_etl
+    - run_etl
+    - set_etl_spec
+
+- instance methods:
+
+    - update_extra_data_attr
+
+Django models that are intended to have data loaded into them by the ETL
+    Framework can either:
+    - extend this model (if in a simple object hierarchy, or if you are comfortable with mixins)
+    - make sure that all the above stuff is in the class, or a parent abstract class within your object hierarchy.
+'''
+
 from django.db import models
 
 # ETL imports

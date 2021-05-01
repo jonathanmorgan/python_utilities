@@ -34,7 +34,7 @@ class ETLEntity( object ):
     #DEBUG_FLAG = False
 
     # logger name
-    MY_LOGGER_NAME = "etl_entity"
+    MY_LOGGER_NAME = "python_utilities.etl.ETLEntity"
 
     # type of "extract" entity.
     STORAGE_TYPE_DICT = "dict"

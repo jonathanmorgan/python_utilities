@@ -56,7 +56,6 @@ class ETLProcessor( object ):
     # logger name
     MY_LOGGER_NAME = "python_utilities.etl.ETLProcessor"
 
-
     #===========================================================================
     # ! ==> class variables
     #===========================================================================
@@ -73,6 +72,77 @@ class ETLProcessor( object ):
     #===========================================================================
     # ! ==> class methods
     #===========================================================================
+
+
+    @classmethod
+    def clean_value( cls, value_IN, desired_type_IN = ETLAttribute.DATA_TYPE_STRING ):
+
+        # return reference
+        value_OUT = None
+
+        # declare variables
+        me = "clean_value ( {} )".format( cls )
+
+        # got a None?
+        if ( value_IN is not None ):
+
+            # seed output with input.
+            value_OUT = value_IN
+
+            # clean based on desired type.
+            if ( desired_type_IN == ETLAttribute.DATA_TYPE_STRING ):
+
+                # type of string?
+                if ( isinstance( value_OUT, str ) == False ):
+
+                    # no - cast to string.
+                    value_OUT = str( value_OUT )
+
+                #-- END check to see if type of string. --#
+
+                # always strip strings
+                if ( isinstance( value_OUT, str ) == True ):
+
+                    # strip white space
+                    value_OUT = value_OUT.strip()
+
+                #-- END check to see if string. --#
+
+            elif ( desired_type_IN == ETLAttribute.DATA_TYPE_INT ):
+
+                # make sure it is an int
+                # type of int?
+                if ( isinstance( value_OUT, int ) == False ):
+
+                    # always strip strings
+                    if ( isinstance( value_OUT, str ) == True ):
+
+                        # strip white space
+                        value_OUT = value_OUT.strip()
+
+                    #-- END check to see if string. --#
+
+                    # cast to int.
+                    value_OUT = int( value_OUT )
+
+                #-- END check to see if type of string. --#
+
+            else:
+
+                output_debug( "in {}: Unknown desired type \"{}\"".format( me, desired_type_IN ) )
+
+            #-- END process based on desired type --#
+
+        else:
+
+            # nothing to do.
+            value_OUT = value_IN
+
+        #-- END check if None --#
+
+        return value_OUT
+
+    #-- END function clean_value() --#
 
 
     #===========================================================================
@@ -395,6 +465,23 @@ class ETLProcessor( object ):
         #-- END check to see if message. --#
 
     #-- END method output_debug() --#
+
+
+    def process_records( self, start_index_IN = None, index_count_IN = None ):
+
+        # return reference
+        status_OUT = None
+
+        # status_OUT should contain a StatusContainer instance.
+
+        # declare variables
+        me = "process_records"
+
+        raise ETLError( "In abstract-ish method ETLProcessor.{}(): OVERRIDE ME".format( me ) )
+
+        return status_OUT
+
+    #-- END class method initialize_etl() --#
 
 
     def reset_record_information( self ):

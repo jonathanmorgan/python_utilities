@@ -12,6 +12,9 @@ import sys
 import time
 import traceback
 
+# python_utilities
+from python_utilities.status.status_container import StatusContainer
+
 # ETL imports
 from python_utilities.etl.etl_attribute import ETLAttribute
 from python_utilities.etl.etl_entity import ETLEntity
@@ -47,6 +50,19 @@ class ETLObjectLoader( ETLProcessor ):
 
     # logger name
     MY_LOGGER_NAME = "python_utilities.etl.ETLObjectLoader"
+
+
+    # status properties returned from store_attribute()
+    PROP_WAS_ATTR_UPDATED = "was_attr_updated"
+    PROP_WAS_UNKNOWN_ATTR = "was_unknown_attr"
+
+    # status properties for a particular record
+    PROP_WAS_INSTANCE_UPDATED = "was_instance_updated"
+    PROP_UPDATED_ATTR_LIST = "updated_attr_list"
+    PROP_NO_CHANGE_ATTR_LIST = "no_change_attr_list"
+    PROP_ERROR_ATTR_LIST = "error_attr_list"
+    PROP_SUCCESS_STATUS_LIST = "success_status_list"
+    PROP_ERROR_STATUS_LIST = "error_status_list"
 
 
     #===========================================================================
@@ -132,6 +148,7 @@ class ETLObjectLoader( ETLProcessor ):
         me = "process_value"
         status_message = None
         my_debug_flag = None
+        work_value = None
         spec_json = None
         json_string = None
         in_data_type = None
@@ -175,7 +192,10 @@ class ETLObjectLoader( ETLProcessor ):
                     if ( out_data_type == ETLAttribute.DATA_TYPE_INT ):
 
                         # convert to int
-                        value_OUT = int( value_IN )
+                        value_OUT = self.clean_value(
+                            value_IN,
+                            desired_type_IN = ETLAttribute.DATA_TYPE_INT
+                        )
 
                         if ( my_debug_flag == True ):
                             status_message = "translated {} to int {}".format( value_IN, value_OUT )
@@ -186,7 +206,10 @@ class ETLObjectLoader( ETLProcessor ):
                     elif ( out_data_type == ETLAttribute.DATA_TYPE_STRING ):
 
                         # convert to string
-                        value_OUT = str( value_IN )
+                        value_OUT = self.clean_value(
+                            value_IN,
+                            desired_type_IN = ETLAttribute.DATA_TYPE_STRING
+                        )
 
                         if ( my_debug_flag == True ):
                             status_message = "translated {} to string {}".format( value_IN, value_OUT )
@@ -196,16 +219,22 @@ class ETLObjectLoader( ETLProcessor ):
                     # complex type - datetime.datetime
                     elif ( out_data_type == ETLAttribute.DATA_TYPE_DATETIME_DATETIME ):
 
+                        # make sure string is clean first.
+                        work_value = self.clean_value(
+                            value_IN,
+                            desired_type_IN = ETLAttribute.DATA_TYPE_STRING
+                        )
+
                         # is there a transform pattern?
                         if ( ( transform_pattern is not None ) and ( transform_pattern != "" ) ):
 
                             # parse using pattern.
-                            value_OUT = datetime.datetime.strptime( value_IN, transform_pattern )
+                            value_OUT = datetime.datetime.strptime( work_value, transform_pattern )
 
                         else:
 
                             # no pattern, let dateutil try to figure it out.
-                            value_OUT = dateutil.parser.parse( value_IN )
+                            value_OUT = dateutil.parser.parse( work_value )
 
                         #-- check if transform pattern. --#
 
@@ -288,11 +317,14 @@ class ETLObjectLoader( ETLProcessor ):
         my_etl_spec = None
         my_class = None
         attr_exists = None
+        current_value = None
         unknown_attr_name_to_value_map = None
         extra_data_json = None
 
         # init
         my_debug_flag = self.debug_flag
+        status_OUT = StatusContainer()
+        status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
 
         # do we have an instance?
         if ( ( instance_IN is not None ) and ( instance_IN != "" ) ):
@@ -315,14 +347,55 @@ class ETLObjectLoader( ETLProcessor ):
                 # if name in instance, store value. If not, add to list for processing.
                 if ( attr_exists == True ):
 
-                    # Store the value.
-                    setattr( instance_IN, attr_name_IN, attr_value_IN )
+                    # update status
+                    status_OUT.set_detail_value( self.PROP_WAS_UNKNOWN_ATTR, False )
+
+                    # get existing value
+                    current_value = getattr( instance_IN, attr_name_IN )
+
+                    # changed?
+                    if ( current_value != attr_value_IN ):
+
+                        # changed - make a note in status.
+                        setattr( instance_IN, attr_name_IN, attr_value_IN )
+                        status_OUT.set_detail_value( self.PROP_WAS_ATTR_UPDATED, True )
+                        status_message = "model attribute {attr_name} updated from {old_value} to {new_value}.".format(
+                            attr_name = attr_name_IN,
+                            old_value = current_value,
+                            new_value = attr_value_IN
+                        )
+                        status_OUT.add_message( status_message )
+                        self.output_debug( status_message, method_IN = me )
+
+                    else:
+
+                        # not changed - no need to do anything.
+                        status_OUT.set_detail_value( self.PROP_WAS_ATTR_UPDATED, False )
+                        status_message = "model attribute {attr_name} NOT changed (current: {old_value}; new: {new_value}), so NOT updated.".format(
+                            attr_name = attr_name_IN,
+                            old_value = current_value,
+                            new_value = attr_value_IN
+                        )
+                        status_OUT.add_message( status_message )
+                        self.output_debug( status_message, method_IN = me )
+
+                    #-- END check if changed. --#
 
                 else:
 
                     # attribute does not exist. Add to the unknown attribute map.
                     unknown_attr_name_to_value_map = self.get_unknown_attrs_name_to_value_map()
                     unknown_attr_name_to_value_map[ attr_name_IN ] = attr_value_IN
+
+                    # update status
+                    status_OUT.set_detail_value( self.PROP_WAS_UNKNOWN_ATTR, True )
+                    status_OUT.set_detail_value( self.PROP_WAS_ATTR_UPDATED, True )
+                    status_message = "attribute {attr_name} NOT in model, adding to extra data (value: {new_value}).".format(
+                        attr_name = attr_name_IN,
+                        new_value = attr_value_IN
+                    )
+                    status_OUT.add_message( status_message )
+                    self.output_debug( status_message, method_IN = me )
 
                     # update the value for this attribute in the extra_data
                     #     JSONField.
@@ -352,6 +425,9 @@ class ETLObjectLoader( ETLProcessor ):
 
         #-- END check to see if instance --#
 
+        return status_OUT
+
     #-- END method store_attributes() --#
+
 
 #-- END class ETLObjectLoader --#
