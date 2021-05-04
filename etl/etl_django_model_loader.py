@@ -13,11 +13,15 @@
 # base python libraries
 import datetime
 import dateutil
+import itertools
 import logging
 import openpyxl
 import sys
 import time
 import traceback
+
+# python_utilities
+from python_utilities.status.status_container import StatusContainer
 
 # ETL imports
 from python_utilities.etl.etl_attribute import ETLAttribute
@@ -249,7 +253,7 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
     #-- END method find_load_instance() --#
 
 
-    def process_records( self, start_index_IN = None, index_count_IN = None ):
+    def process_records( self, start_index_IN = None, record_count_IN = None ):
 
         '''
         Processes all records in iterator stored in this instance. returns
@@ -309,6 +313,7 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
 
         # init
         my_debug_flag = self.debug_flag
+        #my_debug_flag = True
         self.reset_status_information()
         self.start_dt = datetime.datetime.now()
         previous_dt = self.start_dt
@@ -328,7 +333,7 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
 
         # process a subset?
         if ( ( start_index_IN is not None )
-            or ( index_count_IN is not None ) ):
+            or ( record_count_IN is not None ) ):
 
             # we have been asked to subset. See how we call itertools.islice()
             # - start is 0-indexed
@@ -336,25 +341,25 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
             #     if you want from 0 to 9, start is 0, count is 10). If you want
             #     from 4 to 9, start index is 4, count is 6, so stop will be 10).
             if ( ( start_index_IN is not None )
-                and ( index_count_IN is not None ) ):
+                and ( record_count_IN is not None ) ):
 
                 # we have both start and count.
                 start_index = start_index_IN
-                stop_index = start_index_IN + index_count_IN
+                stop_index = start_index_IN + record_count_IN
 
             elif ( ( start_index_IN is not None )
-                and ( index_count_IN is None ) ):
+                and ( record_count_IN is None ) ):
 
                 # we have start, no count.
                 start_index = start_index_IN
                 stop_index = None
 
             elif ( ( start_index_IN is None )
-                and ( index_count_IN is not None ) ):
+                and ( record_count_IN is not None ) ):
 
                 # no start, just count (limit).
                 start_index = 0
-                stop_index = index_count_IN
+                stop_index = record_count_IN
 
             #-- END check to see how to set start and stop.
 
@@ -394,6 +399,8 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
                     update_status = self.update_instance_from_record( current_entry_instance, current_record )
 
                     if ( my_debug_flag == True ):
+                        status_message = "- in {}(): update_status = {}".format( me, update_status )
+                        self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
                         status_message = "- in {}(): unknown_attr_name_to_value_map = {}".format( me, unknown_attr_name_to_value_map )
                         self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
                     #-- END DEBUG --#
@@ -417,6 +424,7 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
 
             # increment counter
             record_counter += 1
+            #print( "record_counter: {counter}".format( counter = record_counter ) )
 
             # output a message?
             if ( ( record_counter % print_every_x_records ) == 0 ):

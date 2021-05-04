@@ -228,14 +228,14 @@ class ETLFromDictionaryIterable( ETLDjangoModelLoader ):
                 # TODO
 
                 # success?
-                store_success = update_status.is_success()
+                store_success = store_status.is_success()
                 if ( update_success == True ):
 
                     # success.
-                    success_status_list.append( update_status )
+                    success_status_list.append( store_status )
 
                     # was attribute updated?
-                    was_attr_updated = update_status.get_detail_value( self.PROP_WAS_ATTR_UPDATED, None )
+                    was_attr_updated = store_status.get_detail_value( self.PROP_WAS_ATTR_UPDATED, None )
                     if ( was_attr_updated == True ):
 
                         # updated.
@@ -253,7 +253,7 @@ class ETLFromDictionaryIterable( ETLDjangoModelLoader ):
 
                     # error.
                     error_attr_list.append( attr_update_spec )
-                    error_status_list.append( update_status )
+                    error_status_list.append( store_status )
 
                 #-- END check to see if update was a success --#
 

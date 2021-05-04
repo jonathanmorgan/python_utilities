@@ -492,6 +492,17 @@ class ETLFromExcelWithHeaders( ETLDjangoModelLoader ):
         # return reference
         value_OUT = None
 
+        # declare variables
+        my_worksheet = None
+        row_count = None
+        first_data_row_index = None
+        end_data_row_index = None
+        row_index_list = None
+        row_index_iterator = None
+
+        # init
+        first_data_row_index = 2
+
         # store value
         self.input_worksheet = value_IN
 
@@ -501,9 +512,212 @@ class ETLFromExcelWithHeaders( ETLDjangoModelLoader ):
         # return value
         value_OUT = self.get_input_worksheet()
 
+        # get row count and create iterator over row indexes within this
+        #     worksheet, starting with row 2 (skipping header row).
+        my_worksheet = value_OUT
+
+        # get row count...
+        row_count = my_worksheet.max_row
+
+        # ...make list of row indexes...
+        first_data_row_index = 2
+        end_data_row_index = row_count
+        row_index_list = range( first_data_row_index, end_data_row_index + 1 )
+
+        # ...make it an iterator...
+        row_index_iterator = iter( row_index_list )
+
+        # ...and store iterator.
+        self.set_record_iterator( row_index_iterator )
+
         return value_OUT
 
     #-- END method set_input_worksheet() --#
+
+
+    def update_instance_from_record( self, instance_IN, record_IN, save_on_success_IN = True ):
+
+        # return reference
+        status_OUT = None
+
+        # declare variables
+        me = "update_instance_from_record"
+        my_debug_flag = None
+        status_message = None
+        my_etl_spec = None
+        current_entry_instance = None
+        current_row_index = None
+        my_worksheet = None
+        row_count = None
+        column_count = None
+        current_column_index = None
+        current_cell = None
+        current_column_value = None
+        current_column_key = None
+        current_attr_name = None
+        current_attr_value = None
+        my_etl_attribute = None
+        store_status = None
+        store_success = None
+
+        # declare variables - status checking
+        was_attr_updated = None
+        was_instance_updated = None
+        updated_attr_list = None
+        no_change_attr_list = None
+        error_attr_list = None
+        success_status_list = None
+        error_status_list = None
+
+        # init
+        status_OUT = StatusContainer()
+        status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
+        my_debug_flag = self.debug_flag
+        my_etl_spec = self.get_etl_entity()
+        current_entry_instance = instance_IN
+        current_row_index = record_IN
+
+        # init status checking variables
+        was_instance_updated = False
+        updated_attr_list = []
+        no_change_attr_list = []
+        error_attr_list = []
+        success_status_list = []
+        error_status_list = []
+
+        # got an instance?
+        if ( current_entry_instance is not None ):
+
+            # get worksheet
+            my_worksheet = self.get_input_worksheet()
+            row_count = my_worksheet.max_row
+            column_count = my_worksheet.max_column
+
+            # loop over columns to get values each column and store in instance.
+            for current_column_index in range( 1, column_count + 1 ):
+
+                # retrieve value for this cell
+                current_cell = my_worksheet.cell( row = current_row_index, column = current_column_index )
+                current_column_value = current_cell.value
+
+                # get key for index.
+                current_column_key = my_etl_spec.pull_key_for_index( current_column_index )
+
+                # start with attribute value set to column value
+                current_attr_value = current_column_value
+
+                # retrieve ETLAttribute for this index.
+                my_etl_attribute = my_etl_spec.pull_attr_for_key( current_column_key )
+
+                # got an attribute spec?
+                if ( my_etl_attribute is not None ):
+
+                    # ETLAttribute found.  Retrieve values and do
+                    #     processing.
+                    current_attr_name = my_etl_attribute.get_load_attr_name()
+
+                    # process value.
+                    current_attr_value = self.process_value( current_attr_value, my_etl_attribute, current_entry_instance )
+
+                else:
+
+                    # no ETLAttribute instance. Direct, untranslated
+                    #     load to instance.
+                    current_attr_name = current_column_key
+
+                #-- END check to see if attribute spec. --#
+
+                # store the value.
+                store_status = self.store_attribute( current_entry_instance, current_attr_name, current_attr_value )
+
+                # success?
+                store_success = store_status.is_success()
+                if ( store_success == True ):
+
+                    # success.
+                    success_status_list.append( store_status )
+
+                    # was attribute updated?
+                    was_attr_updated = store_status.get_detail_value( self.PROP_WAS_ATTR_UPDATED, None )
+                    if ( was_attr_updated == True ):
+
+                        # updated.
+                        was_instance_updated = True
+                        updated_attr_list.append( attr_update_spec )
+
+                    else:
+
+                        # not updated.
+                        no_change_attr_list.append( attr_update_spec )
+
+                    #-- END check to see if attribute updated. --#
+
+                else:
+
+                    # error.
+                    error_attr_list.append( attr_update_spec )
+                    error_status_list.append( store_status )
+
+                #-- END check to see if update was a success --#
+
+            #-- END loop over columns in row --#
+
+            # status - success?
+            if ( len( error_status_list ) == 0 ):
+
+                # success!
+                status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
+                status_message = "Success!"
+                status_OUT.add_message( status_message )
+
+                # All processed. Save?
+                if ( ( was_instance_updated == True )
+                    and ( save_on_success_IN == True ) ):
+
+                    # changed, and we are saving...
+                    current_entry_instance.save()
+
+                #-- END check to see if we save(). --#
+
+            else:
+
+                # not success!
+                status_OUT.set_status_code( StatusContainer.STATUS_CODE_ERROR )
+                status_message = "One or more errors occurred updating instance, see nested \"error_status_list\" and \"error_attr_list\" for more details."
+                status_OUT.add_message( status_message )
+
+            #-- END check to see if success. --#
+
+            # store supporting information in status instance.
+            status_OUT.set_detail_value( self.PROP_WAS_INSTANCE_UPDATED, was_instance_updated )
+            status_OUT.set_detail_value( self.PROP_UPDATED_ATTR_LIST, updated_attr_list )
+            status_OUT.set_detail_value( self.PROP_NO_CHANGE_ATTR_LIST, no_change_attr_list )
+            status_OUT.set_detail_value( self.PROP_ERROR_ATTR_LIST, error_attr_list )
+            status_OUT.set_detail_value( self.PROP_SUCCESS_STATUS_LIST, success_status_list )
+            status_OUT.set_detail_value( self.PROP_ERROR_STATUS_LIST, error_status_list )
+
+            if ( my_debug_flag == True ):
+                status_message = "- in {}(): unknown_attr_name_to_value_map = {}".format( me, unknown_attr_name_to_value_map )
+                self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
+            #-- END DEBUG --#
+
+        else:
+
+            # no instance passed in - log error, return error status.
+            status_message = "ERROR - No instance passed in to update. Can't do anything."
+            self.output_log_message( status_message, method_IN = me, log_level_code_IN = logging.ERROR )
+            self.add_status_message( status_message )
+
+            # status
+            status_OUT.set_status_code( StatusContainer.STATUS_CODE_ERROR )
+            status_OUT.add_message( status_message )
+            status_OUT.set_detail_value( self.PROP_WAS_INSTANCE_UPDATED, False )
+
+        #-- END check to see if instance is not None --#
+
+        return status_OUT
+
+    #-- END method update_instance_from_record() --#
 
 
 #-- END class ETLFromExcelWithHeaders --#
