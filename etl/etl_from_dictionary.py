@@ -32,12 +32,12 @@ from python_utilities.etl.etl_django_model_loader import ETLDjangoModelLoader
 
 
 #===============================================================================
-# class ETLFromExcelWithHeaders
+# class ETLFromDictionary
 #===============================================================================
 
 
 # lineage: object --> ETLProcessor --> ETLObjectLoader --> ETLDjangoModelLoader
-class ETLFromDictionaryIterable( ETLDjangoModelLoader ):
+class ETLFromDictionary( ETLDjangoModelLoader ):
 
 
     #===========================================================================
@@ -49,7 +49,7 @@ class ETLFromDictionaryIterable( ETLDjangoModelLoader ):
     #STATUS_PREFIX_ERROR = "ERROR: "
 
     # logger name
-    MY_LOGGER_NAME = "python_utilities.etl.ETLFromExcelWithHeaders"
+    MY_LOGGER_NAME = "python_utilities.etl.ETLFromDictionary"
 
 
     #===========================================================================
@@ -162,7 +162,11 @@ class ETLFromDictionaryIterable( ETLDjangoModelLoader ):
         current_attr_value = None
         my_etl_attribute = None
         store_status = None
+        store_update_details = None
         store_success = None
+        custom_update_status = None
+        custom_update_success = None
+        did_custom_updates = False
 
         # declare variables - status checking
         was_attr_updated = None
@@ -225,11 +229,10 @@ class ETLFromDictionaryIterable( ETLDjangoModelLoader ):
                 # store the value.
                 store_status = self.store_attribute( current_entry_instance, current_attr_name, current_attr_value )
 
-                # TODO
-
                 # success?
                 store_success = store_status.is_success()
-                if ( update_success == True ):
+                store_update_details = store_status.get_detail_value( self.PROP_ATTR_UPDATE_DETAIL )
+                if ( store_success == True ):
 
                     # success.
                     success_status_list.append( store_status )
@@ -240,24 +243,51 @@ class ETLFromDictionaryIterable( ETLDjangoModelLoader ):
 
                         # updated.
                         was_instance_updated = True
-                        updated_attr_list.append( attr_update_spec )
+                        updated_attr_list.append( store_update_details )
 
                     else:
 
                         # not updated.
-                        no_change_attr_list.append( attr_update_spec )
+                        no_change_attr_list.append( store_update_details )
 
                     #-- END check to see if attribute updated. --#
 
                 else:
 
                     # error.
-                    error_attr_list.append( attr_update_spec )
+                    error_attr_list.append( store_update_details )
                     error_status_list.append( store_status )
 
                 #-- END check to see if update was a success --#
 
             #-- END loop values in record --#
+
+            # call current_entry_instance.update_attrs_from_json(), which can be
+            #     overridden in a particular class to do fancier processing.
+            custom_update_status = current_entry_instance.update_attrs_from_json( current_record )
+
+            # success?
+            custom_update_success = custom_update_status.is_success()
+            if ( custom_update_success == True ):
+
+                # success.
+                success_status_list.append( custom_update_status )
+
+                # was instance updated?
+                was_custom_updated = custom_update_status.get_detail_value( self.PROP_WAS_INSTANCE_UPDATED, None )
+                if ( was_custom_updated == True ):
+
+                    # updated.
+                    was_instance_updated = True
+
+                #-- END check to see if attribute updated. --#
+
+            else:
+
+                # error.
+                error_status_list.append( custom_update_status )
+
+            #-- END check to see if update was a success --#
 
             # status - success?
             if ( len( error_status_list ) == 0 ):
@@ -293,11 +323,6 @@ class ETLFromDictionaryIterable( ETLDjangoModelLoader ):
             status_OUT.set_detail_value( self.PROP_SUCCESS_STATUS_LIST, success_status_list )
             status_OUT.set_detail_value( self.PROP_ERROR_STATUS_LIST, error_status_list )
 
-            if ( my_debug_flag == True ):
-                status_message = "- in {}(): unknown_attr_name_to_value_map = {}".format( me, unknown_attr_name_to_value_map )
-                self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
-            #-- END DEBUG --#
-
         else:
 
             # no instance passed in - log error, return error status.
@@ -317,4 +342,4 @@ class ETLFromDictionaryIterable( ETLDjangoModelLoader ):
     #-- END method update_instance_from_record() --#
 
 
-#-- END class ETLFromDictionaryIterable --#
+#-- END class ETLFromDictionary --#

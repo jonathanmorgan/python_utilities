@@ -6,6 +6,7 @@
 # base python libraries
 import datetime
 import dateutil
+import json
 import logging
 import openpyxl
 import sys
@@ -55,6 +56,10 @@ class ETLObjectLoader( ETLProcessor ):
     # status properties returned from store_attribute()
     PROP_WAS_ATTR_UPDATED = "was_attr_updated"
     PROP_WAS_UNKNOWN_ATTR = "was_unknown_attr"
+    PROP_ATTR_UPDATE_DETAIL = "attr_update_detail"
+    PROP_ATTR_NAME = "attr_name"
+    PROP_ATTR_OLD_VALUE = "attr_old_value"
+    PROP_ATTR_NEW_VALUE = "attr_new_value"
 
     # status properties for a particular record
     PROP_WAS_INSTANCE_UPDATED = "was_instance_updated"
@@ -116,6 +121,7 @@ class ETLObjectLoader( ETLProcessor ):
 
         # debug
         self.debug_flag = False
+        self.include_detailed_status = True
 
     #-- END constructor --#
 
@@ -314,15 +320,19 @@ class ETLObjectLoader( ETLProcessor ):
         me = "store_attribute"
         status_message = None
         my_debug_flag = None
+        do_detailed_status = False
         my_etl_spec = None
         my_class = None
         attr_exists = None
         current_value = None
         unknown_attr_name_to_value_map = None
         extra_data_json = None
+        has_extra_data_changed = None
 
         # init
         my_debug_flag = self.debug_flag
+        #my_debug_flag = True
+        do_detailed_status = self.include_detailed_status
         status_OUT = StatusContainer()
         status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
 
@@ -340,7 +350,11 @@ class ETLObjectLoader( ETLProcessor ):
                 attr_exists = hasattr( my_class, attr_name_IN )
 
                 if ( my_debug_flag == True ):
-                    status_message = "- attr_name = {} ( exists?: {} ); attr_value".format( attr_name_IN, attr_exists, attr_value_IN )
+                    status_message = "- attr_name = {attr_name} ( exists?: {attr_exists} ); attr_value = {attr_value}".format(
+                        attr_name = attr_name_IN,
+                        attr_exists = attr_exists,
+                        attr_value = attr_value_IN
+                    )
                     self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
                 #-- END DEBUG --#
 
@@ -353,19 +367,29 @@ class ETLObjectLoader( ETLProcessor ):
                     # get existing value
                     current_value = getattr( instance_IN, attr_name_IN )
 
+                    # attribute update detail
+                    status_message = "{attr_name}: {old_value} ==> {new_value}.".format(
+                        attr_name = attr_name_IN,
+                        old_value = current_value,
+                        new_value = attr_value_IN
+                    )
+                    status_OUT.set_detail_value( self.PROP_ATTR_UPDATE_DETAIL, status_message )
+
                     # changed?
                     if ( current_value != attr_value_IN ):
 
                         # changed - make a note in status.
                         setattr( instance_IN, attr_name_IN, attr_value_IN )
                         status_OUT.set_detail_value( self.PROP_WAS_ATTR_UPDATED, True )
+
+                        # status message
                         status_message = "model attribute {attr_name} updated from {old_value} to {new_value}.".format(
                             attr_name = attr_name_IN,
                             old_value = current_value,
                             new_value = attr_value_IN
                         )
                         status_OUT.add_message( status_message )
-                        self.output_debug( status_message, method_IN = me )
+                        self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
 
                     else:
 
@@ -377,11 +401,22 @@ class ETLObjectLoader( ETLProcessor ):
                             new_value = attr_value_IN
                         )
                         status_OUT.add_message( status_message )
-                        self.output_debug( status_message, method_IN = me )
+                        self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
 
                     #-- END check if changed. --#
 
                 else:
+
+                    # get existing value
+                    current_value = instance_IN.get_extra_data_attr_value( attr_name_IN )
+
+                    # attribute update detail
+                    status_message = "X {attr_name}: {old_value} ==> {new_value}.".format(
+                        attr_name = attr_name_IN,
+                        old_value = current_value,
+                        new_value = attr_value_IN
+                    )
+                    status_OUT.set_detail_value( self.PROP_ATTR_UPDATE_DETAIL, status_message )
 
                     # attribute does not exist. Add to the unknown attribute map.
                     unknown_attr_name_to_value_map = self.get_unknown_attrs_name_to_value_map()
@@ -389,19 +424,45 @@ class ETLObjectLoader( ETLProcessor ):
 
                     # update status
                     status_OUT.set_detail_value( self.PROP_WAS_UNKNOWN_ATTR, True )
-                    status_OUT.set_detail_value( self.PROP_WAS_ATTR_UPDATED, True )
-                    status_message = "attribute {attr_name} NOT in model, adding to extra data (value: {new_value}).".format(
+                    status_message = "attribute {attr_name} NOT in model, adding to extra data (current: {old_value}; new: {new_value}).".format(
                         attr_name = attr_name_IN,
+                        old_value = current_value,
                         new_value = attr_value_IN
                     )
                     status_OUT.add_message( status_message )
-                    self.output_debug( status_message, method_IN = me )
+                    self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
 
                     # update the value for this attribute in the extra_data
                     #     JSONField.
-                    instance_IN.update_extra_data_attr( attr_name_IN, attr_value_IN )
+                    has_extra_data_changed = instance_IN.update_extra_data_attr( attr_name_IN, attr_value_IN )
+
+                    # check if unknown attribute already present, if so,
+                    #    only set updated flag if value was different.
+
+                    # did it change?
+                    if ( has_extra_data_changed == True ):
+
+                        # it has!
+                        status_OUT.set_detail_value( self.PROP_WAS_ATTR_UPDATED, True )
+
+                    else:
+
+                        # no change!
+                        status_OUT.set_detail_value( self.PROP_WAS_ATTR_UPDATED, False )
+
+                    #-- END check to see if extra data changed. --#
 
                 #-- END check if has attr --#
+
+                # detailed status?
+                if ( do_detailed_status == True ):
+
+                    # store details
+                    status_OUT.set_detail_value( self.PROP_ATTR_NAME, attr_name_IN )
+                    status_OUT.set_detail_value( self.PROP_ATTR_OLD_VALUE, current_value )
+                    status_OUT.set_detail_value( self.PROP_ATTR_NEW_VALUE, attr_value_IN )
+
+                #-- END detailed status --#
 
             else:
 
@@ -427,7 +488,7 @@ class ETLObjectLoader( ETLProcessor ):
 
         return status_OUT
 
-    #-- END method store_attributes() --#
+    #-- END method store_attribute() --#
 
 
 #-- END class ETLObjectLoader --#

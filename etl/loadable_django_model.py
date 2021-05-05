@@ -151,11 +151,55 @@ class LoadableDjangoModel( models.Model ):
     #==========================================================================#
 
 
+    def get_extra_data_attr_value( self, attr_name_IN ):
+
+        # return reference
+        value_OUT = None
+
+        # declare variables
+        extra_data_json = None
+        current_value = None
+
+        # get extra data JSONField
+        extra_data_json = self.extra_data
+
+        # got anything already?
+        if ( extra_data_json is not None ):
+
+            # is name already in extra data?
+            if ( attr_name_IN in extra_data_json ):
+
+                # yes - retrieve current value
+                value_OUT = extra_data_json.get( attr_name_IN, None )
+
+            else:
+
+                # no - return None.
+                value_OUT = None
+
+            #-- END check to see if name in JSON --#
+
+        else:
+
+            # no extra data, return None
+            value_OUT = None
+
+        #-- END check to see if initialized --#
+
+        return value_OUT
+
+    #-- END method get_extra_data_attr_value() --#
+
+
     def update_extra_data_attr( self, attr_name_IN, attr_value_IN ):
+
+        # return reference
+        is_changed_OUT = False
 
         # declare variables
         me = "update_extra_data_attr"
         extra_data_json = None
+        current_value = None
 
         # get extra data JSONField
         extra_data_json = self.extra_data
@@ -169,10 +213,37 @@ class LoadableDjangoModel( models.Model ):
 
         #-- END check to see if initialized --#
 
-        # update the value for this attribute in the dictionary.
-        extra_data_json[ attr_name_IN ] = attr_value_IN
+        # is name already in extra data?
+        if ( attr_name_IN in extra_data_json ):
 
-    #-- END method update_extra_data
+            # retrieve current value
+            current_value = extra_data_json.get( attr_name_IN )
+
+            # is new same as existing?
+            if ( current_value != attr_value_IN ):
+
+                # not the same - update
+                extra_data_json[ attr_name_IN ] = attr_value_IN
+                is_changed_OUT = True
+
+            else:
+
+                # existing value for this key is same as new value. Not changed.
+                is_changed_OUT = False
+
+            #-- END check to see if value as changed for known atribute. --#
+
+        else:
+
+            # not already there - set the value for this attribute
+            extra_data_json[ attr_name_IN ] = attr_value_IN
+            is_changed_OUT = True
+
+        #-- END check to see if name in JSON --#
+
+        return is_changed_OUT
+
+    #-- END method update_extra_data_attr() --#
 
 
 #-- END abstract LoadableDjangoModel class --#

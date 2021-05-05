@@ -13,6 +13,7 @@
 # base python libraries
 import datetime
 import dateutil
+import itertools
 import logging
 import openpyxl
 import sys
@@ -163,7 +164,8 @@ class ETLProcessor( object ):
         self.etl_entity = None
 
         # input
-        self.record_iterator = None
+        self.record_list = None
+        #self.record_iterator = None
 
         # status - batch-level
         self.status_message_list = []
@@ -238,17 +240,169 @@ class ETLProcessor( object ):
     #-- END method get_missing_field_list() --#
 
 
-    def get_record_iterator( self ):
+    def get_record_count( self ):
+
+        # return reference
+        value_OUT = None
+
+        # declare variables
+        my_record_list = None
+
+        # get record list
+        my_record_list = self.record_list
+
+        # do we have a list?
+        if ( my_record_list is not None ):
+
+            # get len
+            value_OUT = len( my_record_list )
+
+        else:
+
+            # no list - return None
+            value_OUT = None
+
+        #-- END check to see if list stored within. --#
+
+        return value_OUT
+
+    #-- END method get_record_count() --#
+
+
+    def get_record_iterator( self, start_index_IN = None, record_count_IN = None, use_islice_IN = False ):
+
+        # return reference
+        value_OUT = None
+
+        # declare variables
+        my_record_list = None
+        my_iterator = None
+
+        # do we have a record list?
+        my_record_list = self.get_record_list()
+        if ( my_record_list is not None ):
+
+            # process a subset?
+            if ( ( start_index_IN is not None )
+                or ( record_count_IN is not None ) ):
+
+                # are we using itertools.islice()? (leaving this here because it is
+                #     interesting, but probably not the right answer in most cases)
+                # - main takeaway - Slicing list before making iterator is usually better. islice() traverses iterator to get to the first item, so the farther into the list the first item is, the more processing you do to get there.
+                if ( use_islice_IN != True ):
+
+                    # just slice the list, then make an iterator from the result.
+                    # - start is 0-indexed
+                    # - stop stops at and does not return the index you pass to stop (so
+                    #     if you want from 0 to 9, start is 0, count is 10). If you want
+                    #     from 4 to 9, start index is 4, count is 6, so stop will be 10).
+                    if ( ( start_index_IN is not None )
+                        and ( record_count_IN is not None ) ):
+
+                        # we have both start and count.
+                        start_index = start_index_IN
+                        stop_index = start_index_IN + record_count_IN
+
+                    elif ( ( start_index_IN is not None )
+                        and ( record_count_IN is None ) ):
+
+                        # we have start, no count.
+                        start_index = start_index_IN
+                        stop_index = None
+
+                    elif ( ( start_index_IN is None )
+                        and ( record_count_IN is not None ) ):
+
+                        # no start, just count (limit).
+                        start_index = 0
+                        stop_index = record_count_IN
+
+                    #-- END check to see how to set start and stop.
+
+                    # slice list...
+                    my_record_list = my_record_list[ start_index : stop_index ]
+
+                    # ...make iterator.
+                    my_iterator = iter( my_record_list )
+
+                else:
+
+                    # using itertools.islice() - leaving this here because it is
+                    #     interesting, but probably not the right answer in most
+                    #     cases
+                    # - main takeaway - Slicing list before making iterator is usually better. islice() traverses iterator to get to the first item, so the farther into the list the first item is, the more processing you do to get there.
+                    # - https://stackoverflow.com/questions/18048698/efficient-iteration-over-slice-in-python
+                    # - https://docs.python.org/3/library/itertools.html#itertools.islice
+
+                    # get iterator
+                    my_iterator = iter( my_record_list )
+
+                    # we have been asked to subset using itertools.islice():
+                    # - start is 0-indexed
+                    # - stop stops at and does not return the index you pass to stop (so
+                    #     if you want from 0 to 9, start is 0, count is 10). If you want
+                    #     from 4 to 9, start index is 4, count is 6, so stop will be 10).
+                    if ( ( start_index_IN is not None )
+                        and ( record_count_IN is not None ) ):
+
+                        # we have both start and count.
+                        start_index = start_index_IN
+                        stop_index = start_index_IN + record_count_IN
+
+                    elif ( ( start_index_IN is not None )
+                        and ( record_count_IN is None ) ):
+
+                        # we have start, no count.
+                        start_index = start_index_IN
+                        stop_index = None
+
+                    elif ( ( start_index_IN is None )
+                        and ( record_count_IN is not None ) ):
+
+                        # no start, just count (limit).
+                        start_index = 0
+                        stop_index = record_count_IN
+
+                    #-- END check to see how to set start and stop.
+
+                    # islice the iterator
+                    my_iterator = itertools.islice( my_iterator, start_index, stop_index )
+
+                #-- END check to see if we use itertools.islice() --#
+
+            else:
+
+                # no subsetting, just make and return iterator.
+                my_iterator = iter( my_record_list )
+
+            #-- END check to see if we have been asked to subset. --#
+
+            # return the result
+            value_OUT = my_iterator
+
+        else:
+
+            # we do not have a record list - return None.
+            value_OUT = None
+
+        #-- END check if associated list. --#
+
+        return value_OUT
+
+    #-- END method get_record_iterator() --#
+
+
+    def get_record_list( self ):
 
         # return reference
         value_OUT = None
 
         # get value
-        value_OUT = self.record_iterator
+        value_OUT = self.record_list
 
         return value_OUT
 
-    #-- END method get_record_iterator() --#
+    #-- END method get_record_list() --#
 
 
     def get_status_message_list( self ):
@@ -321,7 +475,6 @@ class ETLProcessor( object ):
         me = "has_required"
         status_message = None
         my_debug_flag = None
-        my_worksheet = None
 
         # declare variables - check required
         missing_field_list = None
@@ -333,7 +486,6 @@ class ETLProcessor( object ):
         my_debug_flag = self.debug_flag
 
         # get spec information
-        my_worksheet = self.get_input_worksheet()
         my_etl_spec = self.get_etl_entity()
         required_attr_key_list = my_etl_spec.get_required_attr_key_set()
 
@@ -541,23 +693,23 @@ class ETLProcessor( object ):
     #-- END method set_missing_field_list() --#
 
 
-    def set_record_iterator( self, value_IN ):
+    def set_record_list( self, value_IN ):
 
         # return reference
         value_OUT = None
 
         # store value
-        self.record_iterator = iter( value_IN )
+        self.record_list = value_IN
 
         # clear out status variables.
         self.reset_status_information()
 
         # return value
-        value_OUT = self.get_record_iterator()
+        value_OUT = self.get_record_list()
 
         return value_OUT
 
-    #-- END method set_input_worksheet() --#
+    #-- END method set_record_list() --#
 
 
     def set_status_message_list( self, value_IN ):
@@ -606,7 +758,6 @@ class ETLProcessor( object ):
         return value_OUT
 
     #-- END method set_unknown_attrs_name_to_value_map() --#
-
 
 
 #-- END class ETLProcessor --#

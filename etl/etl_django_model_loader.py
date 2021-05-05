@@ -185,21 +185,20 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
             # loop over id keys
             for current_id_key in id_column_key_list:
 
-                if ( my_debug_flag == True ):
-                    status_message = "Current ID key: {}".format( current_id_key )
-                    self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
-                #-- END DEBUG --#
-
                 # retrieve value for key.
                 current_id_value = self.get_value_for_key( record_IN, current_id_key )
 
-                if ( my_debug_flag == True ):
-                    status_message = "- Current ID value: {}".format( current_id_value )
-                    self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
-                #-- END DEBUG --#
-
                 # retrieve attribute name for key.
                 current_id_attr_name = my_etl_spec.pull_load_attr_name_for_key( current_id_key )
+
+                if ( my_debug_flag == True ):
+                    status_message = "Looking for field {id_key} ( attr: {id_attr_name} ) with value \"{id_value}\"".format(
+                        id_key = current_id_key,
+                        id_attr_name = current_id_attr_name,
+                        id_value = current_id_value
+                    )
+                    self.output_debug( status_message, method_IN = me, indent_with_IN = "====> ", do_print_IN = my_debug_flag )
+                #-- END DEBUG --#
 
                 # add to filter
                 # https://stackoverflow.com/questions/9122169/calling-filter-with-a-variable-for-field-name
@@ -262,8 +261,8 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
         TODO:
         - populate StatusContainer, rather than/in addition to status list.
         - test and make sure this all works.
-        - move process_records up a level to ETLDjangoModelLoader.
-        - try to make "update_instance_from_record()" for Excel, see if
+        - // move process_records up a level to ETLDjangoModelLoader.
+        - // try to make "update_instance_from_record()" for Excel, see if
             "process_records()" there works the same as "process_rows()".
         '''
 
@@ -329,52 +328,10 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
         my_class = my_etl_spec.get_load_class()
 
         # get iterator
-        my_iterator = self.get_record_iterator()
-
-        # process a subset?
-        if ( ( start_index_IN is not None )
-            or ( record_count_IN is not None ) ):
-
-            # we have been asked to subset. See how we call itertools.islice()
-            # - start is 0-indexed
-            # - stop stops at and does not return the index you pass to stop (so
-            #     if you want from 0 to 9, start is 0, count is 10). If you want
-            #     from 4 to 9, start index is 4, count is 6, so stop will be 10).
-            if ( ( start_index_IN is not None )
-                and ( record_count_IN is not None ) ):
-
-                # we have both start and count.
-                start_index = start_index_IN
-                stop_index = start_index_IN + record_count_IN
-
-            elif ( ( start_index_IN is not None )
-                and ( record_count_IN is None ) ):
-
-                # we have start, no count.
-                start_index = start_index_IN
-                stop_index = None
-
-            elif ( ( start_index_IN is None )
-                and ( record_count_IN is not None ) ):
-
-                # no start, just count (limit).
-                start_index = 0
-                stop_index = record_count_IN
-
-            #-- END check to see how to set start and stop.
-
-            # islice the iterator
-            my_iterator = itertools.islice( my_iterator, start_index, stop_index )
-
-        else:
-
-            # just use the iterator.
-            pass
-
-        #-- END check to see if custom start row --#
+        my_iterator = self.get_record_iterator( start_index_IN = start_index_IN, record_count_IN = record_count_IN )
 
         # get record count
-        record_count = sum( 1 for current_record in my_iterator )
+        record_count = self.get_record_count()
 
         # loop over data dictionaries
         record_counter = 0
@@ -399,10 +356,24 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
                     update_status = self.update_instance_from_record( current_entry_instance, current_record )
 
                     if ( my_debug_flag == True ):
-                        status_message = "- in {}(): update_status = {}".format( me, update_status )
+
+                        # output details of entry update.
+                        status_message = "- in {method}(): update_status = {status_instance} ( success?: {success_flag}; record updated?: {was_updated}; changed list:{changed_list}".format(
+                            method = me,
+                            status_instance = update_status,
+                            success_flag = update_status.is_success(),
+                            was_updated = update_status.get_detail_value( self.PROP_WAS_INSTANCE_UPDATED ),
+                            changed_list = update_status.get_detail_value(  self.PROP_UPDATED_ATTR_LIST )
+                        )
+                        self.output_debug( status_message, method_IN = me, indent_with_IN = "\n\n====> ", do_print_IN = my_debug_flag )
+
+                        # and, output unknown attributes.
+                        status_message = "- in {method}(): unknown_attr_name_to_value_map = {unknown_attrs}".format(
+                            method = me,
+                            unknown_attrs = unknown_attr_name_to_value_map
+                        )
                         self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
-                        status_message = "- in {}(): unknown_attr_name_to_value_map = {}".format( me, unknown_attr_name_to_value_map )
-                        self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
+
                     #-- END DEBUG --#
 
                 else:

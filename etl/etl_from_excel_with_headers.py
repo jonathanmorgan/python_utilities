@@ -19,6 +19,9 @@ import sys
 import time
 import traceback
 
+# python_utilities
+from python_utilities.status.status_container import StatusContainer
+
 # ETL imports
 from python_utilities.etl.etl_attribute import ETLAttribute
 from python_utilities.etl.etl_entity import ETLEntity
@@ -279,214 +282,6 @@ class ETLFromExcelWithHeaders( ETLDjangoModelLoader ):
     #-- END method map_indexes_to_keys() --#
 
 
-    def process_rows( self, start_row_IN = -1, row_count_IN = -1 ):
-
-        # declare variables
-        me = "process_rows"
-        status_message = None
-        my_debug_flag = None
-        my_etl_spec = None
-        index_to_key_map = None
-        key_to_index_map = None
-        my_worksheet = None
-        my_class = None
-
-        # declare variables - loop over rows
-        row_count = None
-        column_count = None
-        first_data_row_index = 2
-        end_data_row_index = 2
-        row_counter = None
-        print_every_x_rows = None
-        current_row_index = None
-        id_column_key_list = None
-        current_entry_instance = None
-
-        # declare variables - timing
-        my_start_dt = None
-        previous_dt = None
-        current_dt = None
-        current_elapsed = None
-        total_elapsed = None
-        total_average = None
-
-        # declare variables - check required
-        has_required = None
-
-        # declare variables - update and save
-        current_column_index = None
-        current_column_value = None
-        current_column_key = None
-        my_etl_attribute = None
-        current_attr_name = None
-        current_attr_value = None
-        unknown_attr_name_to_value_map = None
-
-        #----------------------------------------------------------------------#
-        # work
-
-        # init
-        my_debug_flag = self.debug_flag
-        self.reset_status_information()
-        self.start_dt = datetime.datetime.now()
-        previous_dt = self.start_dt
-
-        # get spec information
-        my_etl_spec = self.get_etl_entity()
-        index_to_key_map = my_etl_spec.get_attr_index_to_key_map()
-        key_to_index_map = my_etl_spec.get_attr_key_to_index_map()
-        required_attr_key_list = my_etl_spec.get_required_attr_key_set()
-        id_column_key_list = my_etl_spec.get_id_attr_key_list()
-        my_class = my_etl_spec.get_load_class()
-
-        # get worksheet
-        my_worksheet = self.get_input_worksheet()
-        row_count = my_worksheet.max_row
-        column_count = my_worksheet.max_column
-
-        # where do we start?
-        if ( ( start_row_IN is not None ) and ( start_row_IN != "" ) and ( start_row_IN > 0 ) ):
-
-            # start row passed in - use that.
-            first_data_row_index = start_row_IN
-
-        else:
-
-            # default
-            first_data_row_index = 2
-
-        #-- END check to see if custom start row --#
-
-        # where do we stop?
-        if ( ( row_count_IN is not None ) and ( row_count_IN != "" ) and ( row_count_IN > 0 ) ):
-
-            # row count passed in - use that.
-            end_data_row_index = first_data_row_index + row_count_IN - 1
-
-        else:
-
-            # default
-            end_data_row_index = row_count
-
-        #-- END check to see if custom start row --#
-
-        # loop over data rows
-        row_counter = 0
-        print_every_x_rows = self.update_status_every
-        for current_row_index in range( first_data_row_index, end_data_row_index + 1 ):
-
-            # ==> reset per-row variables
-            self.reset_record_information()
-            unknown_attr_name_to_value_map = self.get_unknown_attrs_name_to_value_map()
-
-            # ==> check required.
-            has_required = self.has_required( current_row_index )
-
-            if ( has_required == True ):
-
-                # ==> try to lookup existing instance.
-                current_entry_instance = self.find_load_instance( current_row_index, check_required_IN = False )
-
-                # got an instance?
-                if ( current_entry_instance is not None ):
-
-                    # loop over columns to get values each column and store in instance.
-                    for current_column_index in range( 1, column_count + 1 ):
-
-                        # retrieve value for this cell
-                        current_cell = my_worksheet.cell( row = current_row_index, column = current_column_index )
-                        current_column_value = current_cell.value
-
-                        # get key for index.
-                        current_column_key = my_etl_spec.pull_key_for_index( current_column_index )
-
-                        # start with attribute value set to column value
-                        current_attr_value = current_column_value
-
-                        # retrieve ETLAttribute for this index.
-                        my_etl_attribute = my_etl_spec.pull_attr_for_key( current_column_key )
-
-                        # got an attribute spec?
-                        if ( my_etl_attribute is not None ):
-
-                            # ETLAttribute found.  Retrieve values and do
-                            #     processing.
-                            current_attr_name = my_etl_attribute.get_load_attr_name()
-
-                            # process value.
-                            current_attr_value = self.process_value( current_attr_value, my_etl_attribute, current_entry_instance )
-
-                        else:
-
-                            # no ETLAttribute instance. Direct, untranslated
-                            #     load to instance.
-                            current_attr_name = current_column_key
-
-                        #-- END check to see if attribute spec. --#
-
-                        # store the value.
-                        self.store_attribute( current_entry_instance, current_attr_name, current_attr_value )
-
-                    #-- END loop over columns in row --#
-
-                    # TODO: place unknown fields into JSONField.
-
-                    if ( my_debug_flag == True ):
-                        status_message = "unknown_attr_name_to_value_map = {}".format( unknown_attr_name_to_value_map )
-                        self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
-                    #-- END DEBUG --#
-
-                    # All processed. Save.
-                    current_entry_instance.save()
-
-                else:
-
-                    status_message = "In {}(): row {} - failed to find instance of class {} to load into. This shouldn't happen.".format( me, current_row_index, my_class )
-                    self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
-                    self.add_status_message( status_message )
-
-                #-- END check to see if instance to load into --#
-
-            else:
-
-                # missing required fields, move on.
-                status_message = "row {} is missing required fields, moving on.".format( current_row_index )
-                self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
-                self.add_status_message( status_message )
-
-            #-- END check if required columns are present. --#
-
-            # increment counter
-            row_counter += 1
-
-            # output a message?
-            if ( ( row_counter % print_every_x_rows ) == 0 ):
-                my_start_dt = self.start_dt
-                current_dt = datetime.datetime.now()
-                current_elapsed = current_dt - previous_dt
-                total_elapsed = current_dt - my_start_dt
-                total_average = total_elapsed / row_counter
-                previous_dt = current_dt
-
-                status_message = "----> processed {} of {} records ( existing: {}; new: {} ) @ {} ( timing: last {} elapsed = {}; total elapsed = {}; average = {} ).".format(
-                            row_counter,
-                            row_count,
-                            self.existing_count,
-                            self.new_count,
-                            current_dt,
-                            row_counter,
-                            current_elapsed,
-                            total_elapsed,
-                            total_average )
-
-                self.output_debug( status_message, method_IN = me, do_print_IN = True )
-            #-- END periodic status update. --#
-
-        #-- END loop over rows in openpyxl worksheet --#
-
-    #-- END method process_rows() --#
-
-
     def set_input_worksheet( self, value_IN ):
 
         # return reference
@@ -524,11 +319,9 @@ class ETLFromExcelWithHeaders( ETLDjangoModelLoader ):
         end_data_row_index = row_count
         row_index_list = range( first_data_row_index, end_data_row_index + 1 )
 
-        # ...make it an iterator...
-        row_index_iterator = iter( row_index_list )
-
-        # ...and store iterator.
-        self.set_record_iterator( row_index_iterator )
+        # ...and store list (from which iterator can be made each time it is
+        #     needed).
+        self.set_record_list( row_index_list )
 
         return value_OUT
 
@@ -558,6 +351,7 @@ class ETLFromExcelWithHeaders( ETLDjangoModelLoader ):
         current_attr_value = None
         my_etl_attribute = None
         store_status = None
+        store_update_details = None
         store_success = None
 
         # declare variables - status checking
@@ -632,6 +426,7 @@ class ETLFromExcelWithHeaders( ETLDjangoModelLoader ):
 
                 # success?
                 store_success = store_status.is_success()
+                store_update_details = store_status.get_detail_value( self.PROP_ATTR_UPDATE_DETAIL )
                 if ( store_success == True ):
 
                     # success.
@@ -643,19 +438,19 @@ class ETLFromExcelWithHeaders( ETLDjangoModelLoader ):
 
                         # updated.
                         was_instance_updated = True
-                        updated_attr_list.append( attr_update_spec )
+                        updated_attr_list.append( store_update_details )
 
                     else:
 
                         # not updated.
-                        no_change_attr_list.append( attr_update_spec )
+                        no_change_attr_list.append( store_update_details )
 
                     #-- END check to see if attribute updated. --#
 
                 else:
 
                     # error.
-                    error_attr_list.append( attr_update_spec )
+                    error_attr_list.append( store_update_details )
                     error_status_list.append( store_status )
 
                 #-- END check to see if update was a success --#
