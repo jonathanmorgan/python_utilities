@@ -262,33 +262,6 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
 
             #-- END loop values in record --#
 
-            # call current_entry_instance.update_attrs_from_json(), which can be
-            #     overridden in a particular class to do fancier processing.
-            custom_update_status = current_entry_instance.update_attrs_from_json( current_record )
-
-            # success?
-            custom_update_success = custom_update_status.is_success()
-            if ( custom_update_success == True ):
-
-                # success.
-                success_status_list.append( custom_update_status )
-
-                # was instance updated?
-                was_custom_updated = custom_update_status.get_detail_value( self.PROP_WAS_INSTANCE_UPDATED, None )
-                if ( was_custom_updated == True ):
-
-                    # updated.
-                    was_instance_updated = True
-
-                #-- END check to see if attribute updated. --#
-
-            else:
-
-                # error.
-                error_status_list.append( custom_update_status )
-
-            #-- END check to see if update was a success --#
-
             # status - success?
             if ( len( error_status_list ) == 0 ):
 
@@ -305,6 +278,33 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                     current_entry_instance.save()
 
                 #-- END check to see if we save(). --#
+
+                # call current_entry_instance.update_from_record(), which can be
+                #     overridden in a particular class to do fancier processing.
+                custom_update_status = current_entry_instance.update_from_record( current_record )
+
+                # success?
+                custom_update_success = custom_update_status.is_success()
+                if ( custom_update_success == True ):
+
+                    # success.
+                    success_status_list.append( custom_update_status )
+
+                    # was instance updated?
+                    was_custom_updated = custom_update_status.get_detail_value( self.PROP_WAS_INSTANCE_UPDATED, None )
+                    if ( was_custom_updated == True ):
+
+                        # updated.
+                        was_instance_updated = True
+
+                    #-- END check to see if attribute updated. --#
+
+                else:
+
+                    # error.
+                    error_status_list.append( custom_update_status )
+
+                #-- END check to see if update was a success --#
 
             else:
 
