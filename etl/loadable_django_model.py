@@ -300,4 +300,60 @@ class LoadableDjangoModel( models.Model ):
     #-- END method update_from_record()
 
 
+    def update_related_from_record( self, record_IN ):
+
+        '''
+        Accepts current record, can be extended by a particular model
+            to do non-standard processing to update related information. This
+            method will be called in processing stream after the instance is
+            saved, so it will have an ID and can be referenced in ForeignKeys.
+
+        Preconditions: assumes you'll pass something in to every argument. A
+            None in any of them will cause errors.
+
+        Postconditions: Also outputs error log message if there was a problem.
+            Could throw exception on incorrect calls, but for now, we'll just
+            make sure there is a good error message logged.
+
+        Returns: StatusContainer with information on results.
+        '''
+
+        # return reference
+        status_OUT = None
+
+        # declare variables
+        me = "update_related_from_record"
+        status_message = None
+        update_status = None
+        update_success = None
+
+        # init
+        status_OUT = StatusContainer()
+        status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
+
+        # do we have json?
+        if ( json_IN is not None ):
+
+            # for base method, nothing to do, so SUCCESS!
+            status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
+            status_OUT.set_detail_value( self.PROP_WAS_INSTANCE_UPDATED, False )
+
+        else:
+
+            # no JSON passed in - log error, return false.
+            status_message = "ERROR - No json dictionary passed in ( {} ).".format( json_IN )
+            self.output_log_message( status_message, method_IN = me, log_level_code_IN = logging.ERROR )
+
+            # status
+            status_OUT.set_status_code( StatusContainer.STATUS_CODE_ERROR )
+            status_OUT.add_message( status_message )
+            status_OUT.set_detail_value( self.PROP_WAS_INSTANCE_UPDATED, False )
+
+        #-- END check to see if json is not None --#
+
+        return status_OUT
+
+    #-- END method update_related_from_record()
+
+
 #-- END abstract LoadableDjangoModel class --#

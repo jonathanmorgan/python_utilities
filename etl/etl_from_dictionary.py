@@ -166,6 +166,8 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
         store_success = None
         custom_update_status = None
         custom_update_success = None
+        related_update_status = None
+        related_update_success = None
         did_custom_updates = False
 
         # declare variables - status checking
@@ -262,6 +264,34 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
 
             #-- END loop values in record --#
 
+            # call current_entry_instance.update_from_record(),
+            #     which can be overridden in a particular class to do
+            #     fancier processing than specification can hold.
+            custom_update_status = current_entry_instance.update_from_record( current_record )
+
+            # success?
+            custom_update_success = custom_update_status.is_success()
+            if ( custom_update_success == True ):
+
+                # success.
+                success_status_list.append( custom_update_status )
+
+                # was instance updated?
+                was_custom_updated = custom_update_status.get_detail_value( self.PROP_WAS_INSTANCE_UPDATED, None )
+                if ( was_custom_updated == True ):
+
+                    # updated.
+                    was_instance_updated = True
+
+                #-- END check to see if attribute updated. --#
+
+            else:
+
+                # error.
+                error_status_list.append( custom_update_status )
+
+            #-- END check to see if update was a success --#
+
             # status - success?
             if ( len( error_status_list ) == 0 ):
 
@@ -279,19 +309,20 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
 
                 #-- END check to see if we save(). --#
 
-                # call current_entry_instance.update_from_record(), which can be
-                #     overridden in a particular class to do fancier processing.
-                custom_update_status = current_entry_instance.update_from_record( current_record )
+                # call current_entry_instance.update_related_from_record(),
+                #     which can be overridden in a particular class to do
+                #     fancier processing for related records.
+                related_update_status = current_entry_instance.update_related_from_record( current_record )
 
                 # success?
-                custom_update_success = custom_update_status.is_success()
-                if ( custom_update_success == True ):
+                related_update_success = related_update_status.is_success()
+                if ( related_update_success == True ):
 
                     # success.
-                    success_status_list.append( custom_update_status )
+                    success_status_list.append( related_update_status )
 
                     # was instance updated?
-                    was_custom_updated = custom_update_status.get_detail_value( self.PROP_WAS_INSTANCE_UPDATED, None )
+                    was_custom_updated = related_update_status.get_detail_value( self.PROP_WAS_INSTANCE_UPDATED, None )
                     if ( was_custom_updated == True ):
 
                         # updated.
@@ -302,7 +333,7 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                 else:
 
                     # error.
-                    error_status_list.append( custom_update_status )
+                    error_status_list.append( related_update_status )
 
                 #-- END check to see if update was a success --#
 
