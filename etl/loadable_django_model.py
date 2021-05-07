@@ -246,7 +246,7 @@ class LoadableDjangoModel( models.Model ):
     #-- END method update_extra_data_attr() --#
 
 
-    def update_from_record( self, record_IN ):
+    def update_from_record_pre_save( self, record_IN ):
 
         '''
         Accepts current record, can be extended by a particular model
@@ -266,7 +266,7 @@ class LoadableDjangoModel( models.Model ):
         status_OUT = None
 
         # declare variables
-        me = "update_from_record"
+        me = "update_from_record_pre_save"
         status_message = None
         update_status = None
         update_success = None
@@ -297,10 +297,10 @@ class LoadableDjangoModel( models.Model ):
 
         return status_OUT
 
-    #-- END method update_from_record()
+    #-- END method update_from_record_pre_save()
 
 
-    def update_related_from_record( self, record_IN ):
+    def update_from_record_post_save( self, record_IN ):
 
         '''
         Accepts current record, can be extended by a particular model
@@ -322,7 +322,7 @@ class LoadableDjangoModel( models.Model ):
         status_OUT = None
 
         # declare variables
-        me = "update_related_from_record"
+        me = "update_from_record_post_save"
         status_message = None
         update_status = None
         update_success = None
@@ -353,7 +353,7 @@ class LoadableDjangoModel( models.Model ):
 
         return status_OUT
 
-    #-- END method update_related_from_record()
+    #-- END method update_from_record_post_save()
 
 
 #-- END abstract LoadableDjangoModel class --#

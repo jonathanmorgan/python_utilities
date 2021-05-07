@@ -37,11 +37,17 @@ pretty_json_string = JSONHelper.pretty_print_json( json_object )
 # Imports
 
 # base python modules
+import hashlib
 import json
+import logging
 
 # basic packages
 import regex
 import six # help with supporting both python 2 and 3.
+
+# python utilities
+from python_utilities.json.python_utility_json_error import PythonUtilityJSONError
+from python_utilities.logging.logging_helper import LoggingHelper
 
 # define JSONHelper class.
 class JSONHelper( object ):
@@ -54,6 +60,7 @@ class JSONHelper( object ):
 
     # DEBUG
     DEBUG_FLAG = False
+    MY_LOGGER = "python_utilities.json.JSONHelper"
 
     # regular expression for quote escaping.
     REGEX_MATCH_UNESCAPED_QUOTES = regex.compile( r'(?<!\\)"' )
@@ -117,6 +124,68 @@ class JSONHelper( object ):
     #============================================================================
     # !class methods
     #============================================================================
+
+
+    @classmethod
+    def create_standard_json_hash( cls, json_IN, hash_function_IN = hashlib.sha256 ):
+
+        '''
+        Accepts JSON object. Converts to standard format string by calling
+            standardize_json_to_string(), then makes and a SHA256 hash of the
+            standardized JSON string and returns the hexdigest of the hash.
+        '''
+
+        # return reference
+        value_OUT = ""
+
+        # declare variables.
+        me = "create_standard_json_hash"
+        status_message = None
+        json_string = None
+        json_bytes = None
+        json_hash = None
+        json_hash_hexdigest = None
+
+        # something passed in?
+        if ( json_IN is not None ):
+
+            # convert
+            json_string = cls.standardize_json_to_string( json_IN )
+
+            # encode string (convert to bytes)
+            json_bytes = json_string.encode()
+
+            # create hash
+            json_hash = hash_function_IN( json_bytes )
+
+            # get hex digest of hash
+            json_hash_hexdigest = json_hash.hexdigest()
+
+            # return it.
+            value_OUT = json_hash_hexdigest
+
+        else:
+
+            # error - nothing passed in, None returned.
+            value_OUT = None
+            status_message = "ERROR - In {method}(): nothing passed in ( \"{json_object}\" ), returning None.".format(
+                method = me,
+                json_object = json_IN
+            )
+            LoggingHelper.log_message(
+                status_message,
+                method_IN = me,
+                logger_name_IN = cls.MY_LOGGER,
+                do_print_IN = True,
+                log_level_code_IN = LoggingHelper.LOG_LEVEL_CODE_ERROR
+            )
+            raise PythonUtilityJSONError( status_message )
+
+        #-- END check to see if something passed in. --#
+
+        return value_OUT
+
+    #-- END method create_standard_json_hash() --#
 
 
     @classmethod
