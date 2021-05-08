@@ -275,7 +275,7 @@ class LoadableDjangoModel( models.Model ):
         status_OUT = StatusContainer()
         status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
 
-        # do we have json?
+        # do we have record?
         if ( record_IN is not None ):
 
             # for base method, nothing to do, so SUCCESS!
@@ -331,8 +331,8 @@ class LoadableDjangoModel( models.Model ):
         status_OUT = StatusContainer()
         status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
 
-        # do we have json?
-        if ( json_IN is not None ):
+        # do we have record?
+        if ( record_IN is not None ):
 
             # for base method, nothing to do, so SUCCESS!
             status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
@@ -340,8 +340,8 @@ class LoadableDjangoModel( models.Model ):
 
         else:
 
-            # no JSON passed in - log error, return false.
-            status_message = "ERROR - No json dictionary passed in ( {} ).".format( json_IN )
+            # no record passed in - log error, return false.
+            status_message = "ERROR - No json dictionary passed in ( {} ).".format( record_IN )
             self.output_log_message( status_message, method_IN = me, log_level_code_IN = logging.ERROR )
 
             # status
@@ -349,7 +349,7 @@ class LoadableDjangoModel( models.Model ):
             status_OUT.add_message( status_message )
             status_OUT.set_detail_value( self.PROP_WAS_INSTANCE_UPDATED, False )
 
-        #-- END check to see if json is not None --#
+        #-- END check to see if record is not None --#
 
         return status_OUT
 
