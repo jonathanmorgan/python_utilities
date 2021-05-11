@@ -20,7 +20,15 @@ Django models that are intended to have data loaded into them by the ETL
     - make sure that all the above stuff is in the class, or a parent abstract class within your object hierarchy.
 '''
 
+# python built-ins
+import logging
+
+# django imports
 from django.db import models
+
+# python_utilities
+from python_utilities.logging.logging_helper import LoggingHelper
+from python_utilities.status.status_container import StatusContainer
 
 # ETL imports
 from python_utilities.etl.etl_entity import ETLEntity
@@ -52,6 +60,7 @@ class LoadableDjangoModel( models.Model ):
     #==========================================================================#
 
     etl_spec = None
+    MY_LOGGER_NAME = "python_utilities.etl.LoadableDjangoModel"
 
     #==========================================================================#
     # ! ==> class methods
@@ -86,6 +95,26 @@ class LoadableDjangoModel( models.Model ):
 
 
     @classmethod
+    def get_my_etl_loader_instance( cls ):
+
+        # return reference
+        instance_OUT = None
+
+        # declare variables
+        me = "get_my_etl_loader_instance"
+
+        # Examples:
+        #instance_OUT = ETLFromDictionary()
+        #instance_OUT = ETLFromExcelWithHeaders()
+
+        raise ETLError( "In abstract-ish method LoadableDjangoModel.{}(): OVERRIDE ME".format( me ) )
+
+        return instance_OUT
+
+    #-- END method get_my_etl_loader_instance() --#
+
+
+    @classmethod
     def initialize_etl( cls, *args, **kwargs ):
 
         # return reference
@@ -116,15 +145,102 @@ class LoadableDjangoModel( models.Model ):
 
 
     @classmethod
-    def run_etl( cls, *args, **kwargs ):
+    def run_etl( cls, record_list_IN, start_index_IN = None, row_count_IN = None, debug_flag_IN = False, *args, **kwargs ):
 
         # return reference
         status_OUT = None
 
         # declare variables
         me = "run_etl"
+        status_message = None
+        my_debug_flag = None
+        my_etl_spec = None
+        json_string = None
 
-        raise ETLError( "In abstract-ish method LoadableDjangoModel.{}(): OVERRIDE ME".format( me ) )
+        # declare variables - processing
+        etl_instance = None
+        my_start_row = None
+        my_row_count = None
+        process_status = None
+        process_success = None
+        process_message_list = None
+
+        # init
+        my_debug_flag = debug_flag_IN
+        status_OUT = StatusContainer()
+        status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
+
+        # do we have a record list?
+        if ( ( record_list_IN is not None )
+            and ( len( record_list_IN ) > 0 ) ):
+
+            # first, make sure ETL spec is initialized.
+            cls.initialize_etl()
+
+            # retrieve spec
+            my_etl_spec = cls.get_etl_spec()
+
+            if ( my_debug_flag == True ):
+                spec_json = test_spec.to_json()
+                json_string = json.dumps( spec_json, indent = 4, sort_keys = True )
+                status_message = "In {my_class}.{my_method}(): ETL spec JSON: {json_string}".format(
+                    my_class = cls,
+                    my_method = me,
+                    json_string = json_string
+                )
+                LoggingHelper.output_debug( status_message, do_print_IN = True )
+            #-- END DEBUG --#
+
+            # create ETL instance
+            etl_instance = cls.get_my_etl_loader_instance()
+            etl_instance.debug_flag = my_debug_flag
+            etl_instance.set_etl_entity( my_etl_spec )
+
+            # store list of records.
+            etl_instance.set_record_list( record_list_IN )
+
+            # loop over rows in openpyxl worksheet, processing each
+            status_message = "DOING WORK!"
+            LoggingHelper.output_debug(
+                status_message,
+                indent_with_IN = "==> ",
+                do_print_IN = True
+            )
+            my_start_row = start_index_IN
+            my_row_count = row_count_IN
+            process_status = etl_instance.process_records( start_index_IN = my_start_row, record_count_IN = my_row_count )
+
+            # store process status info in return status
+            status_OUT.add_status_container( process_status )
+            process_message_list = process_status.get_message_list()
+            status_OUT.add_messages_from_list( process_message_list )
+
+            # error?
+            process_success = process_status.is_success()
+            if ( process_success == False ):
+
+                # error
+                status_OUT.set_status_code( StatusContainer.STATUS_CODE_ERROR )
+
+            #-- END check to see if update was a success --#
+
+        else:
+
+            # no instance passed in - log error, return error status.
+            status_message = "ERROR - No record list passed in. Can't do anything."
+            LoggingHelper.log_message(
+                status_message,
+                method_IN = me,
+                logger_name_IN = self.MY_LOGGER_NAME,
+                do_print_IN = True,
+                log_level_code_IN = logging.WARNING
+            )
+
+            # status
+            status_OUT.set_status_code( StatusContainer.STATUS_CODE_ERROR )
+            status_OUT.add_message( status_message )
+
+        #-- END check to see if we actually do work. --#
 
         return status_OUT
 

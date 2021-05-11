@@ -289,8 +289,6 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
         print_every_x_records = None
         current_record = None
         current_entry_instance = None
-        current_key = None
-        current_value = None
 
         # declare variables - timing
         my_start_dt = None
