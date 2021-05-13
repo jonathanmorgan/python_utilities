@@ -42,6 +42,13 @@ class ETLAttribute( object ):
     LOGICAL_TYPE_STRING_DATETIME = "string_datetime"
     LOGICAL_TYPE_STRING_DATETIME_ISO_8601 = "string_datetime_ISO_8601"
 
+    # related data types
+    RELATED_TYPE_DICT = "dict"
+    RELATED_TYPE_LIST = "list"
+    RELATED_TYPE_VALUE_TO_TYPE_MAP = dict()
+    RELATED_TYPE_VALUE_TO_TYPE_MAP[ RELATED_TYPE_DICT ] = dict
+    RELATED_TYPE_VALUE_TO_TYPE_MAP[ RELATED_TYPE_LIST ] = list
+
     # Reusable format strings
     FORMAT_DATETIME_ISO_8601 = "ISO-8601"
 
@@ -93,6 +100,8 @@ class ETLAttribute( object ):
         self.load_attr_data_type = None
         self.load_attr_related_model_class = None
         self.load_attr_related_model_data_type = None
+        self.load_attr_related_model_fk_attr_name = None
+        self.load_attr_related_model_method_name = None
 
         # debug
         self.debug_flag = False
@@ -220,6 +229,32 @@ class ETLAttribute( object ):
         return value_OUT
 
     #-- END method get_load_attr_related_model_data_type --#
+
+
+    def get_load_attr_related_model_fk_attr_name( self ):
+
+        # return reference
+        value_OUT = None
+
+        # get value
+        value_OUT = self.load_attr_related_model_fk_attr_name
+
+        return value_OUT
+
+    #-- END method get_load_attr_related_model_fk_attr_name --#
+
+
+    def get_load_attr_related_model_method_name( self ):
+
+        # return reference
+        value_OUT = None
+
+        # get value
+        value_OUT = self.load_attr_related_model_method_name
+
+        return value_OUT
+
+    #-- END method get_load_attr_related_model_method_name --#
 
 
     def get_transform_conversion_string( self ):
@@ -417,6 +452,8 @@ class ETLAttribute( object ):
         # return reference
         value_OUT = None
 
+        # check validity? value_IN in self.RELATED_TYPE_VALUE_TO_TYPE_MAP?
+
         # store value.
         self.load_attr_related_model_data_type = value_IN
 
@@ -426,6 +463,46 @@ class ETLAttribute( object ):
         return value_OUT
 
     #-- END method set_load_attr_related_model_data_type() --#
+
+
+    def set_load_attr_related_model_fk_attr_name( self, value_IN ):
+
+        '''
+        Accepts value, stores it and returns it.
+        '''
+
+        # return reference
+        value_OUT = None
+
+        # store value.
+        self.load_attr_related_model_fk_attr_name = value_IN
+
+        # return it.
+        value_OUT = self.get_load_attr_related_model_fk_attr_name()
+
+        return value_OUT
+
+    #-- END method set_load_attr_related_model_fk_attr_name() --#
+
+
+    def set_load_attr_related_model_method_name( self, value_IN ):
+
+        '''
+        Accepts value, stores it and returns it.
+        '''
+
+        # return reference
+        value_OUT = None
+
+        # store value.
+        self.load_attr_related_model_method_name = value_IN
+
+        # return it.
+        value_OUT = self.get_load_attr_related_model_method_name()
+
+        return value_OUT
+
+    #-- END method set_load_attr_related_model_method_name() --#
 
 
     def set_transform_conversion_string( self, value_IN ):
