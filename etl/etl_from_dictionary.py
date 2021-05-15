@@ -144,6 +144,64 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
     #-- END method get_value_for_key() --#
 
 
+    def init_status( self, status_IN ):
+
+        '''
+        Standardized StatusContainer initialization, so it is ready for:
+        - process_attr_error()
+        - process_result_status()
+        '''
+
+        # return reference
+        status_OUT = None
+
+        # start with status passed in
+        status_OUT = status_IN
+
+        # init
+        status_OUT.set_detail_value( self.PROP_WAS_INSTANCE_UPDATED, False )
+        status_OUT.set_detail_value( self.PROP_UPDATED_ATTR_LIST, list() )
+        status_OUT.set_detail_value( self.PROP_NO_CHANGE_ATTR_LIST, list() )
+        status_OUT.set_detail_value( self.PROP_ERROR_ATTR_LIST, list() )
+        status_OUT.set_detail_value( self.PROP_SUCCESS_STATUS_LIST, list() )
+        status_OUT.set_detail_value( self.PROP_ERROR_STATUS_LIST, list() )
+
+        return status_OUT
+
+    #-- END init_status() method --#
+
+
+    def process_attr_error( self, status_IN, attr_spec_IN, message_IN ):
+
+        # return reference
+        status_OUT = None
+
+        # declare variables
+        error_attr_list = None
+        error_status_list = None
+        error_status = None
+
+        # start with status passed in
+        status_OUT = status_IN
+
+        # get lists
+        error_attr_list = status_OUT.get_detail_value( self.PROP_ERROR_ATTR_LIST, None )
+        error_status_list = status_OUT.get_detail_value( self.PROP_ERROR_STATUS_LIST, None )
+
+        # Add spec to error_attr_list.
+        error_attr_list.append( attr_spec_IN )
+
+        # make and store status
+        error_status = StatusContainer()
+        error_status.set_status_code( StatusContainer.STATUS_CODE_ERROR )
+        error_status.add_message( message_IN )
+        error_status_list.append( error_status )
+
+        return status_OUT
+
+    #-- END method process_error()
+
+
     def process_related( self, instance_IN, record_IN, related_key_to_spec_map_IN ):
 
         # return reference
@@ -168,6 +226,7 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
 
         # declare variables - processing value
         record_list = None
+        current_record = None
         store_status = None
         store_update_details = None
         store_success = None
@@ -178,16 +237,15 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
         related_data_type = None # object, list, ...?
         related_type = None
         related_fk_attr_name = None
-        #related_processing_method_name = None
+        related_processing_method_name = None
+        related_method_pointer = None
         related_status = None
+        related_success = None
 
         # declare variables - status checking
         was_attr_updated = None
         was_instance_updated = None
-        updated_attr_list = None
-        no_change_attr_list = None
-        error_attr_list = None
-        success_status_list = None
+        is_ok_to_process = None
         error_status_list = None
 
         #----------------------------------------------------------------------#
@@ -203,13 +261,8 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
         record_list = None
         related_attr_to_spec_map = related_key_to_spec_map_IN
 
-        # init status checking variables
-        was_instance_updated = False
-        updated_attr_list = []
-        no_change_attr_list = []
-        error_attr_list = []
-        success_status_list = []
-        error_status_list = []
+        # store supporting information in status instance.
+        status_OUT = self.init_status( status_OUT )
 
         # got an instance?
         if ( current_entry_instance is not None ):
@@ -227,6 +280,8 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                     for current_key, current_attr_spec in related_attr_to_spec_map.items():
 
                         # get information on related object.
+                        related_status = None
+                        is_ok_to_process = True
                         related_class = my_etl_attribute.get_load_attr_related_model_class()
                         related_data_type = my_etl_attribute.get_load_attr_related_model_data_type()
                         related_fk_attr_name = my_etl_attribute.get_load_attr_related_model_fk_attr_name()
@@ -267,13 +322,25 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
 
                                     else:
 
-                                        # TODO - error - unknown type.
+                                        # error - unknown type.
                                         record_list = None
+                                        is_ok_to_process = False
+                                        status_message = "Unexpected ERROR - Unknown related record data type \"{related_record_type}\", skipping related item {attr_value}, attr spec: {attr_spec}.".format(
+                                            related_record_type = related_data_type,
+                                            attr_value = current_attr_value,
+                                            attr_spec = current_attr_spec.to_json()
+                                        )
+
+                                        # process error
+                                        status_OUT = self.process_attr_error( status_OUT, current_attr_spec, status_message )
 
                                     #-- END check to see type --#
 
                                     # do we have a record list?
                                     if ( record_list is not None ):
+
+                                        # OK to process?
+                                        is_ok_to_process = True
 
                                         # we do. Do we have an FK name?
                                         if ( ( related_fk_attr_name is not None ) and ( related_fk_attr_name != "" ) ):
@@ -281,60 +348,152 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                                             # we have FK name - add a property
                                             #     to each record named this set
                                             #     to the current instance.
-                                            # TODO - set FK value
-                                            pass
+                                            for current_record in record_list:
+
+                                                # sanity check - is fk field there now?
+                                                if ( ( related_fk_attr_name in current_record ) == False ):
+
+                                                    # Add foreign key field.
+                                                    current_record[ related_fk_attr_name ] = current_entry_instance
+
+                                                else:
+
+                                                    # error - FK field already present?
+                                                    is_ok_to_process = False
+                                                    status_message = "foreign key field \"{field_name}\" already in related record data. Skipping related item {related_data}, attr spec: {attr_spec}.".format(
+                                                        field_name = related_fk_attr_name,
+                                                        related_data = current_record,
+                                                        attr_spec = current_attr_spec.to_json()
+                                                    )
+
+                                                    # process error
+                                                    status_OUT = self.process_attr_error( status_OUT, current_attr_spec, status_message )
+
+                                                #-- END check to see if fk field already in related data record. --#
+
+                                            #-- END loop over related data records. --#
 
                                         else:
 
                                             # error - no foreign key attribute
                                             #     name. Where do I store FK?
-                                            # TODO - error.
-                                            pass
+                                            is_ok_to_process = False
+                                            status_message = "no foreign key field specified in attr spec: {attr_spec}.".format(
+                                                attr_spec = current_attr_spec.to_json()
+                                            )
+
+                                            # process error
+                                            status_OUT = self.process_attr_error( status_OUT, current_attr_spec, status_message )
 
                                         #-- END check to see if attr name to store FK --#
 
-                                        # TODO - OK to process?
-                                        # TODO - is there a processing method name?
-                                        # TODO - If so, call it as class method - https://stackoverflow.com/questions/3521715/call-a-python-method-by-name
-                                        # TODO - If not, call classmethod run_etl().
-                                        # TODO - regardless of call, check and process status of result.
+                                        # OK to process?
+                                        if ( is_ok_to_process == True ):
+
+                                            # what method do we call to process?
+
+                                            # is there a processing method name?
+                                            if ( ( related_processing_method_name is not None )
+                                                and ( related_processing_method_name != "" ) ):
+
+                                                # check if class has method
+                                                # - https://stackoverflow.com/questions/25295327/how-to-check-if-a-python-class-has-particular-method-or-not
+                                                if ( hasattr( related_class, related_processing_method_name ) == True ):
+
+                                                    # If so, call it as class method - https://stackoverflow.com/questions/3521715/call-a-python-method-by-name
+                                                    related_method_pointer = getattr( related_class, related_processing_method_name )
+                                                    related_status = related_method_pointer( related_class, record_list )
+
+                                                else:
+
+                                                    # error - requested method does not exist.
+                                                    status_message = "related processing method \"{method_name}\" does not exist in related class \"{related_class}\" ( attr spec: {attr_spec} ).".format(
+                                                        method_name = related_processing_method_name,
+                                                        related_class = related_class,
+                                                        attr_spec = current_attr_spec.to_json()
+                                                    )
+
+                                                    # make status
+                                                    related_status = StatusContainer()
+                                                    related_status.set_status_code( StatusContainer.STATUS_CODE_ERROR )
+                                                    related_status.add_message( status_message )
+
+                                                #-- END check to make sure method exists.
+
+                                            else:
+
+                                                # If not, call classmethod run_etl().
+                                                related_status = related_class.run_etl( record_list )
+
+                                            #-- END check which method we call --#
+
+                                            # regardless of call, check and process status of result.
+                                            status_OUT = self.process_result_status(
+                                                status_OUT,
+                                                related_status,
+                                                self.PROP_WAS_INSTANCE_UPDATED,
+                                                details_IN = current_attr_spec
+                                            )
+
+                                        #-- END check to see if OK to process. --#
 
                                     else:
 
                                         # error - no record list. Something went
                                         #     wrong...
-                                        # TODO - error
-                                        pass
+                                        status_message = "no foreign key field specified in attr spec: {attr_spec}.".format(
+                                            attr_spec = current_attr_spec.to_json()
+                                        )
+
+                                        # process error
+                                        status_OUT = self.process_attr_error( status_OUT, current_attr_spec, status_message )
 
                                     #-- END check if record list. --#
 
                                 else:
 
                                     # type of value doesn't match specification.
-                                    #     TODO - Error.
-                                    pass
+                                    status_message = "Type of value ( value = {current_value}: {value_type} ) does not match type in spec ( {data_type} - spec: {attr_spec} ). Nothing to process.".format(
+                                        current_value = current_attr_value,
+                                        value_type = attr_value_type,
+                                        data_type = related_data_type,
+                                        attr_spec = current_attr_spec.to_json()
+                                    )
+
+                                    # process error
+                                    status_OUT = self.process_attr_error( status_OUT, current_attr_spec, status_message )
 
                                 #-- END check to see if value is the right type. --#
 
                             else:
 
                                 # error - no value...? Nothing to process.
-                                #     TODO - Error.
-                                pass
+                                status_message = "No value passed ( value = {current_value} ) for related type attribute ( {attr_spec} ). Nothing to process.".format(
+                                    current_value = current_attr_value,
+                                    attr_spec = current_attr_spec.to_json()
+                                )
+
+                                # process error
+                                status_OUT = self.process_attr_error( status_OUT, current_attr_spec, status_message )
 
                             #-- END check if we have a value --#
 
                         else:
 
                             # error - no related class...? Nothing to process.
-                            #     TODO - Error.
-                            pass
+                            status_message = "No related class in related type attribute ( {attr_spec} ). Nothing to process.".format(
+                                attr_spec = current_attr_spec.to_json()
+                            )
+
+                            # process error
+                            status_OUT = self.process_attr_error( status_OUT, current_attr_spec, status_message )
 
                         #-- END check if we have a related class --#
 
                     #-- END loop over attributes that map to related objects --#
 
                     # status - success?
+                    error_status_list = status_OUT.get_detail_value( self.PROP_ERROR_STATUS_LIST, None )
                     if ( len( error_status_list ) == 0 ):
 
                         # success!
@@ -343,6 +502,7 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                         status_OUT.add_message( status_message )
 
                         # All processed. Save?
+                        was_instance_updated = status_OUT.get_detail_value( self.PROP_WAS_INSTANCE_UPDATED, None )
                         if ( ( was_instance_updated == True )
                             and ( save_on_success_IN == True ) ):
 
@@ -361,14 +521,6 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                         status_OUT.add_message( status_message )
 
                     #-- END check to see if success. --#
-
-                    # store supporting information in status instance.
-                    status_OUT.set_detail_value( self.PROP_WAS_INSTANCE_UPDATED, was_instance_updated )
-                    status_OUT.set_detail_value( self.PROP_UPDATED_ATTR_LIST, updated_attr_list )
-                    status_OUT.set_detail_value( self.PROP_NO_CHANGE_ATTR_LIST, no_change_attr_list )
-                    status_OUT.set_detail_value( self.PROP_ERROR_ATTR_LIST, error_attr_list )
-                    status_OUT.set_detail_value( self.PROP_SUCCESS_STATUS_LIST, success_status_list )
-                    status_OUT.set_detail_value( self.PROP_ERROR_STATUS_LIST, error_status_list )
 
                 else:
 
@@ -418,6 +570,86 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
     #-- END method process_related() --#
 
 
+    def process_result_status( self, status_IN, result_status_IN, was_updated_prop_name_IN, details_IN = None ):
+
+        # return reference
+        status_OUT = None
+
+        # declare variables - information from status
+        success_status_list = None
+        updated_attr_list = None
+        no_change_attr_list = None
+        error_attr_list = None
+        error_status_list = None
+
+        # declare variables - processing
+        result_success = None
+        was_updated = None
+
+        # init - start with status passed in
+        status_OUT = status_IN
+
+        # get info from status
+        success_status_list = status_OUT.get_detail_value( self.PROP_SUCCESS_STATUS_LIST, None )
+        updated_attr_list = status_OUT.get_detail_value( self.PROP_UPDATED_ATTR_LIST, None )
+        no_change_attr_list = status_OUT.get_detail_value( self.PROP_NO_CHANGE_ATTR_LIST, None )
+        error_attr_list = status_OUT.get_detail_value( self.PROP_ERROR_ATTR_LIST, None )
+        error_status_list = status_OUT.get_detail_value( self.PROP_ERROR_STATUS_LIST, None )
+
+        # success?
+        result_success = result_status_IN.is_success()
+        if ( result_success == True ):
+
+            # success.
+            success_status_list.append( result_status_IN )
+
+            # was updated?
+            was_updated = result_status_IN.get_detail_value( was_updated_prop_name_IN, None )
+            if ( was_updated == True ):
+
+                # updated.
+                status_OUT.set_detail_value( self.PROP_WAS_INSTANCE_UPDATED, True )
+
+                # details?
+                if ( details_IN is not None ):
+
+                    # yes - store in appropriate list.
+                    updated_attr_list.append( details_IN )
+
+                #-- END check to see if details --#
+
+            else:
+
+                # details?
+                if ( details_IN is not None ):
+
+                    # yes - store details of thing not updated.
+                    no_change_attr_list.append( details_IN )
+
+                #-- END check to see if details --#
+
+            #-- END check to see if updated. --#
+
+        else:
+
+            # error.
+            error_status_list.append( result_status_IN )
+
+            # details?
+            if ( details_IN is not None ):
+
+                # yes - store error details
+                error_attr_list.append( details_IN )
+
+            #-- END check to see if details --#
+
+        #-- END check to see if update was a success --#
+
+        return status_OUT
+
+    #-- END method process_result_status() --#
+
+
     def update_instance_from_record( self, instance_IN, record_IN, save_on_success_IN = True ):
 
         # return reference
@@ -457,10 +689,6 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
         # declare variables - status checking
         was_attr_updated = None
         was_instance_updated = None
-        updated_attr_list = None
-        no_change_attr_list = None
-        error_attr_list = None
-        success_status_list = None
         error_status_list = None
 
         #----------------------------------------------------------------------#
@@ -475,13 +703,8 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
         current_record = record_IN
         related_attr_to_spec_map = dict()
 
-        # init status checking variables
-        was_instance_updated = False
-        updated_attr_list = []
-        no_change_attr_list = []
-        error_attr_list = []
-        success_status_list = []
-        error_status_list = []
+        # store supporting information in status instance.
+        status_OUT = self.init_status( status_OUT )
 
         # got an instance?
         if ( current_entry_instance is not None ):
@@ -563,36 +786,14 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                     # store the value.
                     store_status = self.store_attribute( current_entry_instance, current_attr_name, current_attr_value )
 
-                    # success?
-                    store_success = store_status.is_success()
+                    # process status
                     store_update_details = store_status.get_detail_value( self.PROP_ATTR_UPDATE_DETAIL )
-                    if ( store_success == True ):
-
-                        # success.
-                        success_status_list.append( store_status )
-
-                        # was attribute updated?
-                        was_attr_updated = store_status.get_detail_value( self.PROP_WAS_ATTR_UPDATED, None )
-                        if ( was_attr_updated == True ):
-
-                            # updated.
-                            was_instance_updated = True
-                            updated_attr_list.append( store_update_details )
-
-                        else:
-
-                            # not updated.
-                            no_change_attr_list.append( store_update_details )
-
-                        #-- END check to see if attribute updated. --#
-
-                    else:
-
-                        # error.
-                        error_attr_list.append( store_update_details )
-                        error_status_list.append( store_status )
-
-                    #-- END check to see if update was a success --#
+                    status_OUT = self.process_result_status(
+                        status_OUT,
+                        store_status,
+                        self.PROP_WAS_ATTR_UPDATED,
+                        details_IN = store_update_details
+                    )
 
                 else:
 
@@ -617,33 +818,19 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
             #     fancier processing than specification can hold.
             pre_save_custom_update_status = current_entry_instance.update_from_record_pre_save( current_record )
 
-            # success?
-            pre_save_custom_update_success = pre_save_custom_update_status.is_success()
-            if ( pre_save_custom_update_success == True ):
-
-                # success.
-                success_status_list.append( pre_save_custom_update_status )
-
-                # was instance updated?
-                was_updated_pre_save = pre_save_custom_update_status.get_detail_value( self.PROP_WAS_INSTANCE_UPDATED, None )
-                if ( was_updated_pre_save == True ):
-
-                    # updated.
-                    was_instance_updated = True
-
-                #-- END check to see if attribute updated. --#
-
-            else:
-
-                # error.
-                error_status_list.append( pre_save_custom_update_status )
-
-            #-- END check to see if pre-save update was a success --#
+            # process status
+            status_OUT = self.process_result_status(
+                status_OUT,
+                pre_save_custom_update_status,
+                self.PROP_WAS_INSTANCE_UPDATED,
+                details_IN = None
+            )
 
             #------------------------------------------------------------------#
             # ==> success thus far?
 
             # status - success?
+            error_status_list = status_OUT.get_detail_value( self.PROP_ERROR_STATUS_LIST, None )
             if ( len( error_status_list ) == 0 ):
 
                 # success!
@@ -655,6 +842,7 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                 # ==> save()?
 
                 # All processed. Save?
+                was_instance_updated = status_OUT.get_detail_value( self.PROP_WAS_INSTANCE_UPDATED, None )
                 if ( ( was_instance_updated == True )
                     and ( save_on_success_IN == True ) ):
 
@@ -671,28 +859,13 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                 #     fancier processing for related records.
                 post_save_custom_update_status = current_entry_instance.update_from_record_post_save( current_record )
 
-                # success?
-                post_save_custom_update_success = post_save_custom_update_status.is_success()
-                if ( post_save_custom_update_success == True ):
-
-                    # success.
-                    success_status_list.append( post_save_custom_update_status )
-
-                    # was instance updated?
-                    was_updated_post_save = post_save_custom_update_status.get_detail_value( self.PROP_WAS_INSTANCE_UPDATED, None )
-                    if ( was_updated_post_save == True ):
-
-                        # updated.
-                        was_instance_updated = True
-
-                    #-- END check to see if attribute updated. --#
-
-                else:
-
-                    # error.
-                    error_status_list.append( related_update_status )
-
-                #-- END check to see if update was a success --#
+                # process status
+                status_OUT = self.process_result_status(
+                    status_OUT,
+                    post_save_custom_update_status,
+                    self.PROP_WAS_INSTANCE_UPDATED,
+                    details_IN = None
+                )
 
                 #--------------------------------------------------------------#
                 # ==> related instances.
@@ -707,28 +880,13 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                         related_attr_to_spec_map
                     )
 
-                    # success?
-                    related_success = related_status.is_success()
-                    if ( related_success == True ):
-
-                        # success.
-                        success_status_list.append( related_status )
-
-                        # was instance updated?
-                        were_related_updated = related_status.get_detail_value( self.PROP_WAS_INSTANCE_UPDATED, None )
-                        if ( were_related_updated == True ):
-
-                            # updated.
-                            was_instance_updated = True
-
-                        #-- END check to see if attribute updated. --#
-
-                    else:
-
-                        # error.
-                        error_status_list.append( related_status )
-
-                    #-- END check to see if related processing was a success --#
+                    # process status
+                    status_OUT = self.process_result_status(
+                        status_OUT,
+                        related_status,
+                        self.PROP_WAS_INSTANCE_UPDATED,
+                        details_IN = None
+                    )
 
                 #-- END check if related. --#
 
@@ -742,14 +900,6 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                 status_OUT.add_message( status_message )
 
             #-- END check to see if success. --#
-
-            # store supporting information in status instance.
-            status_OUT.set_detail_value( self.PROP_WAS_INSTANCE_UPDATED, was_instance_updated )
-            status_OUT.set_detail_value( self.PROP_UPDATED_ATTR_LIST, updated_attr_list )
-            status_OUT.set_detail_value( self.PROP_NO_CHANGE_ATTR_LIST, no_change_attr_list )
-            status_OUT.set_detail_value( self.PROP_ERROR_ATTR_LIST, error_attr_list )
-            status_OUT.set_detail_value( self.PROP_SUCCESS_STATUS_LIST, success_status_list )
-            status_OUT.set_detail_value( self.PROP_ERROR_STATUS_LIST, error_status_list )
 
         else:
 

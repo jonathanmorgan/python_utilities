@@ -569,6 +569,8 @@ class ETLAttribute( object ):
         json_root[ "load_attr_data_type" ] = self.get_load_attr_data_type()
         json_root[ "load_attr_related_model_class" ] = self.get_load_attr_related_model_class()
         json_root[ "load_attr_related_model_data_type" ] = self.get_load_attr_related_model_data_type()
+        json_root[ "load_attr_related_model_fk_attr_name" ] = self.get_load_attr_related_model_fk_attr_name()
+        json_root[ "load_attr_related_model_method_name" ] = self.get_load_attr_related_model_method_name()
 
         json_OUT = json_root
 
