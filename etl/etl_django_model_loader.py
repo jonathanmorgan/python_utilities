@@ -336,6 +336,10 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
         print_every_x_records = self.update_status_every
         for current_record in my_iterator:
 
+            # increment counter
+            record_counter += 1
+            #print( "record_counter: {counter}".format( counter = record_counter ) )
+
             # ==> reset per-row variables
             self.reset_record_information()
             unknown_attr_name_to_value_map = self.get_unknown_attrs_name_to_value_map()
@@ -385,15 +389,14 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
             else:
 
                 # missing required fields, move on.
-                status_message = "row {} is missing required fields, moving on.".format( current_row_index )
+                status_message = "record {record_number} is missing required fields, moving on.".format(
+                    record_number = record_counter
+                )
                 self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
+                #self.output_debug( status_message, method_IN = me, do_print_IN = True )
                 self.add_status_message( status_message )
 
             #-- END check if required columns are present. --#
-
-            # increment counter
-            record_counter += 1
-            #print( "record_counter: {counter}".format( counter = record_counter ) )
 
             # output a message?
             if ( ( record_counter % print_every_x_records ) == 0 ):

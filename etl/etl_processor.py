@@ -513,7 +513,7 @@ class ETLProcessor( object ):
             if ( ( current_required_value is None ) or ( current_required_value == "" ) ):
 
                 # not set.
-                missing_field_list.append( "key: {}; index: {}".format( current_required_key, current_required_index ) )
+                missing_field_list.append( current_required_key )
                 has_required_OUT = False
 
                 if ( my_debug_flag == True ):
