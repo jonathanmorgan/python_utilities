@@ -14,10 +14,14 @@
 import datetime
 import dateutil
 import itertools
+import json
 import logging
 import sys
 import time
 import traceback
+
+# django imports
+from django.db import DataError
 
 # python_utilities
 from python_utilities.status.status_container import StatusContainer
@@ -847,7 +851,30 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                     and ( save_on_success_IN == True ) ):
 
                     # changed, and we are saving...
-                    current_entry_instance.save()
+                    try:
+
+                        current_entry_instance.save()
+
+                    except DataError as de:
+
+                        # log the JSON for the current record...
+                        status_message = "DataError caught save()-ing instance (probably type mismatch). Record:\n{record_json_string}".format(
+                            record_json_string = json.dumps( current_record, indent = 4, sort_keys = True )
+                        )
+                        self.output_log_message(
+                            status_message,
+                            method_IN = me,
+                            log_level_code_IN = logging.ERROR,
+                            do_print_IN = True
+                        )
+
+                        # ...then raise the exception again.
+                        raise de
+
+                    #-- END try...except --#
+
+                    # catching specific excpetions here as they arise. List:
+                    # https://docs.djangoproject.com/en/3.2/ref/exceptions/#database-exceptions
 
                 #-- END check to see if we save(). --#
 
