@@ -70,6 +70,104 @@ class ETLAttribute( object ):
     #===========================================================================
 
 
+    @classmethod
+    def create_transform_attribute(
+        cls,
+        extract_prop_IN = None,
+        load_prop_IN = None,
+        transform_to_attr_name_IN = None,
+        extract_data_type_IN = DATA_TYPE_STRING,
+        extract_logical_type_IN = None,
+        is_required_IN = None,
+        load_attr_data_type_IN = None,
+        conversion_string_IN = None
+    ):
+
+        # return reference
+        attr_OUT = None
+
+        # declare variables
+        temp_etl_attr = None
+
+        # init
+        temp_etl_attr = ETLAttribute()
+
+        #----------------------------------------------------------------------#
+        # extract
+        #----------------------------------------------------------------------#
+
+        temp_etl_attr.set_extract_name( extract_prop_IN )
+        temp_etl_attr.set_extract_data_type( extract_data_type_IN )
+
+        if ( extract_logical_type_IN is not None ):
+            temp_etl_attr.set_extract_logical_type( extract_logical_type_IN )
+        #-- END check to see if logical type --#
+
+        if ( is_required_IN is not None ):
+            temp_etl_attr.set_extract_is_required( is_required_IN )
+        #-- END check if is required --#
+
+        #----------------------------------------------------------------------#
+        # transform
+        #----------------------------------------------------------------------#
+
+        if ( conversion_string_IN is not None ):
+            temp_etl_attr.set_transform_conversion_string( conversion_string_IN )
+        #-- END check if conversion string passed in --#
+
+        if ( transform_to_attr_name_IN is not None ):
+            temp_etl_attr.set_transform_to_attr_name( transform_to_attr_name_IN )
+        #-- END check if transform_to_attr_name --#
+
+        #----------------------------------------------------------------------#
+        # load
+        #----------------------------------------------------------------------#
+
+        if ( load_attr_data_type_IN is not None ):
+            temp_etl_attr.set_load_attr_data_type( load_attr_data_type_IN )
+        #-- END check if load attr data type --#
+
+        temp_etl_attr.set_load_attr_name( load_prop_IN )
+
+        attr_OUT = temp_etl_attr
+
+        return attr_OUT
+
+    #-- END classmethod create_transform_attribute() --#
+
+
+    @classmethod
+    def create_transform_attribute_datetime(
+        cls,
+        extract_prop_IN = None,
+        load_prop_IN = None,
+        transform_to_attr_name_IN = None,
+        extract_data_type_IN = DATA_TYPE_STRING,
+        extract_logical_type_IN = LOGICAL_TYPE_STRING_DATETIME_ISO_8601,
+        is_required_IN = None,
+        load_attr_data_type_IN = DATA_TYPE_DATETIME_DATETIME,
+        conversion_string_IN = FORMAT_DATETIME_ISO_8601
+    ):
+
+        # return reference
+        attr_OUT = None
+
+        attr_OUT = cls.create_transform_attribute(
+            extract_prop_IN = extract_prop_IN,
+            load_prop_IN = load_prop_IN,
+            transform_to_attr_name_IN = transform_to_attr_name_IN,
+            extract_data_type_IN = extract_data_type_IN,
+            extract_logical_type_IN = extract_logical_type_IN,
+            is_required_IN = is_required_IN,
+            load_attr_data_type_IN = load_attr_data_type_IN,
+            conversion_string_IN = conversion_string_IN
+        )
+
+        return attr_OUT
+
+    #-- END classmethod createtransform_attribute_datetime() --#
+
+
     #===========================================================================
     # ! ==> __init__() method - instance variables
     #===========================================================================
