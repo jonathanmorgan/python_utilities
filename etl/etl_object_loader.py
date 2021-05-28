@@ -231,18 +231,45 @@ class ETLObjectLoader( ETLProcessor ):
                             desired_type_IN = ETLAttribute.DATA_TYPE_STRING
                         )
 
-                        # is there a transform pattern?
-                        if ( ( transform_pattern is not None ) and ( transform_pattern != "" ) ):
+                        # is there a value?
+                        if ( ( work_value is not None ) and ( work_value != "" ) ):
 
-                            # parse using pattern.
-                            value_OUT = datetime.datetime.strptime( work_value, transform_pattern )
+                            # is there a transform pattern?
+                            if ( ( transform_pattern is not None ) and ( transform_pattern != "" ) ):
+
+                                # parse using pattern.
+                                value_OUT = datetime.datetime.strptime( work_value, transform_pattern )
+
+                            else:
+
+                                try:
+
+                                    # no pattern, let dateutil try to figure it out.
+                                    value_OUT = dateutil.parser.parse( work_value )
+
+                                except dateutil.parser.ParserError as pe:
+
+                                    # bad date string. Log and print it...
+                                    status_message = "unable to parse date string value {date_value} ( exception: {parse_exception} ); transform_pattern: {pattern}; Returning None.".format(
+                                        date_value = work_value,
+                                        parse_exception = pe,
+                                        pattern = transform_pattern
+                                    )
+                                    self.output_debug( status_message, method_IN = me, do_print_IN = True )
+
+                                    # ...return value passed in.
+                                    value_OUT = value_IN
+
+                                #-- END try...except around date parsing --#
+
+                            #-- check if transform pattern. --#
 
                         else:
 
-                            # no pattern, let dateutil try to figure it out.
-                            value_OUT = dateutil.parser.parse( work_value )
+                            # no value passed in, just return it.
+                            value_OUT = value_IN
 
-                        #-- check if transform pattern. --#
+                        #-- END check to see if value is parse-able. --#
 
                         if ( my_debug_flag == True ):
                             status_message = "translated {} to datetime {}".format( value_IN, value_OUT )
