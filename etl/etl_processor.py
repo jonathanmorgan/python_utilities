@@ -20,6 +20,9 @@ import sys
 import time
 import traceback
 
+# other packages
+import pytz
+
 # python_utilities
 from python_utilities.logging.logging_helper import LoggingHelper
 
@@ -68,6 +71,9 @@ class ETLProcessor( object ):
     # logging
     logging_level = logging.ERROR
     update_status_every = 1000
+
+    # time zones (sigh) - default to UTC.
+    my_time_zone = pytz.UTC
 
 
     #===========================================================================

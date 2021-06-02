@@ -157,6 +157,11 @@ class ETLObjectLoader( ETLProcessor ):
         work_value = None
         spec_json = None
         json_string = None
+        transformed_value = None
+        time_zone = None
+
+        # declare variables - info from spec
+        attr_name = None
         in_data_type = None
         in_logical_type = None
         transform_pattern = None
@@ -175,19 +180,24 @@ class ETLObjectLoader( ETLProcessor ):
             # do we have a value?
             if ( value_IN is not None ):
 
-                if ( my_debug_flag == True ):
-                    spec_json = attribute_spec_IN.to_json()
-                    json_string = json.dumps( spec_json, indent = 4, sort_keys = True )
-                    status_message = "ETLAttribute JSON string:\n{json_string}".format( json_string = json_string )
-                    self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
-                #-- END DEBUG --#
-
                 # retrieve info from spec.
+                attr_name = attribute_spec_IN.get_load_attr_name()
                 in_data_type = attribute_spec_IN.get_extract_data_type()
                 in_logical_type = attribute_spec_IN.get_extract_logical_type()
                 out_data_type = attribute_spec_IN.get_load_attr_data_type()
                 transform_pattern = attribute_spec_IN.get_transform_conversion_string()
                 transform_to_attr_name = attribute_spec_IN.get_transform_to_attr_name()
+
+                if ( my_debug_flag == True ):
+                    spec_json = attribute_spec_IN.to_json()
+                    json_string = json.dumps( spec_json, indent = 4, sort_keys = True )
+                    status_message = "attr: {attr_name}; value: \"{value}\"; ETLAttribute JSON string:\n{json_string}".format(
+                        attr_name = attr_name,
+                        value = value_IN,
+                        json_string = json_string
+                    )
+                    self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
+                #-- END DEBUG --#
 
                 # is there an output data type we transform to...
                 if ( ( out_data_type is not None ) and ( out_data_type != "" ) ):
@@ -231,6 +241,14 @@ class ETLObjectLoader( ETLProcessor ):
                             desired_type_IN = ETLAttribute.DATA_TYPE_STRING
                         )
 
+                        if ( my_debug_flag == True ):
+                            status_message = "datetime attr: {attr_name}; cleaned value: \"{value}\"".format(
+                                attr_name = attr_name,
+                                value = work_value
+                            )
+                            self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
+                        #-- END DEBUG --#
+
                         # is there a value?
                         if ( ( work_value is not None ) and ( work_value != "" ) ):
 
@@ -264,15 +282,38 @@ class ETLObjectLoader( ETLProcessor ):
 
                             #-- check if transform pattern. --#
 
+                            # time zone.
+                            time_zone = value_OUT.tzinfo
+
+                            if ( my_debug_flag == True ):
+                                status_message = "translated datetime \"{translated_value}\" has tzinfo: {my_tzinfo}".format(
+                                    translated_value = value_OUT,
+                                    my_tzinfo = time_zone
+                                )
+                                self.output_debug( status_message, method_IN = me, indent_with_IN = "====> ", do_print_IN = my_debug_flag )
+                            #-- END DEBUG --#
+
+                            if ( time_zone is None ):
+
+                                # got a default time zone?
+                                if ( self.my_time_zone is not None ):
+
+                                    value_OUT = value_OUT.replace( tzinfo = self.my_time_zone )
+
+                                #-- END check to see if we have a time zone --#
+
+                            #-- END check to see if time zone set. --#
+
                         else:
 
-                            # no value passed in, just return it.
-                            value_OUT = value_IN
+                            # no value passed in, just return None (standardize
+                            #     empty dates from either None or "" to None).
+                            value_OUT = None
 
                         #-- END check to see if value is parse-able. --#
 
                         if ( my_debug_flag == True ):
-                            status_message = "translated {} to datetime {}".format( value_IN, value_OUT )
+                            status_message = "translated \"{}\" to datetime {}".format( value_IN, value_OUT )
                             self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
                         #-- END DEBUG --#
 

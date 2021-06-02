@@ -695,6 +695,9 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
         was_instance_updated = None
         error_status_list = None
 
+        # declare variables - debug
+        json_string = None
+
         #----------------------------------------------------------------------#
         # ==> do work
 
@@ -706,6 +709,14 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
         current_entry_instance = instance_IN
         current_record = record_IN
         related_attr_to_spec_map = dict()
+
+        if ( my_debug_flag == True ):
+            json_string = json.dumps( current_record, indent = 4, sort_keys = True )
+            status_message = "current record JSON string:\n{json_string}".format(
+                json_string = json_string
+            )
+            self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
+        #-- END DEBUG --#
 
         # store supporting information in status instance.
         status_OUT = self.init_status( status_OUT )

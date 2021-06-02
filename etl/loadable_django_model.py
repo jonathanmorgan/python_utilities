@@ -21,6 +21,7 @@ Django models that are intended to have data loaded into them by the ETL
 '''
 
 # python built-ins
+import json
 import logging
 
 # django imports
@@ -181,7 +182,7 @@ class LoadableDjangoModel( models.Model ):
             my_etl_spec = cls.get_etl_spec()
 
             if ( my_debug_flag == True ):
-                spec_json = test_spec.to_json()
+                spec_json = my_etl_spec.to_json()
                 json_string = json.dumps( spec_json, indent = 4, sort_keys = True )
                 status_message = "In {my_class}.{my_method}(): ETL spec JSON: {json_string}".format(
                     my_class = cls,
