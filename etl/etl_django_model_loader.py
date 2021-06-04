@@ -445,4 +445,4 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
     #-- END method update_instance_from_record() --#
 
 
-#-- END class ETLObjectLoader --#
+#-- END class ETLDjangoModelLoader --#

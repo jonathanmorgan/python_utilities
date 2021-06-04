@@ -146,7 +146,19 @@ class LoadableDjangoModel( models.Model ):
 
 
     @classmethod
-    def run_etl( cls, record_list_IN, start_index_IN = None, row_count_IN = None, debug_flag_IN = False, *args, **kwargs ):
+    def run_etl( cls,
+                 record_list_IN,
+                 start_index_IN = None,
+                 row_count_IN = None,
+                 debug_flag_IN = False,
+                 default_time_zone_IN = None,
+                 *args,
+                 **kwargs ):
+
+        '''
+        preconditions:
+        - time_zone_IN should be a pytz timezone instance.
+        '''
 
         # return reference
         status_OUT = None
@@ -196,6 +208,14 @@ class LoadableDjangoModel( models.Model ):
             etl_instance = cls.get_my_etl_loader_instance()
             etl_instance.debug_flag = my_debug_flag
             etl_instance.set_etl_entity( my_etl_spec )
+
+            # default time zone?
+            if ( default_time_zone_IN is not None ):
+
+                # set time zone in ETLProcessor descendant.
+                etl_instance.set_default_time_zone( default_time_zone_IN )
+
+            #-- END check if time zone passed in. --#
 
             # store list of records.
             etl_instance.set_record_list( record_list_IN )

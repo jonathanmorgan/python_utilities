@@ -73,7 +73,11 @@ class ETLProcessor( object ):
     update_status_every = 1000
 
     # time zones (sigh) - default to UTC.
-    my_time_zone = pytz.UTC
+    default_time_zone = pytz.UTC
+
+    # list of time zones: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+    # example loading EST zone:
+    #default_time_zone = pytz.timezone( "America/New_York" )
 
 
     #===========================================================================
@@ -189,6 +193,36 @@ class ETLProcessor( object ):
         self.debug_flag = False
 
     #-- END constructor --#
+
+    @classmethod
+    def get_default_time_zone( cls ):
+
+        # return reference
+        value_OUT = None
+
+        # get value
+        value_OUT = cls.default_time_zone
+
+        return value_OUT
+
+    #-- END classmethod get_default_time_zone() --#
+
+
+    @classmethod
+    def set_default_time_zone( cls, value_IN ):
+
+        # return reference
+        value_OUT = None
+
+        # store value
+        cls.default_time_zone = value_IN
+
+        # return value
+        value_OUT = cls.get_default_time_zone()
+
+        return value_OUT
+
+    #-- END classmethod set_default_time_zone() --#
 
 
     #===========================================================================
