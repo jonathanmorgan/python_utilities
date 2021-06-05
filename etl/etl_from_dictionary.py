@@ -208,6 +208,24 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
 
     def process_related( self, instance_IN, record_IN, related_key_to_spec_map_IN ):
 
+        '''
+        Accepts the instance currently being processed, the current record being
+            processed, and a mapping of the keys in that record containing
+            related data to each attribute's related spec.
+
+        For each key:
+        - retrieves information on how to process the contents related to that
+            key in the record (could be a JSON object, could be a list of JSON
+            objects, etc.)
+        - based on the details for the key, do the right thing. This could
+            mean:
+            - calling run_etl() on an instance of a specified class, passing
+            it the contents of the JSON record for a given key.
+            - passing the record to a method on the current instance, for
+            special processing.
+            - etc.
+        '''
+
         # return reference
         status_OUT = None
 
