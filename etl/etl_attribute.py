@@ -56,9 +56,13 @@ class ETLAttribute( object ):
     # related data types
     RELATED_TYPE_DICT = "dict"
     RELATED_TYPE_LIST = "list"
+    RELATED_TYPE_LIST_OF_DICTS = "list_of_dicts"
+    RELATED_TYPE_LIST_OF_VALUES = "list_of_values"
     RELATED_TYPE_VALUE_TO_TYPE_MAP = dict()
     RELATED_TYPE_VALUE_TO_TYPE_MAP[ RELATED_TYPE_DICT ] = dict
     RELATED_TYPE_VALUE_TO_TYPE_MAP[ RELATED_TYPE_LIST ] = list
+    RELATED_TYPE_VALUE_TO_TYPE_MAP[ RELATED_TYPE_LIST_OF_DICTS ] = list
+    RELATED_TYPE_VALUE_TO_TYPE_MAP[ RELATED_TYPE_LIST_OF_VALUES ] = list
 
     # Reusable format strings
     FORMAT_DATETIME_ISO_8601 = "ISO-8601"
@@ -338,7 +342,7 @@ class ETLAttribute( object ):
                     LoggingHelper.output_debug( status_message, method_IN = me, logger_name_IN = cls.MY_LOGGER_NAME, do_print_IN = my_debug_flag )
                 #-- END DEBUG --#
 
-                # if name in instance, store value. If not, add to list for processing.
+                # if name in instance, store value. If not, add to extra data.
                 if ( attr_exists == True ):
 
                     # update status
