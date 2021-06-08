@@ -209,7 +209,7 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
     #-- END method process_error()
 
 
-    def process_related( self, instance_IN, record_IN, related_key_to_spec_map_IN ):
+    def process_related( self, related_to_instance_IN, record_IN, related_key_to_spec_map_IN ):
 
         '''
         Accepts the instance currently being processed, the current record being
@@ -285,7 +285,7 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
         #my_debug_flag = self.debug_flag
         my_debug_flag = True
         my_etl_spec = self.get_etl_entity()
-        current_entry_instance = instance_IN
+        current_entry_instance = related_to_instance_IN
         current_record = record_IN
         record_list = None
         related_attr_to_spec_map = related_key_to_spec_map_IN
