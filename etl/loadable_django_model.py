@@ -231,12 +231,15 @@ class LoadableDjangoModel( models.Model ):
             # store list of records.
             etl_instance.set_record_list( record_list_IN )
 
-            # loop over rows in openpyxl worksheet, processing each
-            status_message = "DOING WORK!"
+            # loop over rrecords, processing each
+            status_message = "In {my_class} - Starting {my_method}!".format(
+                my_class = cls,
+                my_method = me
+            )
             LoggingHelper.output_debug(
                 status_message,
                 indent_with_IN = "==> ",
-                do_print_IN = True
+                do_print_IN = my_debug_flag
             )
             my_start_row = start_index_IN
             my_row_count = row_count_IN
