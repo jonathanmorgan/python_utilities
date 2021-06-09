@@ -60,6 +60,9 @@ class ETLProcessor( object ):
     # logger name
     MY_LOGGER_NAME = "python_utilities.etl.ETLProcessor"
 
+    # properties in a record
+    RECORD_PROP_NAME_LIST_VALUE = "list_value"
+
     #===========================================================================
     # ! ==> class variables
     #===========================================================================

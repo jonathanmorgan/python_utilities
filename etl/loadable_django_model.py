@@ -32,11 +32,22 @@ from python_utilities.logging.logging_helper import LoggingHelper
 from python_utilities.status.status_container import StatusContainer
 
 # ETL imports
+from python_utilities.etl.etl_attribute import ETLAttribute
 from python_utilities.etl.etl_entity import ETLEntity
 from python_utilities.etl.etl_error import ETLError
-from python_utilities.etl.etl_attribute import ETLAttribute
+from python_utilities.etl.etl_processor import ETLProcessor
 
 class LoadableDjangoModel( models.Model ):
+
+    #===========================================================================
+    # CONSTANTS-ish
+    #===========================================================================
+
+    # logger name
+    MY_LOGGER_NAME = "python_utilities.etl.LoadableDjangoModel"
+
+    # properties in a record
+    RECORD_PROP_NAME_LIST_VALUE = ETLProcessor.RECORD_PROP_NAME_LIST_VALUE  # "list_value"
 
     #==========================================================================#
     # ! ==> model fields

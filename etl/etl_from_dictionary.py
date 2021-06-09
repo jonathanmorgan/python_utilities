@@ -55,8 +55,8 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
     # logger name
     MY_LOGGER_NAME = "python_utilities.etl.ETLFromDictionary"
 
-    # properties in a record
-    RECORD_PROP_NAME_LIST_VALUE = "list_value"
+    # properties in a record - moved up to ETLProcessor
+    #RECORD_PROP_NAME_LIST_VALUE = "list_value"
 
 
     #===========================================================================
@@ -239,8 +239,8 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
         my_debug_flag = None
         status_message = None
         my_etl_spec = None
-        current_entry_instance = None
-        current_record = None
+        related_to_instance = None
+        extract_record = None
         current_key = None
         current_attr_spec = None
         current_value = None
@@ -250,10 +250,10 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
         my_etl_attribute = None
 
         # declare variables - processing value
-        record_list = None
+        related_record_list = None
         list_value = None
-        current_record = None
-        current_entry_instance_id = None
+        current_related_record = None
+        related_to_instance_id = None
         store_status = None
         store_update_details = None
         store_success = None
@@ -285,19 +285,19 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
         #my_debug_flag = self.debug_flag
         my_debug_flag = True
         my_etl_spec = self.get_etl_entity()
-        current_entry_instance = related_to_instance_IN
-        current_record = record_IN
-        record_list = None
+        related_to_instance = related_to_instance_IN
+        extract_record = record_IN
+        related_record_list = None
         related_attr_to_spec_map = related_key_to_spec_map_IN
 
         # store supporting information in status instance.
         status_OUT = self.init_status( status_OUT )
 
         # got an instance?
-        if ( current_entry_instance is not None ):
+        if ( related_to_instance is not None ):
 
             # do we have a record?
-            if ( current_record is not None ):
+            if ( extract_record is not None ):
 
                 # and, do we have related?
                 if ( ( related_attr_to_spec_map is not None ) and ( len( related_attr_to_spec_map ) > 0 ) ):
@@ -309,9 +309,10 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                     for current_key, current_attr_spec in related_attr_to_spec_map.items():
 
                         if ( my_debug_flag == True ):
-                            status_message = "Processing related key \"{related_key}\", spec: {related_spec}".format(
+                            status_message = "Processing related key \"{related_key}\"\n\n==> spec: {related_spec}\n\n==> record: {record}".format(
                                 related_key = current_key,
-                                related_spec = current_attr_spec.to_json()
+                                related_spec = json.dumps( current_attr_spec.to_json(), indent = 4, sort_keys = True ),
+                                record = json.dumps( extract_record, indent = 4, sort_keys = True ),
                             )
                             self.output_debug( status_message, method_IN = me, indent_with_IN = "\n====> ", do_print_IN = my_debug_flag )
                         #-- END DEBUG --#
@@ -325,7 +326,7 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                         related_processing_method_name = current_attr_spec.get_load_attr_related_model_method_name()
 
                         # get value for key from record.
-                        current_attr_value = current_record.get( current_key )
+                        current_attr_value = extract_record.get( current_key )
 
                         # is there a related class?
                         if ( related_class is not None ):
@@ -342,9 +343,10 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                                 related_type = ETLAttribute.RELATED_TYPE_VALUE_TO_TYPE_MAP.get( related_data_type, None )
 
                                 if ( my_debug_flag == True ):
-                                    status_message = "Related type for type value \"{my_type_value}\" = {type_type}".format(
+                                    status_message = "Related type for type value \"{my_type_value}\" = {type_type} ( value: {attr_value} )".format(
                                         my_type_value = related_data_type,
-                                        type_type = related_type
+                                        type_type = related_type,
+                                        attr_value = current_attr_value
                                     )
                                     self.output_debug( status_message, method_IN = me, indent_with_IN = "\n--------> ", do_print_IN = my_debug_flag )
                                 #-- END DEBUG --#
@@ -357,38 +359,38 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
 
                                         # dictionary - add single item to record
                                         #     list.
-                                        record_list = list()
-                                        record_list.append( current_attr_value )
+                                        related_record_list = list()
+                                        related_record_list.append( current_attr_value )
 
                                     elif ( ( related_data_type == ETLAttribute.RELATED_TYPE_LIST )
                                         or ( related_data_type == ETLAttribute.RELATED_TYPE_LIST_OF_DICTS ) ):
 
-                                        # list of dictionaries - use it as record_list.
-                                        record_list = current_attr_value
+                                        # list of dictionaries - use it as related_record_list.
+                                        related_record_list = current_attr_value
 
                                     elif ( related_data_type == ETLAttribute.RELATED_TYPE_LIST_OF_VALUES ):
 
                                         # list of values. For each, make
                                         #     dictionary and store the value
                                         #     inside, with name "list_value".
-                                        record_list = list()
+                                        related_record_list = list()
                                         for list_value in current_attr_value:
 
                                             # make dictionary
-                                            current_record = dict()
+                                            current_related_record = dict()
 
                                             # store value in dictionary.
-                                            current_record[ self.RECORD_PROP_NAME_LIST_VALUE ] = list_value
+                                            current_related_record[ self.RECORD_PROP_NAME_LIST_VALUE ] = list_value
 
                                             # add record to record list
-                                            record_list.append( current_record )
+                                            related_record_list.append( current_related_record )
 
                                         #-- END loop over values in list. --#
 
                                     else:
 
                                         # error - unknown type.
-                                        record_list = None
+                                        related_record_list = None
                                         is_ok_to_process = False
                                         status_message = "Unexpected ERROR - Unknown related record data type \"{related_record_type}\", skipping related item {attr_value}, attr spec: {attr_spec}.".format(
                                             related_record_type = related_data_type,
@@ -402,7 +404,7 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                                     #-- END check to see type --#
 
                                     # do we have a record list?
-                                    if ( record_list is not None ):
+                                    if ( related_record_list is not None ):
 
                                         # OK to process?
                                         is_ok_to_process = True
@@ -416,14 +418,14 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                                             #  - add a property
                                             #     to each record named this set
                                             #     to the current instance's ID.
-                                            for current_record in record_list:
+                                            for current_related_record in related_record_list:
 
                                                 # sanity check - is fk field there now?
-                                                if ( ( related_fk_id_attr_name in current_record ) == False ):
+                                                if ( ( related_fk_id_attr_name in current_related_record ) == False ):
 
                                                     # Add foreign key ID field.
-                                                    current_entry_instance_id = current_entry_instance.id
-                                                    current_record[ related_fk_id_attr_name ] = current_entry_instance_id
+                                                    related_to_instance_id = related_to_instance.id
+                                                    current_related_record[ related_fk_id_attr_name ] = related_to_instance_id
 
                                                 else:
 
@@ -431,7 +433,7 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                                                     is_ok_to_process = False
                                                     status_message = "foreign key ID field \"{field_name}\" already in related record data. Skipping related item {related_data}, attr spec: {attr_spec}.".format(
                                                         field_name = related_fk_id_attr_name,
-                                                        related_data = current_record,
+                                                        related_data = current_related_record,
                                                         attr_spec = current_attr_spec.to_json()
                                                     )
 
@@ -471,16 +473,21 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
 
                                                     # If so, call it as class method - https://stackoverflow.com/questions/3521715/call-a-python-method-by-name
                                                     related_method_pointer = getattr( related_class, related_processing_method_name )
-                                                    related_status = related_method_pointer( related_class, record_list )
+                                                    related_status = related_method_pointer(
+                                                        related_to_instance,
+                                                        related_record_list,
+                                                        current_attr_spec
+                                                    )
 
                                                 else:
 
                                                     # error - requested method does not exist.
-                                                    status_message = "related processing method \"{method_name}\" does not exist in related class \"{related_class}\" ( attr spec: {attr_spec} ).".format(
+                                                    status_message = "ERROR - related processing method \"{method_name}\" does not exist in related class \"{related_class}\" ( attr spec: {attr_spec} ).".format(
                                                         method_name = related_processing_method_name,
                                                         related_class = related_class,
                                                         attr_spec = current_attr_spec.to_json()
                                                     )
+                                                    self.output_log_message( status_message, method_IN = me, indent_with_IN = "\n--------> ", log_level_code_IN = logging.ERROR, do_print_IN = my_debug_flag )
 
                                                     # make status
                                                     related_status = StatusContainer()
@@ -492,7 +499,7 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                                             else:
 
                                                 # If not, call classmethod run_etl().
-                                                related_status = related_class.run_etl( record_list )
+                                                related_status = related_class.run_etl( related_record_list )
 
                                             #-- END check which method we call --#
 
@@ -510,9 +517,10 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
 
                                         # error - no record list. Something went
                                         #     wrong...
-                                        status_message = "no foreign key field specified in attr spec: {attr_spec}.".format(
+                                        status_message = "ERROR - no foreign key field specified in attr spec: {attr_spec}.".format(
                                             attr_spec = current_attr_spec.to_json()
                                         )
+                                        self.output_log_message( status_message, method_IN = me, indent_with_IN = "\n--------> ", log_level_code_IN = logging.ERROR, do_print_IN = my_debug_flag )
 
                                         # process error
                                         status_OUT = self.process_attr_error( status_OUT, current_attr_spec, status_message )
@@ -522,12 +530,13 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                                 else:
 
                                     # type of value doesn't match specification.
-                                    status_message = "Type of value ( value = {current_value}: {value_type} ) does not match type in spec ( {data_type} - spec: {attr_spec} ). Nothing to process.".format(
+                                    status_message = "ERROR - Type of value ( value = {current_value}: {value_type} ) does not match type in spec ( {data_type} - spec: {attr_spec} ). Nothing to process.".format(
                                         current_value = current_attr_value,
                                         value_type = attr_value_type,
                                         data_type = related_data_type,
                                         attr_spec = current_attr_spec.to_json()
                                     )
+                                    self.output_log_message( status_message, method_IN = me, indent_with_IN = "\n--------> ", log_level_code_IN = logging.ERROR, do_print_IN = my_debug_flag )
 
                                     # process error
                                     status_OUT = self.process_attr_error( status_OUT, current_attr_spec, status_message )
@@ -537,10 +546,11 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                             else:
 
                                 # error - no value...? Nothing to process.
-                                status_message = "No value passed ( value = {current_value} ) for related type attribute ( {attr_spec} ). Nothing to process.".format(
+                                status_message = "ERROR - No value passed ( value = {current_value} ) for related type attribute ( {attr_spec} ). Nothing to process.".format(
                                     current_value = current_attr_value,
                                     attr_spec = current_attr_spec.to_json()
                                 )
+                                self.output_log_message( status_message, method_IN = me, indent_with_IN = "\n--------> ", log_level_code_IN = logging.ERROR, do_print_IN = my_debug_flag )
 
                                 # process error
                                 status_OUT = self.process_attr_error( status_OUT, current_attr_spec, status_message )
@@ -550,9 +560,10 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                         else:
 
                             # error - no related class...? Nothing to process.
-                            status_message = "No related class in related type attribute ( {attr_spec} ). Nothing to process.".format(
+                            status_message = "ERROR - No related class in related type attribute ( {attr_spec} ). Nothing to process.".format(
                                 attr_spec = current_attr_spec.to_json()
                             )
+                            self.output_log_message( status_message, method_IN = me, indent_with_IN = "\n--------> ", log_level_code_IN = logging.ERROR, do_print_IN = my_debug_flag )
 
                             # process error
                             status_OUT = self.process_attr_error( status_OUT, current_attr_spec, status_message )
@@ -576,11 +587,11 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                             and ( save_on_success_IN == True ) ):
 
                             # changed, and we are saving...
-                            current_entry_instance.save()
+                            related_to_instance.save()
 
                         #-- END check to see if we save(). --#
 
-                        # TODO: current_entry_instance.update_from_record_post_related()?
+                        # TODO: related_to_instance.update_from_record_post_related()?
 
                     else:
 
@@ -596,7 +607,7 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                     # no related_attr_to_spec_map. Not necessarily an error, but
                     #     nothing to do...
                     status_message = "WARNING - No related attributes passed in. Can't do anything."
-                    self.output_log_message( status_message, method_IN = me, log_level_code_IN = logging.WARNING )
+                    self.output_log_message( status_message, method_IN = me, log_level_code_IN = logging.WARNING, do_print_OUT = my_debug_flag )
                     self.add_status_message( status_message )
 
                     # status
