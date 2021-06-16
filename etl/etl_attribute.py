@@ -5,6 +5,7 @@
 
 # base python libraries
 import datetime
+import importlib
 import json
 import logging
 import pytz
@@ -500,7 +501,17 @@ class ETLAttribute( object ):
         # load storage traits
         self.load_attr_name = None
         self.load_attr_data_type = None
+
+        # ==> related class
+
+        # can either store instance of class...
         self.load_attr_related_model_class = None
+
+        # ...or string name of module and class for dynamic loading.
+        self.load_attr_related_model_class_module = None
+        self.load_attr_related_model_class_name = None
+
+        # and other related information.
         self.load_attr_related_model_data_type = None
         self.load_attr_related_model_fk_attr_name = None
         self.load_attr_related_model_method_name = None
@@ -636,6 +647,32 @@ class ETLAttribute( object ):
     #-- END method get_load_attr_related_model_class --#
 
 
+    def get_load_attr_related_model_class_module( self ):
+
+        # return reference
+        value_OUT = None
+
+        # get value
+        value_OUT = self.load_attr_related_model_class_module
+
+        return value_OUT
+
+    #-- END method get_load_attr_related_model_class_module --#
+
+
+    def get_load_attr_related_model_class_name( self ):
+
+        # return reference
+        value_OUT = None
+
+        # get value
+        value_OUT = self.load_attr_related_model_class_name
+
+        return value_OUT
+
+    #-- END method get_load_attr_related_model_class_name --#
+
+
     def get_load_attr_related_model_data_type( self ):
 
         # return reference
@@ -673,6 +710,139 @@ class ETLAttribute( object ):
         return value_OUT
 
     #-- END method get_load_attr_related_model_method_name --#
+
+
+    def get_related_model_class( self ):
+
+        '''
+        First checks if actual related class stored in instance. If so, returns
+            it. If not, tries to load class from module name and class name.
+            Returns the result, if either name is missing, outputs error log and
+            returns None. If problems with module or class loading, Exception
+            will be thrown.
+        '''
+
+        # return reference
+        class_OUT = None
+
+        # declare variables
+        me = "get_related_model_class"
+        my_debug_flag = None
+        status_message = None
+        spec_json = None
+        spec_json_string = None
+        my_attr_name = None
+        related_class = None
+        related_class_module_name = None
+        related_class_module = None
+        related_class_name = None
+
+        # init
+        my_debug_flag = self.debug_flag
+        #my_debug_flag = True
+        spec_json = self.to_json()
+        spec_json_string = json.dumps( spec_json, indent = 4, sort_keys = True )
+
+        # retrieve spec info.
+        my_attr_name = self.get_extract_name()
+        related_class = self.get_load_attr_related_model_class()
+        related_class_module_name = self.get_load_attr_related_model_class_module()
+        related_class_name = self.get_load_attr_related_model_class_name()
+
+        if ( my_debug_flag == True ):
+            status_message = "In {my_method_name}() TOP: attribute {my_attr_name}; spec:\n{my_spec_json}.".format(
+                my_method_name = me,
+                my_attr_name = my_attr_name,
+                my_spec_json = spec_json_string
+            )
+            LoggingHelper.output_debug( status_message, method_IN = me, logger_name_IN = self.MY_LOGGER_NAME, do_print_IN = my_debug_flag )
+        #-- END DEBUG --#
+
+        # do we have actual class reference?
+        if ( related_class is None ):
+
+            # no class reference. Do we have module and name so we can load it
+            #     dynamically?
+            related_class_module_name = self.get_load_attr_related_model_class_module()
+            related_class_name = self.get_load_attr_related_model_class_name()
+
+            if ( my_debug_flag == True ):
+                status_message = "No related class."
+                LoggingHelper.output_debug( status_message, method_IN = me, logger_name_IN = self.MY_LOGGER_NAME, do_print_IN = my_debug_flag )
+            #-- END DEBUG --#
+
+            # must have both module and name.
+            if ( ( related_class_module_name is not None ) and ( related_class_module_name != "" ) ):
+
+                if ( ( related_class_name is not None ) and ( related_class_name != "" ) ):
+
+                    # try to load the module.
+                    related_class_module = importlib.import_module( related_class_module_name )
+
+                    # and, then, try to retrieve class from module.
+                    related_class = getattr( related_class_module, related_class_name )
+
+                    # if we get here without exception, return the class.
+                    class_OUT = related_class
+
+                    if ( my_debug_flag == True ):
+                        status_message = "Loaded related class {my_class} ( module: {my_module}; class: {my_class_name})".format(
+                            my_class = class_OUT,
+                            my_module = related_class_module_name,
+                            my_class_name = related_class_name
+                        )
+                        LoggingHelper.output_debug( status_message, method_IN = me, logger_name_IN = self.MY_LOGGER_NAME, do_print_IN = my_debug_flag )
+                    #-- END DEBUG --#
+
+                else:
+
+                    # ERROR - no class name. Nothing to do.
+
+                    status_message = "ERROR in {my_method_name}(): no related class name passed in for attr_name: {my_attr_name}; full attribute specification:\n{my_spec_json}. If no related class reference stored, must have both related class module name and related class name.  Nothing to be done.".format(
+                        my_method_name = me,
+                        my_attr_name = self.get_extract_name(),
+                        my_spec_json = json_string
+                    )
+                    LoggingHelper.log_message( status_message, method_IN = me, logger_name_IN = self.MY_LOGGER_NAME, log_level_code_IN = logging.ERROR, do_print_IN = True )
+
+                    # return None
+                    class_OUT = None
+
+                #-- END check if class name. --#
+
+            else:
+
+                # ERROR - no module name. Nothing to do.
+                spec_json = self.to_json()
+                json_string = json.dumps( spec_json, indent = 4, sort_keys = True )
+
+                status_message = "ERROR in {my_method_name}(): no related class module name passed in for attr_name: {my_attr_name}; full attribute specification:\n{my_spec_json}. If no related class reference stored, must have both related class module name and related class name. Nothing to be done.".format(
+                    my_method_name = me,
+                    my_attr_name = self.get_extract_name(),
+                    my_spec_json = json_string
+                )
+                LoggingHelper.log_message( status_message, method_IN = me, logger_name_IN = self.MY_LOGGER_NAME, log_level_code_IN = logging.ERROR, do_print_IN = True )
+
+                # return None
+                class_OUT = None
+
+            #-- END check to see if module name. --#
+
+        else:
+
+            # related class reference found - return it.
+            class_OUT = related_class
+
+            if ( my_debug_flag == True ):
+                status_message = "Found related class ( {my_class} ).".format( my_class = class_OUT )
+                LoggingHelper.output_debug( status_message, method_IN = me, logger_name_IN = self.MY_LOGGER_NAME, do_print_IN = my_debug_flag )
+            #-- END DEBUG --#
+
+        #-- END check to see if class reference present --#
+
+        return class_OUT
+
+    #-- END method get_related_model_class() --#
 
 
     def get_transform_conversion_string( self ):
@@ -1305,6 +1475,46 @@ class ETLAttribute( object ):
     #-- END method set_load_attr_related_model_class() --#
 
 
+    def set_load_attr_related_model_class_module( self, value_IN ):
+
+        '''
+        Accepts value, stores it and returns it.
+        '''
+
+        # return reference
+        value_OUT = None
+
+        # store value.
+        self.load_attr_related_model_class_module = value_IN
+
+        # return it.
+        value_OUT = self.get_load_attr_related_model_class_module()
+
+        return value_OUT
+
+    #-- END method set_load_attr_related_model_class_module() --#
+
+
+    def set_load_attr_related_model_class_name( self, value_IN ):
+
+        '''
+        Accepts value, stores it and returns it.
+        '''
+
+        # return reference
+        value_OUT = None
+
+        # store value.
+        self.load_attr_related_model_class_name = value_IN
+
+        # return it.
+        value_OUT = self.get_load_attr_related_model_class_name()
+
+        return value_OUT
+
+    #-- END method set_load_attr_related_model_class_name() --#
+
+
     def set_load_attr_related_model_data_type( self, value_IN ):
 
         '''
@@ -1451,6 +1661,8 @@ class ETLAttribute( object ):
         json_root[ "load_attr_name" ] = self.get_load_attr_name()
         json_root[ "load_attr_data_type" ] = self.get_load_attr_data_type()
         json_root[ "load_attr_related_model_class" ] = str( self.get_load_attr_related_model_class() )
+        json_root[ "load_attr_related_model_class_module" ] = str( self.get_load_attr_related_model_class_module() )
+        json_root[ "load_attr_related_model_class_name" ] = str( self.get_load_attr_related_model_class_name() )
         json_root[ "load_attr_related_model_data_type" ] = self.get_load_attr_related_model_data_type()
         json_root[ "load_attr_related_model_fk_attr_name" ] = self.get_load_attr_related_model_fk_attr_name()
         json_root[ "load_attr_related_model_method_name" ] = self.get_load_attr_related_model_method_name()

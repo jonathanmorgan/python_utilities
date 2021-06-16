@@ -305,7 +305,7 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                         # get information on related object.
                         related_status = None
                         is_ok_to_process = True
-                        related_class = current_attr_spec.get_load_attr_related_model_class()
+                        related_class = current_attr_spec.get_related_model_class()
                         related_processing_method_name = current_attr_spec.get_load_attr_related_model_method_name()
 
                         # create related record list.
@@ -851,7 +851,7 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                     # got everything we need. do work!
 
                     # get information on related object.
-                    related_class = related_attr_spec.get_load_attr_related_model_class()
+                    related_class = related_attr_spec.get_related_model_class()
                     related_processing_method_name = related_attr_spec.get_load_attr_related_model_method_name()
 
                     # is there a related class?
@@ -1089,6 +1089,8 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
 
         # declare variables - related child objects
         related_class = None
+        related_class_module = None
+        related_class_name = None
         related_attr_to_spec_map = None
         related_status = None
         related_success = None
@@ -1131,6 +1133,8 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
             # init
             was_instance_updated = False
             related_class = None
+            related_class_module = None
+            related_class_name = None
             store_status = None
             store_success = False
             pre_save_custom_update_status = None
@@ -1164,9 +1168,19 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                     # ETLAttribute found.  Retrieve values and do
                     #     processing.
 
-                    # is there a related class?
+                    # is there a related class or related class name?
                     related_class = my_etl_attribute.get_load_attr_related_model_class()
-                    if ( related_class is not None ):
+                    related_class_module = my_etl_attribute.get_load_attr_related_model_class_module()
+                    related_class_name = my_etl_attribute.get_load_attr_related_model_class_name()
+
+                    if (
+                        ( related_class is not None )
+                        or
+                        (
+                           ( ( related_class_module is not None ) and ( related_class_module != "" ) )
+                           and ( ( related_class_name is not None ) and ( related_class_name != "" ) )
+                        )
+                    ):
 
                         # related class! Add attribute name to list for
                         #     processing at end, after save.
