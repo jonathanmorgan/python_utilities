@@ -1169,18 +1169,8 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                     #     processing.
 
                     # is there a related class or related class name?
-                    related_class = my_etl_attribute.get_load_attr_related_model_class()
-                    related_class_module = my_etl_attribute.get_load_attr_related_model_class_module()
-                    related_class_name = my_etl_attribute.get_load_attr_related_model_class_name()
-
-                    if (
-                        ( related_class is not None )
-                        or
-                        (
-                           ( ( related_class_module is not None ) and ( related_class_module != "" ) )
-                           and ( ( related_class_name is not None ) and ( related_class_name != "" ) )
-                        )
-                    ):
+                    related_class = my_etl_attribute.get_related_model_class()
+                    if ( related_class is not None ):
 
                         # related class! Add attribute name to list for
                         #     processing at end, after save.
