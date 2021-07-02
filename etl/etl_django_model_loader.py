@@ -407,7 +407,7 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
                 total_average = total_elapsed / record_counter
                 previous_dt = current_dt
 
-                status_message = "----> processed {} of {} records ( existing: {}; new: {} ) @ {} ( timing: last {} elapsed = {}; total elapsed = {}; average = {} ).".format(
+                status_message = "processed {} of {} records ( existing: {}; new: {} ) @ {} ( timing: last {} elapsed = {}; total elapsed = {}; average = {} ).".format(
                             record_counter,
                             record_count,
                             self.existing_count,
@@ -418,7 +418,7 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
                             total_elapsed,
                             total_average )
 
-                self.output_debug( status_message, method_IN = me, do_print_IN = True )
+                self.output_debug( status_message, method_IN = me, indent_with_IN = "\n\n----> ", do_print_IN = True )
             #-- END periodic status update. --#
 
         #-- END loop over rows in openpyxl worksheet --#
