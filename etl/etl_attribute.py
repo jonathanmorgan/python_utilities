@@ -303,6 +303,10 @@ class ETLAttribute( object ):
         '''
         Assumes we are working with a django model object that extends
             LoadableDjangoModel (ldm).
+
+        postconditions: In StatusContainer returned, expects
+            ETLAttribute.PROP_WAS_ATTR_UPDATED to be set to boolean True if
+            updated, False if not.
         '''
 
         # return reference

@@ -196,6 +196,12 @@ class ETLObjectLoader( ETLProcessor ):
 
     def store_attribute( self, instance_IN, attr_name_IN, attr_value_IN ):
 
+        '''
+        postconditions: In StatusContainer returned, expects
+            self.PROP_WAS_ATTR_UPDATED to be set to boolean True if updated,
+            False if not.
+        '''
+
         # return reference
         status_OUT = None
 

@@ -35,6 +35,7 @@ from python_utilities.status.status_container import StatusContainer
 from python_utilities.etl.etl_attribute import ETLAttribute
 from python_utilities.etl.etl_entity import ETLEntity
 from python_utilities.etl.etl_error import ETLError
+from python_utilities.etl.etl_object_loader import ETLObjectLoader
 from python_utilities.etl.etl_processor import ETLProcessor
 
 class LoadableDjangoModel( models.Model ):
@@ -48,6 +49,9 @@ class LoadableDjangoModel( models.Model ):
 
     # properties in a record
     RECORD_PROP_NAME_LIST_VALUE = ETLProcessor.RECORD_PROP_NAME_LIST_VALUE  # "list_value"
+
+    # StatusContainer properties
+    PROP_WAS_INSTANCE_UPDATED = ETLObjectLoader.PROP_WAS_INSTANCE_UPDATED
 
     #==========================================================================#
     # ! ==> model fields
@@ -188,6 +192,11 @@ class LoadableDjangoModel( models.Model ):
         process_status = None
         process_success = None
         process_message_list = None
+        error_counter = None
+        record_counter = None
+        success_counter = None
+        update_counter = None
+
 
         # init
         my_debug_flag = debug_flag_IN
@@ -244,6 +253,18 @@ class LoadableDjangoModel( models.Model ):
             my_start_row = start_index_IN
             my_row_count = row_count_IN
             process_status = etl_instance.process_records( start_index_IN = my_start_row, record_count_IN = my_row_count )
+
+            # retrieve status counts...
+            error_counter = process_status.get_detail_value( ETLProcessor.STATUS_PROP_UPDATE_ERROR_COUNT )
+            record_counter = process_status.get_detail_value( ETLProcessor.STATUS_PROP_PROCESSED_RECORD_COUNT )
+            success_counter = process_status.get_detail_value( ETLProcessor.STATUS_PROP_UPDATE_SUCCESS_COUNT )
+            update_counter = process_status.get_detail_value( ETLProcessor.STATUS_PROP_UPDATED_RECORD_COUNT )
+
+            # ...and use them to update the output status
+            status_OUT.set_detail_value( ETLProcessor.STATUS_PROP_PROCESSED_RECORD_COUNT, record_counter )
+            status_OUT.set_detail_value( ETLProcessor.STATUS_PROP_UPDATE_ERROR_COUNT, error_counter )
+            status_OUT.set_detail_value( ETLProcessor.STATUS_PROP_UPDATE_SUCCESS_COUNT, success_counter )
+            status_OUT.set_detail_value( ETLProcessor.STATUS_PROP_UPDATED_RECORD_COUNT, update_counter )
 
             # store process status info in return status
             status_OUT.add_status_container( process_status )
@@ -410,6 +431,10 @@ class LoadableDjangoModel( models.Model ):
             Could throw exception on incorrect calls, but for now, we'll just
             make sure there is a good error message logged.
 
+        - Also, in StatusContainer that is returned, expects
+            self.PROP_WAS_INSTANCE_UPDATED to be set to True if
+            updates occurred, False if not.
+
         Returns: StatusContainer with information on results.
         '''
 
@@ -465,6 +490,10 @@ class LoadableDjangoModel( models.Model ):
         Postconditions: Also outputs error log message if there was a problem.
             Could throw exception on incorrect calls, but for now, we'll just
             make sure there is a good error message logged.
+
+        - Also, in StatusContainer that is returned, expects
+            self.PROP_WAS_INSTANCE_UPDATED to be set to True if updates
+            occurred, False if not.
 
         Returns: StatusContainer with information on results.
         '''

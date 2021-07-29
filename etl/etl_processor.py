@@ -63,6 +63,12 @@ class ETLProcessor( object ):
     # properties in a record
     RECORD_PROP_NAME_LIST_VALUE = "list_value"
 
+    # status properties
+    STATUS_PROP_PROCESSED_RECORD_COUNT = "processed_record_count"
+    STATUS_PROP_UPDATE_ERROR_COUNT = "update_error_count"
+    STATUS_PROP_UPDATE_SUCCESS_COUNT = "update_success_count"
+    STATUS_PROP_UPDATED_RECORD_COUNT = "updated_record_count"
+
     #===========================================================================
     # ! ==> class variables
     #===========================================================================
@@ -664,6 +670,22 @@ class ETLProcessor( object ):
 
     def process_records( self, start_index_IN = None, index_count_IN = None ):
 
+        '''
+        Postconditions: StatusContainer returned should contain:
+        - the count of the records processed during processing in a
+            StatusContainer detail property named
+            STATUS_PROP_PROCESSED_RECORD_COUNT ( "processed_record_count" ).
+        - the count of the records with errors during processing in a
+            StatusContainer detail property named
+            STATUS_PROP_UPDATE_ERROR_COUNT ( "update_error_count" ).
+        - the count of the records successfully processed during processing in a
+            StatusContainer detail property named
+            STATUS_PROP_UPDATE_SUCCESS_COUNT ( "update_success_count" ).
+        - the count of the records updated during processing in a
+            StatusContainer detail property named
+            STATUS_PROP_UPDATED_RECORD_COUNT ( "updated_record_count" ).
+        '''
+
         # return reference
         status_OUT = None
 
@@ -672,7 +694,17 @@ class ETLProcessor( object ):
         # declare variables
         me = "process_records"
 
-        raise ETLError( "In abstract-ish method ETLProcessor.{}(): OVERRIDE ME".format( me ) )
+        # Example of status
+        status_message = "In abstract-ish method ETLProcessor.{}(): OVERRIDE ME".format( me )
+        status_OUT = StatusContainer()
+        status_OUT.set_status_code( StatusContainer.STATUS_CODE_ERROR )
+        status_OUT.add_message( status_message )
+        status_OUT.set_detail_value( self.STATUS_PROP_PROCESSED_RECORD_COUNT, 0 )
+        status_OUT.set_detail_value( self.STATUS_PROP_UPDATE_ERROR_COUNT, 0 )
+        status_OUT.set_detail_value( self.STATUS_PROP_UPDATE_SUCCESS_COUNT, 0 )
+        status_OUT.set_detail_value( self.STATUS_PROP_UPDATED_RECORD_COUNT, 0 )
+
+        raise ETLError( status_message )
 
         return status_OUT
 

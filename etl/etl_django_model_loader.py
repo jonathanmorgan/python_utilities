@@ -258,9 +258,23 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
         Processes all records in iterator stored in this instance. returns
             StatusContainer instance with details on how it all went.
 
+        Postconditions: StatusContainer returned should contain:
+        - the count of the records processed during processing in a
+            StatusContainer detail property named
+            STATUS_PROP_PROCESSED_RECORD_COUNT ( "processed_record_count" ).
+        - the count of the records with errors during processing in a
+            StatusContainer detail property named
+            STATUS_PROP_UPDATE_ERROR_COUNT ( "update_error_count" ).
+        - the count of the records successfully processed during processing in a
+            StatusContainer detail property named
+            STATUS_PROP_UPDATE_SUCCESS_COUNT ( "update_success_count" ).
+        - the count of the records updated during processing in a
+            StatusContainer detail property named
+            STATUS_PROP_UPDATED_RECORD_COUNT ( "updated_record_count" ).
+
         TODO:
-        - populate StatusContainer, rather than/in addition to status list.
-        - test and make sure this all works.
+        - // populate StatusContainer, rather than/in addition to status list.
+        - // test and make sure this all works.
         - // move process_records up a level to ETLDjangoModelLoader.
         - // try to make "update_instance_from_record()" for Excel, see if
             "process_records()" there works the same as "process_rows()".
@@ -285,7 +299,10 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
         my_iterator = None
         start_index = None
         stop_index = None
+        error_counter = None
         record_counter = None
+        success_counter = None
+        update_counter = None
         print_every_x_records = None
         current_record = None
         current_entry_instance = None
@@ -303,6 +320,8 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
 
         # declare variables - update and save
         update_status = None
+        was_update_success = None
+        was_instance_updated = None
         unknown_attr_name_to_value_map = None
 
         #----------------------------------------------------------------------#
@@ -314,6 +333,10 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
         self.reset_status_information()
         self.start_dt = datetime.datetime.now()
         previous_dt = self.start_dt
+        error_counter = 0
+        record_counter = 0
+        success_counter = 0
+        update_counter = 0
 
         # get spec information
         status_OUT = StatusContainer()
@@ -332,7 +355,10 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
         record_count = self.get_record_count()
 
         # loop over data dictionaries
+        error_counter = 0
         record_counter = 0
+        success_counter = 0
+        update_counter = 0
         print_every_x_records = self.update_status_every
         for current_record in my_iterator:
 
@@ -357,15 +383,40 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
                     # update instance from record
                     update_status = self.update_instance_from_record( current_entry_instance, current_record )
 
+                    # evaluate status
+                    was_update_success = update_status.is_success()
+                    was_instance_updated = update_status.get_detail_value( self.PROP_WAS_INSTANCE_UPDATED )
+
+                    # success?
+                    if ( was_update_success == True ):
+
+                        # success
+                        success_counter += 1
+
+                    else:
+
+                        # error
+                        error_counter += 1
+
+                    #-- END check if success. --#
+
+                    # was record updated?
+                    if ( was_instance_updated == True ):
+
+                        # increment update counter
+                        update_counter += 1
+
+                    #-- END check if instance was updated --#
+
                     if ( my_debug_flag == True ):
 
                         # output details of entry update.
                         status_message = "- in {method}(): update_status = {status_instance} ( success?: {success_flag}; record updated?: {was_updated}; changed list:{changed_list}".format(
                             method = me,
                             status_instance = update_status,
-                            success_flag = update_status.is_success(),
-                            was_updated = update_status.get_detail_value( self.PROP_WAS_INSTANCE_UPDATED ),
-                            changed_list = update_status.get_detail_value(  self.PROP_UPDATED_ATTR_LIST )
+                            success_flag = was_update_success,
+                            was_updated = was_instance_updated,
+                            changed_list = update_status.get_detail_value( self.PROP_UPDATED_ATTR_LIST )
                         )
                         self.output_debug( status_message, method_IN = me, indent_with_IN = "\n\n====> ", do_print_IN = my_debug_flag )
 
@@ -421,7 +472,13 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
                 self.output_debug( status_message, method_IN = me, indent_with_IN = "\n\n----> ", do_print_IN = True )
             #-- END periodic status update. --#
 
-        #-- END loop over rows in openpyxl worksheet --#
+        #-- END loop over records --#
+
+        # set record, error, success, and update counts in status
+        status_OUT.set_detail_value( self.STATUS_PROP_PROCESSED_RECORD_COUNT, record_counter )
+        status_OUT.set_detail_value( self.STATUS_PROP_UPDATE_ERROR_COUNT, error_counter )
+        status_OUT.set_detail_value( self.STATUS_PROP_UPDATE_SUCCESS_COUNT, success_counter )
+        status_OUT.set_detail_value( self.STATUS_PROP_UPDATED_RECORD_COUNT, update_counter )
 
         return status_OUT
 
@@ -429,6 +486,20 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
 
 
     def update_instance_from_record( self, instance_IN, record_IN, save_on_success_IN = True ):
+
+        '''
+        postconditions: StatusContainer returned here should contain:
+        - ETLObjectLoader.PROP_WAS_INSTANCE_UPDATED ( "was_instance_updated" ) -
+            set to True if instance was updated.
+        - ETLObjectLoader.PROP_UPDATED_ATTR_LIST ( "updated_attr_list" ) - list
+            of ETLAttribute instances of attributes that were updated.
+
+        It can also contain (currently not set):
+        - ETLObjectLoader.PROP_NO_CHANGE_ATTR_LIST ( "no_change_attr_list" )
+        - ETLObjectLoader.PROP_ERROR_ATTR_LIST ( "error_attr_list" )
+        - ETLObjectLoader.PROP_SUCCESS_STATUS_LIST ( "success_status_list" )
+        - ETLObjectLoader.PROP_ERROR_STATUS_LIST ( "error_status_list" )
+        '''
 
         # return reference
         status_OUT = None
