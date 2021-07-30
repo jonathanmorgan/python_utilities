@@ -1277,7 +1277,7 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
             # call current_entry_instance.update_from_record_pre_save(),
             #     which can be overridden in a particular class to do
             #     fancier processing than specification can hold.
-            pre_save_custom_update_status = current_entry_instance.update_from_record_pre_save( current_record )
+            pre_save_custom_update_status = current_entry_instance.update_from_record_pre_save( current_record, debug_flag_IN = my_debug_flag )
 
             # process status
             status_OUT = self.process_result_status(
@@ -1341,7 +1341,7 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                 # call current_entry_instance.update_from_record_post_save(),
                 #     which can be overridden in a particular class to do
                 #     fancier processing for related records.
-                post_save_custom_update_status = current_entry_instance.update_from_record_post_save( current_record )
+                post_save_custom_update_status = current_entry_instance.update_from_record_post_save( current_record, debug_flag_IN = my_debug_flag )
 
                 # process status
                 status_OUT = self.process_result_status(

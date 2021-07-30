@@ -418,7 +418,7 @@ class LoadableDjangoModel( models.Model ):
     #-- END method update_extra_data_attr() --#
 
 
-    def update_from_record_pre_save( self, record_IN ):
+    def update_from_record_pre_save( self, record_IN, debug_flag_IN = False ):
 
         '''
         Accepts current record, can be extended by a particular model
@@ -476,7 +476,7 @@ class LoadableDjangoModel( models.Model ):
     #-- END method update_from_record_pre_save()
 
 
-    def update_from_record_post_save( self, record_IN ):
+    def update_from_record_post_save( self, record_IN, debug_flag_IN = False ):
 
         '''
         Accepts current record, can be extended by a particular model
