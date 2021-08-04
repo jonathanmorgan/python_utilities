@@ -209,7 +209,13 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
     #-- END method process_error()
 
 
-    def process_related( self, related_to_instance_IN, record_IN, related_key_to_spec_map_IN ):
+    def process_related(
+        self,
+        related_to_instance_IN,
+        record_IN,
+        related_key_to_spec_map_IN,
+        save_on_success_IN = True
+    ):
 
         '''
         Accepts the instance currently being processed, the current record being
@@ -804,11 +810,6 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
             - passing the record to a method on the current instance, for
             special processing.
             - etc.
-
-        postconditions: In StatusContainer that is returned, expects
-            ETLProcessor.PROP_WAS_INSTANCE_UPDATED to be set to True if updates
-            occurred, False if not.
-
         '''
 
         # return reference
@@ -830,10 +831,7 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
         related_method_pointer = None
 
         # declare variables - status checking
-        error_counter = None
-        record_counter = None
-        success_counter = None
-        update_counter = None
+        was_instance_updated = None
 
         #----------------------------------------------------------------------#
         # ==> do work
@@ -981,22 +979,6 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
 
         #-- END check to see if instance is not None --#
 
-        # were there updates?
-
-        # retrieve status counts...
-        error_counter = status_OUT.get_detail_value( ETLProcessor.STATUS_PROP_UPDATE_ERROR_COUNT )
-        record_counter = status_OUT.get_detail_value( ETLProcessor.STATUS_PROP_PROCESSED_RECORD_COUNT )
-        success_counter = status_OUT.get_detail_value( ETLProcessor.STATUS_PROP_UPDATE_SUCCESS_COUNT )
-        update_counter = status_OUT.get_detail_value( ETLProcessor.STATUS_PROP_UPDATED_RECORD_COUNT )
-
-        # what was update counter?
-        if ( ( update_counter is not None ) and ( update_counter > 0 ) ):
-
-            # there were updates! was updated...
-            status_OUT.set_detail_value( self.PROP_WAS_INSTANCE_UPDATED, True )
-
-        #-- END check if updates. --#
-
         return status_OUT
 
     #-- END method process_related_call_method() --#
@@ -1083,20 +1065,6 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
 
 
     def update_instance_from_record( self, instance_IN, record_IN, save_on_success_IN = True ):
-
-        '''
-        postconditions: StatusContainer returned here should contain:
-        - ETLObjectLoader.PROP_WAS_INSTANCE_UPDATED ( "was_instance_updated" ) -
-            set to True if instance was updated.
-        - ETLObjectLoader.PROP_UPDATED_ATTR_LIST ( "updated_attr_list" ) - list
-            of ETLAttribute instances of attributes that were updated.
-
-        It can also contain (currently not set):
-        - ETLObjectLoader.PROP_NO_CHANGE_ATTR_LIST ( "no_change_attr_list" )
-        - ETLObjectLoader.PROP_ERROR_ATTR_LIST ( "error_attr_list" )
-        - ETLObjectLoader.PROP_SUCCESS_STATUS_LIST ( "success_status_list" )
-        - ETLObjectLoader.PROP_ERROR_STATUS_LIST ( "error_status_list" )
-        '''
 
         # return reference
         status_OUT = None
@@ -1277,7 +1245,7 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
             # call current_entry_instance.update_from_record_pre_save(),
             #     which can be overridden in a particular class to do
             #     fancier processing than specification can hold.
-            pre_save_custom_update_status = current_entry_instance.update_from_record_pre_save( current_record, debug_flag_IN = my_debug_flag )
+            pre_save_custom_update_status = current_entry_instance.update_from_record_pre_save( current_record )
 
             # process status
             status_OUT = self.process_result_status(
@@ -1341,7 +1309,7 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                 # call current_entry_instance.update_from_record_post_save(),
                 #     which can be overridden in a particular class to do
                 #     fancier processing for related records.
-                post_save_custom_update_status = current_entry_instance.update_from_record_post_save( current_record, debug_flag_IN = my_debug_flag )
+                post_save_custom_update_status = current_entry_instance.update_from_record_post_save( current_record )
 
                 # process status
                 status_OUT = self.process_result_status(
@@ -1361,7 +1329,8 @@ class ETLFromDictionary( ETLDjangoModelLoader ):
                     related_status = self.process_related(
                         current_entry_instance,
                         current_record,
-                        related_attr_to_spec_map
+                        related_attr_to_spec_map,
+                        save_on_success_IN = save_on_success_IN
                     )
 
                     # process status
