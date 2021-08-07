@@ -15,6 +15,8 @@ import traceback
 
 # other packages
 import dateutil
+import dateutil.parser
+# import updated because of this: https://stackoverflow.com/questions/48632176/python-dateutil-attributeerror-module-dateutil-has-no-attribute-parse
 
 # python_utilities
 from python_utilities.logging.logging_helper import LoggingHelper
@@ -303,10 +305,6 @@ class ETLAttribute( object ):
         '''
         Assumes we are working with a django model object that extends
             LoadableDjangoModel (ldm).
-
-        postconditions: In StatusContainer returned, expects
-            ETLAttribute.PROP_WAS_ATTR_UPDATED to be set to boolean True if
-            updated, False if not.
         '''
 
         # return reference
