@@ -167,6 +167,7 @@ class LoadableDjangoModel( models.Model ):
                  row_count_IN = None,
                  debug_flag_IN = False,
                  default_time_zone_IN = None,
+                 do_output_progress_IN = False,
                  *args,
                  **kwargs ):
 
@@ -252,7 +253,11 @@ class LoadableDjangoModel( models.Model ):
             )
             my_start_row = start_index_IN
             my_row_count = row_count_IN
-            process_status = etl_instance.process_records( start_index_IN = my_start_row, record_count_IN = my_row_count )
+            process_status = etl_instance.process_records(
+                start_index_IN = my_start_row,
+                record_count_IN = my_row_count,
+                do_output_progress_IN = do_output_progress_IN
+            )
 
             # retrieve status counts...
             error_counter = process_status.get_detail_value( ETLProcessor.STATUS_PROP_UPDATE_ERROR_COUNT )

@@ -252,7 +252,12 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
     #-- END method find_load_instance() --#
 
 
-    def process_records( self, start_index_IN = None, record_count_IN = None ):
+    def process_records(
+        self,
+        start_index_IN = None,
+        record_count_IN = None,
+        do_output_progress_IN = False
+    ):
 
         '''
         Processes all records in iterator stored in this instance. returns
@@ -326,6 +331,18 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
 
         #----------------------------------------------------------------------#
         # work
+
+        if ( do_output_progress_IN == True ):
+            # hello world.
+            status_message = "\n\nTop of {me}! ( @ {right_now} )\n\n".format( me = me, right_now = datetime.datetime.now() )
+            self.output_log_message(
+                status_message,
+                method_IN = me,
+                indent_with_IN = "\n\n====> ",
+                log_level_code_IN = logging.INFO,
+                do_print_IN = True
+            )
+        #-- END check if do_output_progress_IN --#
 
         # init
         my_debug_flag = self.debug_flag
@@ -449,8 +466,11 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
 
             #-- END check if required columns are present. --#
 
-            # output a message?
-            if ( ( record_counter % print_every_x_records ) == 0 ):
+            # output a progress message?
+            if ( ( ( record_counter % print_every_x_records ) == 0 )
+                and ( do_output_progress_IN == True ) ):
+
+                # basic timing analysis.
                 my_start_dt = self.start_dt
                 current_dt = datetime.datetime.now()
                 current_elapsed = current_dt - previous_dt
@@ -458,21 +478,57 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
                 total_average = total_elapsed / record_counter
                 previous_dt = current_dt
 
-                status_message = "processed {} of {} records ( existing: {}; new: {} ) @ {} ( timing: last {} elapsed = {}; total elapsed = {}; average = {} ).".format(
-                            record_counter,
-                            record_count,
-                            self.existing_count,
-                            self.new_count,
-                            current_dt,
-                            record_counter,
-                            current_elapsed,
-                            total_elapsed,
-                            total_average )
-
-                self.output_debug( status_message, method_IN = me, indent_with_IN = "\n\n----> ", do_print_IN = True )
+                status_message = "processed {counter} of {count} records ( existing: {existing_count}; new: {new_count} ) @ {right_now} ( timing: last {current_count} elapsed = {current_elapsed}; total elapsed = {total_elapsed}; average = {total_average} ).".format(
+                    counter = record_counter,
+                    count = record_count,
+                    existing_count = self.existing_count,
+                    new_count = self.new_count,
+                    right_now = current_dt,
+                    current_count = print_every_x_records,
+                    current_elapsed = current_elapsed,
+                    total_elapsed = total_elapsed,
+                    total_average = total_average
+                )
+                self.output_log_message(
+                    status_message,
+                    method_IN = me,
+                    indent_with_IN = "\n\n----> ",
+                    log_level_code_IN = logging.INFO,
+                    do_print_IN = True
+                )
             #-- END periodic status update. --#
 
         #-- END loop over records --#
+
+        # output final status message?
+        if ( do_output_progress_IN == True ):
+
+            my_start_dt = self.start_dt
+            current_dt = datetime.datetime.now()
+            current_elapsed = current_dt - previous_dt
+            total_elapsed = current_dt - my_start_dt
+            total_average = total_elapsed / record_counter
+            previous_dt = current_dt
+
+            status_message = "Processing COMPLETE - processed {counter} of {count} records ( existing: {existing_count}; new: {new_count} ) @ {right_now} ( timing: last {current_count} elapsed = {current_elapsed}; total elapsed = {total_elapsed}; average = {total_average} ).".format(
+                counter = record_counter,
+                count = record_count,
+                existing_count = self.existing_count,
+                new_count = self.new_count,
+                right_now = current_dt,
+                current_count = ( record_count % print_every_x_records ),
+                current_elapsed = current_elapsed,
+                total_elapsed = total_elapsed,
+                total_average = total_average
+            )
+            self.output_log_message(
+                status_message,
+                method_IN = me,
+                indent_with_IN = "\n\n====> ",
+                log_level_code_IN = logging.INFO,
+                do_print_IN = True
+            )
+        #-- END check if we are outputting progress. --#
 
         # set record, error, success, and update counts in status
         status_OUT.set_detail_value( self.STATUS_PROP_PROCESSED_RECORD_COUNT, record_counter )
