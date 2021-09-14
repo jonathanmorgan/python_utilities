@@ -28,7 +28,8 @@ from python_utilities.etl.etl_entity import ETLEntity
 from python_utilities.etl.etl_error import ETLError
 from python_utilities.etl.etl_processor import ETLProcessor
 from python_utilities.etl.etl_object_loader import ETLObjectLoader
-from python_utilities.etl.etl_django_model_loader import ETLDjangoModelLoader
+#from python_utilities.etl.etl_django_model_loader import ETLDjangoModelLoader
+from python_utilities.etl.etl_from_dictionary import ETLFromDictionary
 
 
 #===============================================================================
@@ -36,8 +37,8 @@ from python_utilities.etl.etl_django_model_loader import ETLDjangoModelLoader
 #===============================================================================
 
 
-# lineage: object --> ETLProcessor --> ETLObjectLoader --> ETLDjangoModelLoader
-class ETLFromExcelWithHeaders( ETLDjangoModelLoader ):
+# lineage: object --> ETLProcessor --> ETLObjectLoader --> ETLDjangoModelLoader --> ETLFromDictionary
+class ETLFromExcelWithHeaders( ETLFromDictionary ):
 
 
     #===========================================================================
@@ -142,54 +143,84 @@ class ETLFromExcelWithHeaders( ETLDjangoModelLoader ):
         current_cell = None
         current_value = None
 
-        # init
-        my_debug_flag = self.debug_flag
-        row_index_IN = record_IN  # for this type, pass index, not record.
+        # first, check type of record.
 
-        # get spec information
-        my_worksheet = self.get_input_worksheet()
-        my_etl_spec = self.get_etl_entity()
+        # ==> dictionary?
+        if ( isinstance( record_IN, dict ) ):
 
-        if ( my_debug_flag == True ):
-            status_message = "Getting value for key: {}".format( key_IN )
-            self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
-        #-- END DEBUG --#
+            # dictionary - call parent method.
+            value_OUT = super().get_value_for_key(
+                record_IN,
+                key_IN
+            )
 
-        # retrieve column index
-        current_column_index = my_etl_spec.pull_index_for_key( key_IN )
+        elif ( isinstance( record_IN, int ) ):
 
-        if ( my_debug_flag == True ):
-            status_message = "- Current column index: {}".format( current_column_index )
-            self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
-        #-- END DEBUG --#
+            # init
+            my_debug_flag = self.debug_flag
+            row_index_IN = record_IN  # for this type, pass index, not record.
 
-        if ( ( current_column_index is not None ) and ( current_column_index != "" ) ):
-
-            # retrieve value from this row.
-            current_cell = my_worksheet.cell( row = row_index_IN, column = current_column_index )
-            current_value = current_cell.value
-            value_OUT = current_value
+            # get spec information
+            my_worksheet = self.get_input_worksheet()
+            my_etl_spec = self.get_etl_entity()
 
             if ( my_debug_flag == True ):
-                status_message = "- Current column value: {}".format( current_value )
+                status_message = "Getting value for key: {}".format( key_IN )
                 self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
             #-- END DEBUG --#
+
+            # retrieve column index
+            current_column_index = my_etl_spec.pull_index_for_key( key_IN )
+
+            if ( my_debug_flag == True ):
+                status_message = "- Current column index: {}".format( current_column_index )
+                self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
+            #-- END DEBUG --#
+
+            if ( ( current_column_index is not None ) and ( current_column_index != "" ) ):
+
+                # retrieve value from this row.
+                current_cell = my_worksheet.cell( row = row_index_IN, column = current_column_index )
+                current_value = current_cell.value
+                value_OUT = current_value
+
+                if ( my_debug_flag == True ):
+                    status_message = "- Current column value: {}".format( current_value )
+                    self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
+                #-- END DEBUG --#
+
+            else:
+
+                # ERROR
+                status_message = "In method ETLFromExcelWithHeaders.{method_name}(): No index found for key {key_name}.".format(
+                    method_name = me,
+                    key_name = key_IN
+                )
+                self.output_log_message( status_message, me, log_level_code_IN = logging.ERROR, do_print_IN = True )
+
+                # unknown key - can't get value.
+                value_OUT = None
+
+                raise ETLError( status_message )
+
+            #-- END check to see if key maps to index. --#
 
         else:
 
             # ERROR
-            status_message = "In method ETLFromExcelWithHeaders.{method_name}(): No index found for key {key_name}.".format(
+            status_message = "In method ETLFromExcelWithHeaders.{method_name}(): record is of unexpected type: {record_type}, not int or dict ( record: {record} ).".format(
                 method_name = me,
-                key_name = key_IN
+                record_type = type( record_IN ),
+                record = record_IN
             )
             self.output_log_message( status_message, me, log_level_code_IN = logging.ERROR, do_print_IN = True )
 
-            # unknown key - can't get value.
+            # unknown record type - can't get value.
             value_OUT = None
 
             raise ETLError( status_message )
 
-        #-- END check to see if key maps to index. --#
+        #-- END check type of record passed in. --#
 
         return value_OUT
 
@@ -337,6 +368,7 @@ class ETLFromExcelWithHeaders( ETLDjangoModelLoader ):
         me = "update_instance_from_record"
         my_debug_flag = None
         status_message = None
+        record_dictionary = None
         my_etl_spec = None
         current_entry_instance = None
         current_row_index = None
@@ -350,18 +382,9 @@ class ETLFromExcelWithHeaders( ETLDjangoModelLoader ):
         current_attr_name = None
         current_attr_value = None
         my_etl_attribute = None
-        store_status = None
-        store_update_details = None
-        store_success = None
 
-        # declare variables - status checking
-        was_attr_updated = None
-        was_instance_updated = None
-        updated_attr_list = None
-        no_change_attr_list = None
-        error_attr_list = None
-        success_status_list = None
-        error_status_list = None
+        #----------------------------------------------------------------------#
+        # ==> do work
 
         # init
         status_OUT = StatusContainer()
@@ -370,14 +393,10 @@ class ETLFromExcelWithHeaders( ETLDjangoModelLoader ):
         my_etl_spec = self.get_etl_entity()
         current_entry_instance = instance_IN
         current_row_index = record_IN
+        record_dictionary = {}
 
-        # init status checking variables
-        was_instance_updated = False
-        updated_attr_list = []
-        no_change_attr_list = []
-        error_attr_list = []
-        success_status_list = []
-        error_status_list = []
+        # store supporting information in status instance.
+        status_OUT = self.init_status( status_OUT )
 
         # got an instance?
         if ( current_entry_instance is not None ):
@@ -387,14 +406,21 @@ class ETLFromExcelWithHeaders( ETLDjangoModelLoader ):
             row_count = my_worksheet.max_row
             column_count = my_worksheet.max_column
 
-            # loop over columns to get values each column and store in instance.
+            #------------------------------------------------------------------#
+            # ==> process record attributes (loop over columns in row)
+
+            # loop over columns to get values for each column and create a
+            #     dictionary that we'll pass on to parent method.
             for current_column_index in range( 1, column_count + 1 ):
 
-                # retrieve value for this cell
+                #--------------------------------------------------------------#
+                # ==> get attribute spec, name and value
+
+                # value --> retrieve value for this cell
                 current_cell = my_worksheet.cell( row = current_row_index, column = current_column_index )
                 current_column_value = current_cell.value
 
-                # get key for index.
+                # key --> get key for index.
                 current_column_key = my_etl_spec.pull_key_for_index( current_column_index )
 
                 # start with attribute value set to column value
@@ -410,9 +436,6 @@ class ETLFromExcelWithHeaders( ETLDjangoModelLoader ):
                     #     processing.
                     current_attr_name = my_etl_attribute.get_load_attr_name()
 
-                    # process value.
-                    current_attr_value = self.process_value( current_attr_value, my_etl_attribute, current_entry_instance )
-
                 else:
 
                     # no ETLAttribute instance. Direct, untranslated
@@ -421,80 +444,20 @@ class ETLFromExcelWithHeaders( ETLDjangoModelLoader ):
 
                 #-- END check to see if attribute spec. --#
 
-                # store the value.
-                store_status = self.store_attribute( current_entry_instance, current_attr_name, current_attr_value )
+                # add attribute_name and value to record dictionary.
+                record_dictionary[ current_attr_name ] = current_attr_value
 
-                # success?
-                store_success = store_status.is_success()
-                store_update_details = store_status.get_detail_value( self.PROP_ATTR_UPDATE_DETAIL )
-                if ( store_success == True ):
+            #-- END loop over cells in spreadsheet row. --#
 
-                    # success.
-                    success_status_list.append( store_status )
+            #--------------------------------------------------------------#
+            # ==> get attribute spec, name and value
 
-                    # was attribute updated?
-                    was_attr_updated = store_status.get_detail_value( self.PROP_WAS_ATTR_UPDATED, None )
-                    if ( was_attr_updated == True ):
-
-                        # updated.
-                        was_instance_updated = True
-                        updated_attr_list.append( store_update_details )
-
-                    else:
-
-                        # not updated.
-                        no_change_attr_list.append( store_update_details )
-
-                    #-- END check to see if attribute updated. --#
-
-                else:
-
-                    # error.
-                    error_attr_list.append( store_update_details )
-                    error_status_list.append( store_status )
-
-                #-- END check to see if update was a success --#
-
-            #-- END loop over columns in row --#
-
-            # status - success?
-            if ( len( error_status_list ) == 0 ):
-
-                # success!
-                status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
-                status_message = "Success!"
-                status_OUT.add_message( status_message )
-
-                # All processed. Save?
-                if ( ( was_instance_updated == True )
-                    and ( save_on_success_IN == True ) ):
-
-                    # changed, and we are saving...
-                    current_entry_instance.save()
-
-                #-- END check to see if we save(). --#
-
-            else:
-
-                # not success!
-                status_OUT.set_status_code( StatusContainer.STATUS_CODE_ERROR )
-                status_message = "One or more errors occurred updating instance, see nested \"error_status_list\" and \"error_attr_list\" for more details."
-                status_OUT.add_message( status_message )
-
-            #-- END check to see if success. --#
-
-            # store supporting information in status instance.
-            status_OUT.set_detail_value( self.PROP_WAS_INSTANCE_UPDATED, was_instance_updated )
-            status_OUT.set_detail_value( self.PROP_UPDATED_ATTR_LIST, updated_attr_list )
-            status_OUT.set_detail_value( self.PROP_NO_CHANGE_ATTR_LIST, no_change_attr_list )
-            status_OUT.set_detail_value( self.PROP_ERROR_ATTR_LIST, error_attr_list )
-            status_OUT.set_detail_value( self.PROP_SUCCESS_STATUS_LIST, success_status_list )
-            status_OUT.set_detail_value( self.PROP_ERROR_STATUS_LIST, error_status_list )
-
-            if ( my_debug_flag == True ):
-                status_message = "- in {}(): unknown_attr_name_to_value_map = {}".format( me, unknown_attr_name_to_value_map )
-                self.output_debug( status_message, method_IN = me, do_print_IN = my_debug_flag )
-            #-- END DEBUG --#
+            # call parent method to process spreadsheet row as dictionary, so
+            #     we get all of the pre- and post-processing there built-in.
+            status_OUT = super().update_instance_from_record(
+                current_entry_instance,
+                record_dictionary
+            )
 
         else:
 

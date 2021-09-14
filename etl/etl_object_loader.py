@@ -130,6 +130,148 @@ class ETLObjectLoader( ETLProcessor ):
     #===========================================================================
 
 
+    def init_status( self, status_IN ):
+
+        '''
+        Standardized StatusContainer initialization, so it is ready for:
+        - process_attr_error()
+        - process_result_status()
+        '''
+
+        # return reference
+        status_OUT = None
+
+        # start with status passed in
+        status_OUT = status_IN
+
+        # init
+        status_OUT.set_detail_value( self.PROP_WAS_INSTANCE_UPDATED, False )
+        status_OUT.set_detail_value( self.PROP_UPDATED_ATTR_LIST, list() )
+        status_OUT.set_detail_value( self.PROP_NO_CHANGE_ATTR_LIST, list() )
+        status_OUT.set_detail_value( self.PROP_ERROR_ATTR_LIST, list() )
+        status_OUT.set_detail_value( self.PROP_SUCCESS_STATUS_LIST, list() )
+        status_OUT.set_detail_value( self.PROP_ERROR_STATUS_LIST, list() )
+
+        return status_OUT
+
+    #-- END init_status() method --#
+
+
+    def process_attr_error( self, status_IN, attr_spec_IN, message_IN ):
+
+        # return reference
+        status_OUT = None
+
+        # declare variables
+        error_attr_list = None
+        error_status_list = None
+        error_status = None
+
+        # start with status passed in
+        status_OUT = status_IN
+
+        # get lists
+        error_attr_list = status_OUT.get_detail_value( self.PROP_ERROR_ATTR_LIST, None )
+        error_status_list = status_OUT.get_detail_value( self.PROP_ERROR_STATUS_LIST, None )
+
+        # Add spec to error_attr_list.
+        error_attr_list.append( attr_spec_IN )
+
+        # make and store status
+        error_status = StatusContainer()
+        error_status.set_status_code( StatusContainer.STATUS_CODE_ERROR )
+        error_status.add_message( message_IN )
+        error_status_list.append( error_status )
+
+        return status_OUT
+
+    #-- END method process_attr_error()
+
+
+    def process_result_status( self,
+                               status_IN,
+                               result_status_IN,
+                               was_updated_prop_name_IN,
+                               details_IN = None ):
+
+        # return reference
+        status_OUT = None
+
+        # declare variables - information from status
+        success_status_list = None
+        updated_attr_list = None
+        no_change_attr_list = None
+        error_attr_list = None
+        error_status_list = None
+
+        # declare variables - processing
+        result_success = None
+        was_updated = None
+
+        # init - start with status passed in
+        status_OUT = status_IN
+
+        # get info from status
+        success_status_list = status_OUT.get_detail_value( self.PROP_SUCCESS_STATUS_LIST, None )
+        updated_attr_list = status_OUT.get_detail_value( self.PROP_UPDATED_ATTR_LIST, None )
+        no_change_attr_list = status_OUT.get_detail_value( self.PROP_NO_CHANGE_ATTR_LIST, None )
+        error_attr_list = status_OUT.get_detail_value( self.PROP_ERROR_ATTR_LIST, None )
+        error_status_list = status_OUT.get_detail_value( self.PROP_ERROR_STATUS_LIST, None )
+
+        # success?
+        result_success = result_status_IN.is_success()
+        if ( result_success == True ):
+
+            # success.
+            success_status_list.append( result_status_IN )
+
+            # was updated?
+            was_updated = result_status_IN.get_detail_value( was_updated_prop_name_IN, None )
+            if ( was_updated == True ):
+
+                # updated.
+                status_OUT.set_detail_value( self.PROP_WAS_INSTANCE_UPDATED, True )
+
+                # details?
+                if ( details_IN is not None ):
+
+                    # yes - store in appropriate list.
+                    updated_attr_list.append( details_IN )
+
+                #-- END check to see if details --#
+
+            else:
+
+                # details?
+                if ( details_IN is not None ):
+
+                    # yes - store details of thing not updated.
+                    no_change_attr_list.append( details_IN )
+
+                #-- END check to see if details --#
+
+            #-- END check to see if updated. --#
+
+        else:
+
+            # error.
+            error_status_list.append( result_status_IN )
+
+            # details?
+            if ( details_IN is not None ):
+
+                # yes - store error details
+                error_attr_list.append( details_IN )
+
+            #-- END check to see if details --#
+
+        #-- END check to see if update was a success --#
+
+        return status_OUT
+
+    #-- END method process_result_status() --#
+
+
     def process_value( self, value_IN, attribute_spec_IN, instance_IN ):
 
         '''
