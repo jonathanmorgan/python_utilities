@@ -35,6 +35,8 @@ from python_utilities.status.status_container import StatusContainer
 from python_utilities.etl.etl_attribute import ETLAttribute
 from python_utilities.etl.etl_entity import ETLEntity
 from python_utilities.etl.etl_error import ETLError
+from python_utilities.etl.etl_from_dictionary import ETLFromDictionary
+from python_utilities.etl.etl_from_excel_with_headers import ETLFromExcelWithHeaders
 from python_utilities.etl.etl_object_loader import ETLObjectLoader
 from python_utilities.etl.etl_processor import ETLProcessor
 
@@ -118,12 +120,53 @@ class LoadableDjangoModel( models.Model ):
 
         # declare variables
         me = "get_my_etl_loader_instance"
+        my_etl_spec = None
+        extract_storage_type = None
 
-        # Examples:
-        #instance_OUT = ETLFromDictionary()
-        #instance_OUT = ETLFromExcelWithHeaders()
+        # retrieve ETL spec
+        my_etl_spec = cls.get_etl_spec()
 
-        raise ETLError( "In abstract-ish method LoadableDjangoModel.{}(): OVERRIDE ME".format( me ) )
+        # got one?
+        if ( my_etl_spec is not None ):
+
+            # got one, retrieve type.
+            extract_storage_type = my_etl_spec.get_extract_storage_type()
+
+            # got a type?
+            if ( ( extract_storage_type is not None )
+                and ( extract_storage_type != "" )
+                and ( extract_storage_type in ETLEntity.VALID_STORAGE_TYPE_LIST ) ):
+
+                # we do - which type?
+                if ( ( extract_storage_type == ETLEntity.STORAGE_TYPE_DICT )
+                    or ( extract_storage_type == ETLEntity.STORAGE_TYPE_JSON ) ):
+
+                    # ETLFromDictionary
+                    instance_OUT = ETLFromDictionary()
+
+                elif ( extract_storage_type == ETLEntity.STORAGE_TYPE_XLSX_WITH_HEADERS ):
+
+                    # ETLFromExcelWithHeaders
+                    instance_OUT = ETLFromExcelWithHeaders()
+
+                else:
+
+                    # default for everything else is ETLFromDictionary.
+                    instance_OUT = ETLFromDictionary()
+
+            else:
+
+                # no storage type. Default to dictionary.
+                instance_OUT = ETLFromDictionary()
+
+            #-- END check if we have an extract storage type. --#
+
+        else:
+
+            # no spec - error.
+            raise ETLError( "In LoadableDjangoModel.{}(): no ETL spec, can't retrieve appropriate ETL class based on spec.".format( me ) )
+
+        #-- END check to see if spec --#
 
         return instance_OUT
 
@@ -161,13 +204,37 @@ class LoadableDjangoModel( models.Model ):
 
 
     @classmethod
+    def initialize_etl_loader( cls, etl_loader_IN, debug_flag_IN = False, *args, **kwargs ):
+
+        '''
+        Can be extended by a child class to further initialize the ETL loader
+            as needed, depending on the type of loader and other needs of the
+            class. Defaults to doing nothing.
+        '''
+
+        # return reference
+        etl_loader_OUT = None
+
+        # declare variables
+        me = "initialize_etl_loader"
+
+        # by default, pass back what is passed in.
+        etl_loader_OUT = etl_loader_IN
+
+        return etl_loader_OUT
+
+    #-- END class method initialize_etl_loader() --#
+
+
+    @classmethod
     def run_etl( cls,
-                 record_list_IN,
+                 record_list_IN = None,
                  start_index_IN = None,
                  row_count_IN = None,
                  debug_flag_IN = False,
                  default_time_zone_IN = None,
                  do_output_progress_IN = False,
+                 allow_empty_record_list_IN = False,
                  *args,
                  **kwargs ):
 
@@ -205,8 +272,9 @@ class LoadableDjangoModel( models.Model ):
         status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
 
         # do we have a record list?
-        if ( ( record_list_IN is not None )
-            and ( len( record_list_IN ) > 0 ) ):
+        if ( ( ( record_list_IN is not None )
+                and ( len( record_list_IN ) > 0 ) )
+             or ( allow_empty_record_list_IN == True ) ):
 
             # first, make sure ETL spec is initialized.
             cls.initialize_etl()
@@ -230,6 +298,9 @@ class LoadableDjangoModel( models.Model ):
             etl_instance.debug_flag = my_debug_flag
             etl_instance.set_etl_entity( my_etl_spec )
 
+            # call method to further initialize ETLLoader.
+            etl_instance = cls.initialize_etl_loader( etl_instance )
+
             # default time zone?
             if ( default_time_zone_IN is not None ):
 
@@ -238,8 +309,13 @@ class LoadableDjangoModel( models.Model ):
 
             #-- END check if time zone passed in. --#
 
-            # store list of records.
-            etl_instance.set_record_list( record_list_IN )
+            # list of records passed in?
+            if ( record_list_IN is not None ):
+
+                # store list of records.
+                etl_instance.set_record_list( record_list_IN )
+
+            #-- END check if record list passed in --#
 
             # loop over rrecords, processing each
             status_message = "In {my_class} - Starting {my_method}!".format(
@@ -292,7 +368,7 @@ class LoadableDjangoModel( models.Model ):
             LoggingHelper.log_message(
                 status_message,
                 method_IN = me,
-                logger_name_IN = self.MY_LOGGER_NAME,
+                logger_name_IN = cls.MY_LOGGER_NAME,
                 do_print_IN = True,
                 log_level_code_IN = logging.WARNING
             )
