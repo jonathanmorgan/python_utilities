@@ -73,6 +73,9 @@ class ParamContainer( object ):
     PARAM_TYPE_INT = 'int'
     PARAM_TYPE_LIST = 'list'
     PARAM_TYPE_STRING = 'string'
+    
+    # PARAMS object types
+    PARAMS_OBJECT_TYPE_DJANGO_QUERY_DICT = "<class 'django.http.request.QueryDict'>"
 
 
     #---------------------------------------------------------------------------
@@ -259,6 +262,8 @@ class ParamContainer( object ):
         
         # declare variables
         my_params = None
+        #params_type = None
+        #params_type_string = None
         my_request = None
 
         # get params
