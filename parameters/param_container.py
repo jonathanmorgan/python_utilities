@@ -21,23 +21,23 @@ Usage:
 
     # make an instance
     my_param_container = ParamContainer()
-    
+
     # define parameters (for outputting debug, nothing more at this point)
     my_param_container.define_parameter( "test_int", ParamContainer.PARAM_TYPE_INT )
     my_param_container.define_parameter( "test_string", ParamContainer.PARAM_TYPE_STRING )
     my_param_container.define_parameter( "test_list", ParamContainer.PARAM_TYPE_LIST )
-    
+
     # load parameters in a dict
     my_param_container.set_parameters( params )
-    
+
     # load parameters from a django HTTP request
     my_param_container.set_request( request )
-    
+
     # get parameter value - pass name and optional default if not present.
     test_int = my_param_container.get_param( "test_int", -1 )
     test_string = my_param_container.get_param( "test_string", "" )
     test_list = my_param_container.get_param( "test_list", [] )
-    
+
     # get param as int
     test_int = my_param_container.get_param_as_int( "test_int", -1 )
 
@@ -73,7 +73,7 @@ class ParamContainer( object ):
     PARAM_TYPE_INT = 'int'
     PARAM_TYPE_LIST = 'list'
     PARAM_TYPE_STRING = 'string'
-    
+
     # PARAMS object types
     PARAMS_OBJECT_TYPE_DJANGO_QUERY_DICT = "<class 'django.http.request.QueryDict'>"
 
@@ -89,7 +89,7 @@ class ParamContainer( object ):
         self.request = None
         self.params_dictionary = {}
         self.param_name_to_type_dict = {}
-        
+
     #-- END method __init__() --#
 
 
@@ -117,20 +117,20 @@ class ParamContainer( object ):
 
         # retrieve parameters
         params_IN = self.get_parameters()
-        
+
         # got params?
         if ( params_IN ):
 
             # get list of expected params
             expected_params = self.param_name_to_type_dict
-            
+
             # loop over expected parameters, grabbing each and adding it to the
             #    output string.
             for param_name, param_type in expected_params.items():
 
                 # initialize this param's output string.
                 param_output_string = param_name + " = "
-                
+
                 # get raw param value
                 param_value_raw = self.get_param( param_name, None )
                 param_output_string += "\"" + str( param_value_raw ) + "\""
@@ -148,16 +148,16 @@ class ParamContainer( object ):
 
                     # get param value list
                     param_value_list = self.get_param_as_list( param_name )
-                    
+
                     param_output_string += "\n----> typeof list: \"" + str( param_value_list ) + "\""
 
                     # output list of values
                     #for param_value in param_value_list:
-                    
+
                     #    param_output_string += param_value + ", "
-                        
+
                     #-- END loop over values in list. --#
-                    
+
                     #param_output_string += "\""
 
                 #-- END handle different types of parameters appropriately --#
@@ -167,9 +167,9 @@ class ParamContainer( object ):
 
                 # then append output string to output string list.
                 output_string_list.append( param_output_string )
-                
+
             #-- END loop over parameters --#
-                    
+
             # initialize output string.
             string_OUT = "Parameters:\n-----------------------------\n"
 
@@ -191,7 +191,7 @@ class ParamContainer( object ):
 
             Purpose: accepts the name and type of a parameter, adds them to the
             internal dict that maps param names to their types.
-            
+
             Params:
             - name_IN - name of parameter we are defining.
             - type_IN - type of parameter - should be one of the PARAM_TYPE_* constants-ish.
@@ -199,67 +199,84 @@ class ParamContainer( object ):
 
         # declare variables
         name_to_type_dict = None
-        
+
         # get dict
         name_to_type_dict = self.param_name_to_type_dict
 
         # add parameter
         name_to_type_dict[ name_IN ] = type_IN
-        
+
     #-- END method define_parameter() --#
 
 
     def get_parameters( self ):
-        
+
         # return reference
         dict_OUT = ""
-        
+
         # declare variables
-        
+
         # try to retrieve value - for now, reference nested request.POST
         dict_OUT = self.params_dictionary
-        
+
         return dict_OUT
-        
+
     #-- END method get_parameters() --#
-    
-    
+
+
     def get_param( self, param_name_IN, default_IN = None ):
-        
+
         # return reference
         value_OUT = ""
-        
+
         # declare variables
         my_params = None
-        
+
         # try to retrieve value - for now, reference nested parameters.
         my_params = self.get_parameters()
         value_OUT = DictHelper.get_dict_value( my_params, param_name_IN, default_IN )
-        
-        return value_OUT
-        
-    #-- END method get_param() --#
-    
 
-    def get_param_as_int( self, param_name_IN, default_IN = -1 ):
-        
+        return value_OUT
+
+    #-- END method get_param() --#
+
+
+    def get_param_as_boolean( self, param_name_IN, default_IN = None ):
+
         # return reference
         value_OUT = ""
-        
+
+        # declare variables
+        my_value = None
+
+        # call get_param()
+        my_value = self.get_param( param_name_IN, default_IN = None )
+        value_OUT = BooleanHelper.convert_value_to_boolean( my_value, default_IN = default_IN )
+
+        return value_OUT
+
+    #-- END method get_param_as_boolean() --#
+
+
+    def get_param_as_int( self, param_name_IN, default_IN = -1 ):
+
+        # return reference
+        value_OUT = ""
+
         # call get_param()
         my_params = self.get_parameters()
         value_OUT = DictHelper.get_dict_value_as_int( my_params, param_name_IN, default_IN )
-        
+
         return value_OUT
-        
+
     #-- END method get_string_param() --#
-    
+
 
     def get_param_as_list( self, param_name_IN, default_IN = [], delimiter_IN = ',' ):
-        
+
         # return reference
         list_OUT = []
-        
+
         # declare variables
         my_params = None
         #params_type = None
@@ -268,7 +285,7 @@ class ParamContainer( object ):
 
         # get params
         my_params = self.get_parameters()
-        
+
         # got a request?  Because of special way that request.POST and
         #    request.GET behave in terms of list parameters, if you have a
         #    request and might have multi-valued inputs, you need to use the
@@ -279,89 +296,89 @@ class ParamContainer( object ):
         #    list if asked, otherwise only returns the first or last value it.
         my_request = self.request
         if ( my_request is not None ):
-        
+
             #print( "request!"  )
-        
+
             # get list using request.POST.getlist()/request.GET.getlist()
             list_OUT = my_params.getlist( param_name_IN, [] )
-            
+
             # if input is present but empty, returns list that has a single
             #    element in it, an empty string.  Want an empty list.
             if ( ( len( list_OUT ) == 1 ) and ( list_OUT[ 0 ] == "" ) ):
-            
+
                 # list with an empty string in it.  Return empty list.
                 list_OUT = []
-            
+
             #-- END check to see if it is a list with a single empty string in it. --#
-            
+
         else:
-        
+
             #print( "NO request!"  )
 
             # not a request object - call get_dict_value_as_list()
             list_OUT = DictHelper.get_dict_value_as_list( my_params, param_name_IN, default_IN, delimiter_IN )
-            
+
         #-- END check to see if request or not. --#
-        
+
         #print( "list_OUT = " + str( list_OUT ) )
-        
+
         return list_OUT
 
     #-- END method get_param_as_list() --#
-    
+
 
     def get_param_as_str( self, param_name_IN, default_IN = '' ):
-        
+
         # return reference
         value_OUT = ""
-        
+
         # call get_param()
         my_params = self.get_parameters()
         value_OUT = DictHelper.get_dict_value_as_str( my_params, param_name_IN, default_IN )
-        
+
         return value_OUT
-        
+
     #-- END method get_param_as_str() --#
-    
+
 
     def get_param_type( self, param_name_IN, default_IN = None ):
-        
+
         # return reference
         value_OUT = ""
-        
+
         # declare variables
         name_to_type_map = None
-        
+
         # try to retrieve type - for now, reference nested parameters.
         name_to_type_map = self.param_name_to_type_dict
         value_OUT = DictHelper.get_dict_value( name_to_type_map, param_name_IN, default_IN )
-        
+
         return value_OUT
-        
+
     #-- END method get_param_type() --#
-    
+
 
     def get_string_param_as_list( self, param_name_IN, default_IN = [], delimiter_IN = ',' ):
-        
+
         # return reference
         list_OUT = []
-        
+
         # declare variables
         my_params = None
         my_request = None
 
         # get params
         my_params = self.get_parameters()
-        
+
         # call get_dict_value_as_list()
         list_OUT = DictHelper.get_dict_value_as_list( my_params, param_name_IN, default_IN, delimiter_IN )
-        
+
         #print( "list_OUT = " + str( list_OUT ) )
-        
+
         return list_OUT
 
     #-- END method get_string_param_as_list() --#
-    
+
 
     def set_parameter_value( self, name_IN, value_IN ):
 
@@ -370,9 +387,9 @@ class ParamContainer( object ):
 
             Purpose: accepts parameter name and value, stores value in nested
                 parameter dictionary for that parameter name.
-                
+
             Postconditions: Returns value set for name.
-            
+
             Params:
             - name_IN - name of parameter we are setting.
             - value_IN - value to store for that param name.
@@ -390,19 +407,19 @@ class ParamContainer( object ):
 
             # yes.  Got a type?
             param_type = self.get_param_type( name_IN )
-            
+
             # get parameter dictionary
             param_dictionary = self.get_parameters()
-            
+
             # store the value in the name.
             param_dictionary[ name_IN ] = value_IN
 
         #-- END check to see if we have a name --#
-        
+
         value_OUT = self.get_param( name_IN )
-        
+
         return value_OUT
-        
+
     #-- END method set_parameter_value() --#
 
 
@@ -412,7 +429,7 @@ class ParamContainer( object ):
             Method: set_parameters()
 
             Purpose: accepts a dict of parameters, stores it in instance.
-            
+
             Params:
             - dict_IN - dict of parameter names mapped to values.
         """

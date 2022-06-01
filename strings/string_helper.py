@@ -1220,7 +1220,7 @@ class StringHelper( object ):
 
 
     @classmethod
-    def make_string_hash( cls, value_IN, hash_function_IN = hashlib.sha256 ):
+    def make_string_hash( cls, value_IN, hash_function_IN = hashlib.sha256, do_encode_IN = True ):
 
         # return reference
         value_OUT = None
@@ -1235,7 +1235,15 @@ class StringHelper( object ):
         if ( ( value_IN is not None ) and ( value_IN != "" ) ):
 
             # encode string (convert to bytes)
-            my_value_bytes = value_IN.encode()
+            if ( do_encode_IN == True ):
+
+                my_value_bytes = value_IN.encode()
+
+            else:
+
+                my_value_bytes = value_IN
+
+            #-- END check if we encode... --#
 
             # create hash
             my_value_hash = hash_function_IN( my_value_bytes )

@@ -29,6 +29,7 @@ class BooleanHelper( object ):
 
 
     TRUE_STRING_VALUES = [ '1', 't', 'true', 'y', 'yes' ]
+    FALSE_STRING_VALUES = [ '0', 'f', 'false', 'n', 'no' ]
 
 
     #===========================================================================
@@ -36,51 +37,56 @@ class BooleanHelper( object ):
     #===========================================================================
 
     @classmethod
-    def convert_value_to_boolean( cls, value_IN ):
-        
+    def convert_value_to_boolean( cls, value_IN, default_IN = False ):
+
         """
         Compares the value passed in to known representations of boolean True:
         - 1
         - t (any case)
         - true (any case)
         - actual boolean value True
-        If any of these match, returns True.  If not, returns false.
+        If any of these match, returns True.  If not, returns False.
         """
-    
+
         # return reference
         value_OUT = False
-        
+
         # declare variables
         value_cleaned = ""
-        
+
         # got something?
         if ( ( value_IN ) and ( value_IN != None ) and ( value_IN != "" ) ):
-            
+
             # clean value (strip, to lower case).
             value_cleaned = str( value_IN )
             value_cleaned = value_cleaned.strip()
             value_cleaned = value_cleaned.lower()
-            
+
             # check for True values.
             if value_cleaned in cls.TRUE_STRING_VALUES:
-                
+
                 value_OUT = True
-            
-            else:
-                
+
+            # check for false values
+            elif value_cleaned in cls.FALSE_STRING_VALUES:
+
                 value_OUT = False
-                
+
+            else:
+
+                value_OUT = default_IN
+
             #-- END check to see if value is in our true values. --#
 
         else:
-            
-            # not one of our approved values, so False.
-            value_OUT = False
-            
+
+            # nothing passed in, return default
+            value_OUT = default_IN
+
         #-- END set of boolean checks. --#
-    
+
         return value_OUT
-    
+
     #-- END convert_value_to_boolean() function --#
 
 
