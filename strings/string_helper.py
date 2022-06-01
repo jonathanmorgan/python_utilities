@@ -1222,6 +1222,28 @@ class StringHelper( object ):
     @classmethod
     def make_string_hash( cls, value_IN, hash_function_IN = hashlib.sha256, do_encode_IN = True ):
 
+        '''
+        Added do_encode_IN so you can also support byte strings (to help with text files).
+
+        This answer has a key for hashing text files correctly: https://stackoverflow.com/a/44873382
+
+            - Include the "b" flag in the file read, so you get bytes, not encoding stuff.
+            - Then, hash just those bytes.
+            - I tried reading in file then hashing, and the round trip from reading, decoding, then encoding resulted in different bytes and a different hash. Just read with "b" flag, then hash using `hashlib.sha256()` (which is what StringHelper.make_string_hash() calls, inside).
+            - Example:
+
+                    # load file, calculate hash, make sure it matches.
+                    with open( my_network_data_file_path, 'rb' ) as my_network_data_file:
+
+                        # read contents of file
+                        my_network_data_from_file = my_network_data_file.read()
+
+                    #-- END open file we might or might not have just made. --#
+
+                    # calculate hash - gets correct answer - same as hashing the file itself on file system.
+                    my_network_data_hash_from_file = StringHelper.make_string_hash( my_network_data_from_file, do_encode_IN = False )
+        '''
+
         # return reference
         value_OUT = None
 
