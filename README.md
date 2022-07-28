@@ -2,6 +2,8 @@
 
 _latest_: [![DOI](https://zenodo.org/badge/6323399.svg)](https://zenodo.org/badge/latestdoi/6323399)
 
+v.1.1.1: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6917759.svg)](https://doi.org/10.5281/zenodo.6917759)
+
 v.1.1.0: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5904708.svg)](https://doi.org/10.5281/zenodo.5904708)
 
 v.1.0.2: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4686148.svg)](https://doi.org/10.5281/zenodo.4686148)
@@ -150,7 +152,7 @@ Use pip:
 
 ### Option 2: latest from github
 
-Clone this repository and place it somewhere in your PYTHON\_PATH, including the base "python\_utilities" directory.  The easiest way to use these libraries with a Django site is to clone this repository into the site's folder alongside other applications, so these utilities are a part of the same python path as other django apps.  These utilities are used by other of my django applications, as well.  They can also be used outside of django.
+Clone this repository ( [https://github.com/jonathanmorgan/python_utilities.git](https://github.com/jonathanmorgan/python_utilities.git) ) and place it somewhere in your PYTHON\_PATH, including the base "python\_utilities" directory.  The easiest way to use these libraries with a Django site is to clone this repository into the site's project folder (where `manage.py` lives) alongside other applications, so these utilities are a part of the same python path as other django apps.  These utilities are used by other of my django applications, as well.  They can also be used outside of django.
 
 Dependencies are listed below.  You can install them individually, or you can just use the `requirements*.txt` files, which lists them all out, to install them all at once using pip.  The command to install base packages, without database-specific support:
 
@@ -159,7 +161,7 @@ Dependencies are listed below.  You can install them individually, or you can ju
 
 ### For either option, database packages
 
-For database packages, you'll need to load the requirements file for each database you want to interact with (right now `requirements_pgsql.txt` for postgresql and `rewuirements_mysql.txt` for MySQL).  Whichever you install, you'll also need to make sure you installed the client and client-dev libraries for each database you use.
+For database packages, you'll need to load the requirements file for each database you want to interact with (right now `requirements_pgsql.txt` for postgresql and `requirements_mysql.txt` for MySQL).  Whichever you install, you'll also need to make sure you installed the client and client-dev libraries for each database you use.
 
 ### /beautiful\_soup/*
 
