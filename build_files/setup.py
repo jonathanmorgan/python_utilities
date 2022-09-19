@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="python-utilities-jsm", # Replace with your own username
-    version="1.1.1",
+    version="1.1.2",
     author="Jonathan Morgan",
     author_email="jonathan.morgan.007@gmail.com",
     description="Myriad python utilities.",
