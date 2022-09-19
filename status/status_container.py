@@ -94,6 +94,40 @@ class StatusContainer( object ):
 
 
     #---------------------------------------------------------------------------
+    # ! ==> class methods
+    #---------------------------------------------------------------------------
+
+
+    @classmethod
+    def process_result_status( cls, status_IN, result_status_IN, details_IN = None ):
+
+        # return reference
+        status_OUT = None
+
+        # declare variables
+        result_success = None
+
+        # init - start with status passed in
+        status_OUT = status_IN
+
+        # add result status to status list.
+        status_OUT.add_status_container( result_status_IN )
+
+        # success?
+        result_success = result_status_IN.is_success()
+        if ( result_success == False ):
+
+            # set status container to error.
+            status_OUT.set_status_code( StatusContainer.STATUS_CODE_ERROR )
+
+        #-- END check to see if update was a success --#
+
+        return status_OUT
+
+    #-- END method process_result_status() --#
+
+
+    #---------------------------------------------------------------------------
     # ! ==> __init__() and __str__() methods
     #---------------------------------------------------------------------------
 
