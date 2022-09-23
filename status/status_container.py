@@ -94,6 +94,11 @@ class StatusContainer( object ):
 
 
     #---------------------------------------------------------------------------
+    # ! ==> class methods
+    #---------------------------------------------------------------------------
+
+
+    #---------------------------------------------------------------------------
     # ! ==> __init__() and __str__() methods
     #---------------------------------------------------------------------------
 
@@ -512,6 +517,25 @@ class StatusContainer( object ):
         return value_OUT
 
     #-- end method is_warning() --#
+
+    def process_result_status( self, result_status_IN, details_IN = None ):
+
+        # declare variables
+        result_success = None
+
+        # add result status to status list.
+        self.add_status_container( result_status_IN )
+
+        # success?
+        result_success = result_status_IN.is_success()
+        if ( result_success == False ):
+
+            # set status container to error.
+            self.set_status_code( StatusContainer.STATUS_CODE_ERROR )
+
+        #-- END check to see if update was a success --#
+
+    #-- END method process_result_status() --#
 
 
     def set_details( self, dict_IN, *args, **kwargs ):
