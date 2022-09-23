@@ -4,8 +4,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="python-utilities-jsm", # Replace with your own username
-    version="1.1.2",
+    name="python-utilities-jsm", # Replace with your own package name
+    version="1.1.3",
     author="Jonathan Morgan",
     author_email="jonathan.morgan.007@gmail.com",
     description="Myriad python utilities.",
