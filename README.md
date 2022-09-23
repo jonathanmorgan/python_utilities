@@ -2,6 +2,8 @@
 
 _latest_: [![DOI](https://zenodo.org/badge/6323399.svg)](https://zenodo.org/badge/latestdoi/6323399)
 
+v.1.1.3: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7106278.svg)](https://doi.org/10.5281/zenodo.7106278)
+
 v.1.1.2: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7054892.svg)](https://doi.org/10.5281/zenodo.7054892)
 
 v.1.1.1: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6917759.svg)](https://doi.org/10.5281/zenodo.6917759)
