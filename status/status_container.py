@@ -98,35 +98,6 @@ class StatusContainer( object ):
     #---------------------------------------------------------------------------
 
 
-    @classmethod
-    def process_result_status( cls, status_IN, result_status_IN, details_IN = None ):
-
-        # return reference
-        status_OUT = None
-
-        # declare variables
-        result_success = None
-
-        # init - start with status passed in
-        status_OUT = status_IN
-
-        # add result status to status list.
-        status_OUT.add_status_container( result_status_IN )
-
-        # success?
-        result_success = result_status_IN.is_success()
-        if ( result_success == False ):
-
-            # set status container to error.
-            status_OUT.set_status_code( StatusContainer.STATUS_CODE_ERROR )
-
-        #-- END check to see if update was a success --#
-
-        return status_OUT
-
-    #-- END method process_result_status() --#
-
-
     #---------------------------------------------------------------------------
     # ! ==> __init__() and __str__() methods
     #---------------------------------------------------------------------------
@@ -546,6 +517,25 @@ class StatusContainer( object ):
         return value_OUT
 
     #-- end method is_warning() --#
+
+    def process_result_status( self, result_status_IN, details_IN = None ):
+
+        # declare variables
+        result_success = None
+
+        # add result status to status list.
+        self.add_status_container( result_status_IN )
+
+        # success?
+        result_success = result_status_IN.is_success()
+        if ( result_success == False ):
+
+            # set status container to error.
+            self.set_status_code( StatusContainer.STATUS_CODE_ERROR )
+
+        #-- END check to see if update was a success --#
+
+    #-- END method process_result_status() --#
 
 
     def set_details( self, dict_IN, *args, **kwargs ):
