@@ -326,6 +326,8 @@ class ETLProcessor( object ):
         # declare variables
         my_record_list = None
         my_iterator = None
+        start_index = None
+        stop_index = None
 
         # do we have a record list?
         my_record_list = self.get_record_list()

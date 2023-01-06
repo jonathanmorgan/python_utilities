@@ -256,7 +256,7 @@ class ETLDjangoModelLoader( ETLObjectLoader ):
         self,
         start_index_IN = None,
         record_count_IN = None,
-        do_output_progress_IN = False
+        do_output_progress_IN = True
     ):
 
         '''
