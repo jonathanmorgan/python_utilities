@@ -400,4 +400,4 @@ class RserveHelper( ExceptionHelper ):
     #-- END method set_rserve_port() --#
 
 
-#-- END class LoggingHelper --#
+#-- END class RserveHelper --#
