@@ -1,6 +1,6 @@
 # to build
 
-- in the repo
+- in the repo:
     
     - if there are additional files in the repo that you want to be included in the built package, add them to the `python_utilities/build/MANIFEST.in` file.
     - update the `python_utilities/build/setup.py` file as needed. This includes:
