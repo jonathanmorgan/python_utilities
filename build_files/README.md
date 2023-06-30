@@ -19,7 +19,7 @@
 - move the following files out from the source code into `python_utilities_build`:
 
     - python_utilities/build/LICENSE
-    - python_utilities/build/MANIFEST.in
+    - python_utilities/build/MANIFEST.in (this repo doesn't have a manifest, at the moment)
     - python_utilities/build/setup.py
     - python_utilities/README.md
 
