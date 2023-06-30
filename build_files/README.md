@@ -1,12 +1,19 @@
 # to build
 
-- make a folder named `python_utilities_build`.
-- get source code.  Either:
+- in the repo, update the `python_utilities/build/setup.py` file as needed. This includes:
+
+    - description
+    - metadata about version number, license, etc.
+    - dependencies
+    - required python
+
+- on your build machine, make a folder named `python_utilities_build`.
+- get source code and place it in this folder.  Either:
 
     - clone this repository into that folder: `git clone https://github.com/jonathanmorgan/python_utilities"
     - or (DO THIS) grab the release source tar ball for the release you want to build.
 
-- move the following files into `python_utilities_build`:
+- move the following files out from the source code into `python_utilities_build`:
 
     - python_utilities/build/LICENSE
     - python_utilities/build/setup.py
