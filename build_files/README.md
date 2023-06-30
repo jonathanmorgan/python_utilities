@@ -8,7 +8,7 @@
     - required python
 
 - on your build machine, make a folder named `python_utilities_build`.
-- get source code and place it in this folder.  Either:
+- get source code and place it in the `python_utilities_build` folder.  Either:
 
     - clone this repository into that folder: `git clone https://github.com/jonathanmorgan/python_utilities"
     - or (DO THIS) grab the release source tar ball for the release you want to build.
